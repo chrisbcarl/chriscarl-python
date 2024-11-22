@@ -1,0 +1,14 @@
+[MASTER]
+jobs=4
+ignore-patterns =
+    **/tests/**
+    **/ignoreme/**
+
+[MESSAGES CONTROL]
+disable =
+
+[BASIC]
+good-names=_,a,b,c,d,e,f,i,j,k,m,n,x,y,z,ex,fd,id,log
+
+[FORMAT]
+max-line-length=180

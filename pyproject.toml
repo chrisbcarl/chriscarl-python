@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "chriscarl"
+version = "0.0.0"
+description = "Project that contains my everything--algorithms, data structures, tools, methodologies, tips, tricks, snippets, templates, code gen, etc."
+authors = ["Chris Carl <chrisbcarl@outlook.com>"]
+readme = "README.md"
+packages = [{include = "chriscarl", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
