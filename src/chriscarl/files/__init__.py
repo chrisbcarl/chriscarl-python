@@ -30,7 +30,7 @@ SCRIPT_DIRPATH = os.path.dirname(SCRIPT_FILEPATH)
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
-LOGGER.addHandler(logging.NullHandler())
+LOGGER.appendHandler(logging.NullHandler())
 
 # ###
 
@@ -65,19 +65,19 @@ def _self_modify():
             continue
         dirname = os.path.basename(d)
         dupper = dirname.upper()
-        tokens.add("# {}".format(d))
+        tokens.append("# {}".format(d))
         if dupper:
-            tokens.add("DIRPATH_{} = os.path.join(SCRIPT_DIRPATH, '{}')".format(dupper, dirname))
+            tokens.append("DIRPATH_{} = os.path.join(SCRIPT_DIRPATH, '{}')".format(dupper, dirname))
         else:
             dupper = 'ROOT'
-            tokens.add("DIRPATH_ROOT = SCRIPT_DIRPATH")
+            tokens.append("DIRPATH_ROOT = SCRIPT_DIRPATH")
         for f in fs:
             if '__init__' in f:
                 continue
             pname = get_legal_python_name(f)
-            tokens.add("FILEPATH_{} = os.path.join(DIRPATH_{}, '{}')".format(pname.upper(), dupper, f))
+            tokens.append("FILEPATH_{} = os.path.join(DIRPATH_{}, '{}')".format(pname.upper(), dupper, f))
 
-        tokens.add("")
+        tokens.append("")
     os.chdir(cwd)
 
     new_content = lines[0:indexes[0]] + ['# ###\n'] + tokens + ['\n# ###\n']
