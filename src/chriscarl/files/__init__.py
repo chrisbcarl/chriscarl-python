@@ -7,6 +7,9 @@ Date:           2024-11-24
 Description:
 
 files - glorified file to constant manifest
+
+Updates:
+    2024-11-24 - chriscarl.files - initial commit
 '''
 
 # stdlib imports
@@ -82,10 +85,11 @@ def _self_modify():
         w.write('\n'.join(new_content))
 
 
-lcls = dict(locals())
-for k, v in lcls.items():
-    if k.startswith('DIRPATH') and not os.path.isdir(v):
-        raise OSError('dir {} at "{}" does not exist!'.format(k, v))
-for k, v in lcls.items():
-    if k.startswith('FILEPATH') and not os.path.isfile(v):
-        raise OSError('file {} at "{}" does not exist!'.format(k, v))
+def _self_verify():
+    lcls = dict(globals())
+    for k, v in lcls.items():
+        if k.startswith('DIRPATH') and not os.path.isdir(v):
+            raise OSError('dir {} at "{}" does not exist!'.format(k, v))
+    for k, v in lcls.items():
+        if k.startswith('FILEPATH') and not os.path.isfile(v):
+            raise OSError('file {} at "{}" does not exist!'.format(k, v))
