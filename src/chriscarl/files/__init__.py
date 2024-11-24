@@ -30,7 +30,7 @@ SCRIPT_DIRPATH = os.path.dirname(SCRIPT_FILEPATH)
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
-LOGGER.appendHandler(logging.NullHandler())
+LOGGER.addHandler(logging.NullHandler())
 
 # ###
 
