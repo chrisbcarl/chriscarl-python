@@ -5,11 +5,40 @@ description = "Project that contains my everything--algorithms, data structures,
 authors = ["Chris Carl <chrisbcarl@outlook.com>"]
 readme = "README.md"
 packages = [{include = "chriscarl", from = "src"}]
+include = [
+    { path = "tests", format = "sdist" },
+    # it seems to include all files that are in the packages include section without the need to specify
+]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.12,<3.14"
+six = "^1.16.0"
+mypy = "^1.13.0"
 
+
+[tool.poetry.group.test.dependencies]
+parameterized = "^0.9.0"
+pytest = "^8.3.3"
+tox = "^4.23.2"
+
+
+[tool.poetry.group.dev.dependencies]
+pyinstaller = "^6.11.1"
+types-six = "^1.16.21.20241105"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+
+
+[[tool.mypy.overrides]]
+module = [
+    'parameterized',
+]
+ignore_missing_imports = true
