@@ -19,6 +19,8 @@ DO NOT COMMIT THIS SHIT AS IS YET DO NOT FUCKING DO IT
     LOGGER.info('this is a cannonical way of making files here.')
     ```
     - self modifying format that elongates its prints based on the last longest and internally justifies
+- git workflow (cicd pipelining): https://github.com/chrisbcarl/chriscarl-python/new/main?filename=.github%2Fworkflows%2Fpython-app.yml&workflow_template=ci%2Fpython-app
+- multiversion python package "workflow":https://github.com/chrisbcarl/chriscarl-python/new/main?filename=.github%2Fworkflows%2Fpython-package.yml&workflow_template=ci%2Fpython-package
 
 
 - typing stub creation
