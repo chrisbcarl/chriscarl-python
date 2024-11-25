@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Author:         Carl, Chris
+Author:         Chris Carl
 Email:          chrisbcarl@outlook.com
 Date:           2024-11-24
 Description:
@@ -40,16 +40,19 @@ FILEPATH_DEFAULT_DESCRIPTIONS_JSON = os.path.join(DIRPATH_ROOT, 'default-descrip
 
 # ./templates
 DIRPATH_TEMPLATES = os.path.join(SCRIPT_DIRPATH, 'templates')
-FILEPATH_DEV_MODULE_TEMPLATE_PY = os.path.join(DIRPATH_TEMPLATES, 'dev-module.template.py')
-FILEPATH_DEV_SHADOW_TEMPLATE_PY = os.path.join(DIRPATH_TEMPLATES, 'dev-shadow.template.py')
+FILEPATH_MOD_LIB_TEMPLATE = os.path.join(DIRPATH_TEMPLATES, 'mod.lib.template')
+FILEPATH_TEMPLATE = os.path.join(DIRPATH_TEMPLATES, 'template')
+FILEPATH_TEST_TEMPLATE = os.path.join(DIRPATH_TEMPLATES, 'test.template')
+FILEPATH_TOOL_TEMPLATE = os.path.join(DIRPATH_TEMPLATES, 'tool.template')
 
 # ###
 
 
 def _self_modify():
+    # type: () -> bool
     '''
     Description:
-        run this to self-analyze and print what you wanna see
+        run this to update the DIRPATH_* and FILEPATH_* constants that represent actual file paths
     '''
     from chriscarl.core.functors.python import get_legal_python_name
     me_filepath = os.path.join(SCRIPT_DIRPATH, '{}.py'.format(SCRIPT_NAME))
@@ -80,12 +83,18 @@ def _self_modify():
         tokens.append("")
     os.chdir(cwd)
 
-    new_content = lines[0:indexes[0]] + ['# ###\n'] + tokens + ['\n# ###\n']
+    new_content = lines[0:indexes[0]] + ['# ###\n'] + tokens + lines[indexes[1]:]
     with open(me_filepath, 'w', encoding='utf-8') as w:
         w.write('\n'.join(new_content))
+    return True
 
 
 def _self_verify():
+    # type: () -> bool
+    '''
+    Description:
+        run this to check each of the DIRPATH_* and FILEPATH_* actually exist...
+    '''
     lcls = dict(globals())
     for k, v in lcls.items():
         if k.startswith('DIRPATH') and not os.path.isdir(v):
@@ -93,3 +102,4 @@ def _self_verify():
     for k, v in lcls.items():
         if k.startswith('FILEPATH') and not os.path.isfile(v):
             raise OSError('file {} at "{}" does not exist!'.format(k, v))
+    return True

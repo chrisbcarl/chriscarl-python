@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chriscarl"
-version = "0.0.0"
+version = "0.1.0"
 description = "Project that contains my everything--algorithms, data structures, tools, methodologies, tips, tricks, snippets, templates, code gen, etc."
 authors = ["Chris Carl <chrisbcarl@outlook.com>"]
 readme = "README.md"
@@ -9,6 +9,9 @@ include = [
     { path = "tests", format = "sdist" },
     # it seems to include all files that are in the packages include section without the need to specify
 ]
+
+[tool.poetry.scripts]
+dev = 'chriscarl.tools.dev:main'
 
 [tool.poetry.dependencies]
 python = "^3.12,<3.14"
