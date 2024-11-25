@@ -2,6 +2,8 @@
 ; E226,E302,E41 ???
 ; F401 - too long
 ; W503/W504 line break after binary operator which means that a binary operation like & or | happens and then has a newline after, looks janky, but common in overly long one-line formulas.
-ignore = F401, W503, W504
-max-line-length = 180
+; E501 line too long (i dont need flake to be up my ass about it when i've got everyone else on it)
+; E741 ambiguous variable name (like "l" ffs)
+ignore = F401, W503, W504, E501, E741
+; max-line-length = 180
 exclude = tests/*

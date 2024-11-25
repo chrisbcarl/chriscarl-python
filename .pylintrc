@@ -8,7 +8,7 @@ ignore-patterns =
 disable =
 
 [BASIC]
-good-names=_,a,b,c,d,e,f,i,j,k,m,n,x,y,z,ex,fd,id,log
+good-names=_,a,b,c,d,e,f,i,j,k,l,m,n,x,y,z,ex,fd,id,log
 
 [FORMAT]
 max-line-length=180

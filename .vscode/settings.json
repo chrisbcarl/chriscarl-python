@@ -1,10 +1,25 @@
 {
     "editor.wordWrap": "off",
-    "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\scripts\\python.exe",
+    "search.exclude": {
+        "**/*py*cache*": true,  // covers ./.pytest_cache and __pycache__
+        "**/*.venv*": true,
+    },
+    "files.exclude": {
+        "**/*py*cache*": true,  // covers ./.pytest_cache and __pycache__
+        "**/*.venv*": true,
+    },
     "[python]": {
         "editor.defaultFormatter": "eeyore.yapf",
         "editor.formatOnSave": true,
         "editor.formatOnSaveMode": "file",
-        "editor.formatOnType": false
+        "editor.formatOnType": false,
     },
+    "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\scripts\\python.exe",
+    // stubgen src\chriscarl -o dist/typing
+    "python.analysis.stubPath": "${workspaceFolder}\\dist\\typing",
+    "python.analysis.extraPaths": ["${workspaceFolder}\\src"],
+    "mypy-type-checker.args": [
+        // "--ignore-missing-imports",
+        "--follow-imports=silent"
+    ],
 }
