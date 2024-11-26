@@ -9,6 +9,7 @@ Description:
 Tool that is used to do lots of "dev" related things like git pushing, versioning, publishing, templating, conforming, etc.
 
 Updates:
+    2024-11-26 - tools.dev - moved code away from here and into tools.lib.dev
     2024-11-25 - tools.dev - this thing is practically a work of art (lol its late). create/run both work and do it well.
                  tools.dev - added --tool generation, logging reports the fullpath which is so much more satisfying
                  tools.dev - FIX: reruns when not in --force mode had a logic bug which caused tests to be dumped in the wrong place

@@ -26,8 +26,8 @@
             "program": "${workspaceFolder}/src/chriscarl/tools/dev.py",
             "console": "integratedTerminal",
             "args": [
-                "create", "core.lib.stdlib.importlib", "--force",
-                // "run", "--funcs", "files._self_verify", "files._self_verify",
+                // "create", "core.lib.stdlib.importlib", "--force",
+                "run", "dir", "vars", "--module", "builtins", "--print-help",
                 "--log-level", "DEBUG",
             ]
         },
