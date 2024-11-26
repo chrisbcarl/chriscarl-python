@@ -55,6 +55,7 @@ def audit_tdd(dirpath=REPO_DIRPATH, module_name=chriscarl.__name__, tests_dirnam
         check to see which files have a corresponding test, which files do not, and which tests are abandoned
         this wont work on non-pypa repo packages like installed or .pyc packaged packages.
     '''
+    top_module_name = module_name
     src_to_test = {}
     src_to_file = {}
     test_to_src = {}
@@ -87,14 +88,18 @@ def audit_tdd(dirpath=REPO_DIRPATH, module_name=chriscarl.__name__, tests_dirnam
 
     src_without_tests = set(k for k, v in src_to_test.items() if v not in test_to_src)
     orphaned_tests = set(k for k, v in test_to_src.items() if v not in src_to_test)
+    print(src_without_tests)
 
     ret = 0
     if src_without_tests:
-        LOGGER.info('recommendation: run the following command line:\n\n    dev create %s', ' '.join(sorted(src_without_tests)))
+        LOGGER.info(
+            'recommendation: run the following command line:\n\n    dev create %s --module "%s"\n\n', ' '.join(x[len(top_module_name) + 1:] for x in sorted(src_without_tests)),
+            top_module_name
+        )
         LOGGER.critical('%d src files detected without equivalent test!', len(src_without_tests))
         ret += len(src_without_tests)
     if orphaned_tests:
-        LOGGER.info('recommendation: refactor and then remove with the following command lines:\n\n%s', '\n'.join('    rm "{}"'.format(ele) for ele in orphaned_tests))
+        LOGGER.info('recommendation: refactor and then remove with the following command lines:\n\n%s\n\n', '\n'.join('    rm "{}"'.format(ele) for ele in orphaned_tests))
         LOGGER.critical('%d orphaned tests detected!', len(src_without_tests))
         ret += len(orphaned_tests)
 
