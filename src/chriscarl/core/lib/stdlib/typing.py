@@ -20,8 +20,9 @@ import sys
 import inspect
 import logging
 from typing import (  # type: ignore
-    Any, List, Literal, Iterable, Union, _AnyMeta, _GenericAlias,
+    Any, List, Literal, Iterable, Union, _AnyMeta, _UnionGenericAlias, _GenericAlias,
 )
+from types import ModuleType
 
 # third party imports
 
@@ -42,7 +43,7 @@ _isinstance = isinstance
 
 
 def isof_typing(obj, typing):
-    # type: (Any, _GenericAlias) -> bool
+    # type: (Any, Union[_UnionGenericAlias, _GenericAlias]) -> bool
     if _isinstance(typing, (tuple, list, set, dict)):
         return any(isof_one(obj, typ) for typ in typing)
 
@@ -93,16 +94,22 @@ def isof_typing(obj, typing):
             # Literal[True] -> '__args__': (True,)
             return obj == args[0]
 
+    # ultimate fallback
+    try:
+        return _isinstance(obj, typing)
+    except TypeError:
+        pass
+
     raise NotImplementedError('im so sorry, I havent yet figured out how to handle {}'.format(typing))
 
 
 def isof_iterable(obj, itr):
-    # type: (Any, Iterable[Union[type, _GenericAlias]]) -> bool
+    # type: (Any, Iterable[Union[type ,_UnionGenericAlias, _GenericAlias]]) -> bool
     return any(isof_one(obj, typ) for typ in itr)
 
 
 def isof_one(obj, typing):
-    # type: (Any, Union[type, Iterable, _AnyMeta, None, _GenericAlias]) -> bool
+    # type: (Any, Union[type, Iterable, _AnyMeta, None ,_UnionGenericAlias, _GenericAlias, ModuleType]) -> bool
     if typing is Any:
         return True
     if typing is None:
@@ -111,12 +118,14 @@ def isof_one(obj, typing):
         return False
     if _isinstance(typing, type):
         return _isinstance(obj, typing)  # type: ignore
+    if typing is ModuleType:
+        return _isinstance(obj, typing)  # type: ignore
 
     return isof_typing(obj, typing)
 
 
 def isof(obj, *typings):
-    # type: (Any, List[Union[type, Iterable, _AnyMeta, None, _GenericAlias]]) -> bool
+    # type: (Any, List[Union[type, Iterable, _AnyMeta, None ,_UnionGenericAlias, _GenericAlias, ModuleType]]) -> bool
     '''
     Description:
         wouldnt it be nice to do something like this?
@@ -137,7 +146,7 @@ def isof(obj, *typings):
 
 
 def isinstance_raise(obj, *typings, msg=''):
-    # type: (Any, List[Union[type, Iterable, _AnyMeta, None, _GenericAlias]], str) -> bool
+    # type: (Any, List[Union[type, Iterable, _AnyMeta, None ,_UnionGenericAlias, _GenericAlias, ModuleType]], str) -> bool
     from chriscarl.core.lib.stdlib.inspect import get_variable_names
     var_name = list(get_variable_names(obj, stack_frames=2))[0]
 

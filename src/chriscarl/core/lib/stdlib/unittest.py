@@ -19,7 +19,7 @@ import sys
 import inspect
 import logging
 import subprocess
-from typing import Callable, Tuple, Dict, List, Any, Union
+from typing import Callable, Tuple, Iterable, List, Any, Union
 
 # third party imports
 
@@ -103,8 +103,30 @@ def assert_null_hypothesis(variables, controls, break_idx=-1):
 
         else:
             experiment = func(*args, **kwargs)
+            if inspect.isgenerator(experiment) or isinstance(experiment, (map, filter)):
+                LOGGER.debug('{} encountered a generator... expanding.'.format(status))
+                experiment = list(experiment)  # expand it out
             assert experiment == control, '{} failed to accept null hypothesis (control != experiment): {} != {}'.format(status, control, experiment)
 
         # stacklevel has a bug in it somewhere such that lazy formatting isnt correctly using THIS frame, but the stacklevel frame
         LOGGER.info('{} = {}'.format(status, control), stacklevel=2)
+    return True
+
+
+def assert_subset(subset, superset):
+    # (Iterable, Iterable) -> bool
+    '''
+    Description:
+        assert that all of the elements of the left are in the elements on the left
+    Arguments:
+        subset: Iterable
+        superset: Iterable
+    '''
+    isinstance_raise(subset, Iterable)
+    isinstance_raise(superset, Iterable)
+
+    subset = set(list(subset))
+    superset = set(list(superset))
+
+    assert subset.issubset(superset), 'failed to assert left set of {} elements is a subset of right set of {} elements!'.format(len(subset), len(superset))
     return True

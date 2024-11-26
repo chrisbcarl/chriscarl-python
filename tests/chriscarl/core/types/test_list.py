@@ -42,20 +42,42 @@ LOGGER.addHandler(logging.NullHandler())
 class TestCase(unittest.TestCase):
 
     def setUp(self):
+        self.num_list = [1, 2, 2, 3, 3, 3]
         return super().setUp()
 
     def tearDown(self):
         return super().tearDown()
 
-    @unittest.skip('lorem ipsum')
-    def test_case_0(self):
+    def test_dedupe(self):
         variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
+            (lib.dedupe, self.num_list),
         ]
         controls = [
-            6,
-            6,
+            [1, 2, 3],
+        ]
+        assert_null_hypothesis(variables, controls)
+
+    def test_find_index(self):
+        variables = [
+            (lib.find_index, (lambda x: x > 0, self.num_list)),
+            (lib.find_index, (lambda x: x > 1, self.num_list)),
+            (lib.find_index, (lambda x: x > 2, self.num_list)),
+        ]
+        controls = [
+            [i for i, ele in enumerate(self.num_list) if ele > 0],
+            [i for i, ele in enumerate(self.num_list) if ele > 1],
+            [i for i, ele in enumerate(self.num_list) if ele > 2],
+        ]
+        assert_null_hypothesis(variables, controls)
+
+    def test_sorted_list_by_frequency(self):
+        variables = [
+            (lib.sorted_list_by_frequency, self.num_list, dict(ascending=True)),
+            (lib.sorted_list_by_frequency, self.num_list, dict(ascending=False)),
+        ]
+        controls = [
+            [1, 2, 3],
+            [3, 2, 1],
         ]
         assert_null_hypothesis(variables, controls)
 
@@ -65,6 +87,8 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0()
+    tc.test_dedupe()
+    tc.test_find_index()
+    tc.test_sorted_list_by_frequency()
 
     tc.tearDown()

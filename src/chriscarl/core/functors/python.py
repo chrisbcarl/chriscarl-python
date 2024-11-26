@@ -10,7 +10,8 @@ Python is lots of deep nerdy python shit that usually involves runtime fuckery.
 chriscarl.core files are non-self-referential, do very little importing, and define the bedrock from which other things do import.
 
 Updates:
-    2024-11-22 - chriscarl.core.python - initial commit
+    2024-11-25 - core.python - added fallback check which strangely hasnt been triggered yet until I tried Iterable
+    2024-11-22 - core.python - initial commit
 '''
 
 # stdlib imports
@@ -20,7 +21,7 @@ import re
 import sys
 import logging
 import subprocess
-from typing import Any, Tuple, Dict, List, Set, Union, Callable, Generator
+from typing import Any, Tuple, List, Union, Callable, Generator
 
 # third party imports
 

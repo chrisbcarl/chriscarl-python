@@ -1,59 +1,137 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Author:         Chris Carl
-Email:          chrisbcarl@outlook.com
-Date:           2022-08-26
+Author:         {author}
+Email:          {email}
+Date:           {date}
 Description:
 
-Stub.
+{module_dot_path} is a tool which... TODO: lorem ipsum
+
+Updates:
+    {date} - {module_dot_path} - initial commit
 '''
+
 # stdlib imports
 from __future__ import absolute_import, print_function, division, with_statement  # , unicode_literals
 import os
 import sys
 import logging
-import argparse
+from typing import List, Generator
+from dataclasses import dataclass, field
+from argparse import ArgumentParser
 
 # third party imports
 
 # project imports
-from chriscarl.libraries.stdlib.logging import console_log, create_logger
-from chriscarl.libraries.stdlib.argparse import raise_argparse_error
-from chriscarl.types import coercers
+from chriscarl.core.functors.misc import LOG_LEVELS, ArgparseNiceFormat
+from chriscarl.core.lib.stdlib.os import abspath, make_dirpath
 
-FILE_RELPATH = 'tests/examples/canonical-app-style.py'
+SCRIPT_RELPATH = '{script_relpath}'
 if not hasattr(sys, '_MEIPASS'):
-    FILE_PATH = os.path.abspath(__file__)
+    SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
-    FILE_PATH = os.path.abspath(os.path.join(sys._MEIPASS, FILE_RELPATH))  # pylint: disable=no-member
-FILE_DIR = os.path.dirname(FILE_PATH)
-FILE_NAME = os.path.splitext(os.path.basename(__file__))[0]
+    SCRIPT_FILEPATH = os.path.abspath(os.path.join(sys._MEIPASS, SCRIPT_RELPATH))  # pylint: disable=no-member
+SCRIPT_DIRPATH = os.path.dirname(SCRIPT_FILEPATH)
+SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 # argument defaults
-DEFAULT_ARG = True
+DEFAULT_FIB_INIT = [0, 1]
+DEFAULT_OUTPUT_DIRPATH = os.path.abspath('/tmp')
 
 # tool constants
-TOOL_CONSTANT = True
 
 
-def main(args, loggers=[]):
-    for logger in loggers:
-        logger.info(' '.join(args.message for i in range(args.times)))
+def fast_fib(n, debug=False, a=0, b=1):
+    # type: (int, bool, int, int) -> Generator[int, None, None]
+    if debug:
+        logging.debug('a = %s; b = %s', a, b)
+    yield 0
+    yield 1
+    for i in range(3, n + 1):  # because we're calculating the 3rd number
+        c = a + b
+        if debug:
+            logging.debug('a = %s; b = %s; c = %s; i = %s', a, b, c, i)
+        yield c
+        a = b
+        b = c
+        if debug:
+            logging.debug('\tafter swapping c, b, a...')
+            logging.debug('\ta = %s; b = %s; c = %s; i = %s', a, b, c, i)
+    if debug:
+        logging.debug('finished %s steps!', n)
+
+
+@dataclass
+class Arguments:
+    '''
+    Document this class with any specifics for the process function.
+    '''
+    n: int
+    debug: bool
+    times: int
+    init: List[int] = field(default_factory=lambda: DEFAULT_FIB_INIT)
+    output_dirpath: str = DEFAULT_OUTPUT_DIRPATH
+    messages: List[str] = field(default_factory=lambda: [])
+    log_level: str = 'INFO'
+
+    @staticmethod
+    def argparser():
+        # type: () -> ArgumentParser
+        parser = ArgumentParser(prog=SCRIPT_NAME, description=__doc__, formatter_class=ArgparseNiceFormat)
+        parser.add_argument('n', type=int, help='the -th term of fib you want')
+        parser.add_argument('--debug', action='store_true', help='chose to print debug info')
+        parser.add_argument('--times', '-t', type=lambda x: int(x, base=0), required=True, help='print how many times? any numerical format is ok')
+        parser.add_argument('--init', type=int, nargs=2, default=DEFAULT_FIB_INIT, help='assume sequence starts with these 2 numbers')
+        parser.add_argument('--output-dirpath', '-o', type=str, default=DEFAULT_OUTPUT_DIRPATH, help='where do you want to save a text of the sequence')
+        parser.add_argument('--messages', '-m', type=str, nargs='*', default=[], help='messages youd like to have printed')
+        parser.add_argument('--log-level', type=str, default='INFO', choices=LOG_LEVELS, help='log level?')
+        return parser
+
+    def process(self):
+        make_dirpath(self.output_dirpath)
+        if self.debug:
+            self.log_level = 'DEBUG'
+        logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=self.log_level)
+
+    @staticmethod
+    def from_argparser(parser):
+        # type: (ArgumentParser) -> Arguments
+        ns = parser.parse_args()
+        arguments = Arguments(**(vars(ns)))
+        arguments.process()
+        return arguments
+
+
+def main():
+    # type: () -> int
+    parser = Arguments.argparser()
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
+    args = Arguments.from_argparser(parser)
+    numbers = []
+    for fib in fast_fib(args.n, debug=args.debug, a=args.init[0], b=args.init[1]):
+        numbers.append(fib)
+
+    if args.debug:
+        logging.debug('numbers: %s', numbers)
+
+    if args.messages:
+        with open(abspath(args.output_dirpath, 'out'), 'w', encoding='utf-8') as w:
+            for i in range(args.times):
+                for m, message in enumerate(args.messages):
+                    logging.info('%d - %d - %s', i, m, message)
+                    # have to escape here since this is a template, lol
+                    w.write('{{}}\n'.format(message))  # type: ignore
+
+    logging.info('fib: %s', fib)
+    return fib
 
 
 if __name__ == '__main__':
-    prog = os.path.splitext(os.path.basename(__file__))[0]
-    logger = create_logger(prog, formatting='%(message)s')
-
-    parser = argparse.ArgumentParser(prog, usage=None, epilog=None)
-    parser.add_argument('-m', '--message', type=str, default='hi', help='print this')
-    parser.add_argument('-t', '--times', type=raise_argparse_error(coercers.type_int), required=True, help='print how many times')
-    if len(sys.argv) == 1:
-        parser.print_help()
-    else:
-        args = parser.parse_args()
-        main(args, loggers=[logger, LOGGER])
+    sys.exit(main())

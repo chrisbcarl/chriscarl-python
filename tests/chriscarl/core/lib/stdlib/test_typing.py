@@ -19,6 +19,7 @@ import sys
 import typing
 import logging
 import unittest
+from types import ModuleType
 
 # third party imports
 
@@ -172,6 +173,7 @@ class TestCase(unittest.TestCase):
             (lib.isof, ({}, typing.Dict[str, typing.List[typing.Union[int, float]]])),
             (lib.isof, (self.callable, typing.Callable[[int, typing.List[float]], typing.Tuple[int, float]])),
             (lib.isof, (self.generator, typing.Generator[typing.Tuple[int, typing.List[float]], None, None])),
+            (lib.isof, (sys, ModuleType)),
         ]
         controls = [True for _ in variables]
 
