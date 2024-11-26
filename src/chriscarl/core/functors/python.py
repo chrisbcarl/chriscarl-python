@@ -11,6 +11,7 @@ chriscarl.core files are non-self-referential, do very little importing, and def
 
 Updates:
     2024-11-25 - core.python - added fallback check which strangely hasnt been triggered yet until I tried Iterable
+                 core.python - added ModuleDocumentation
     2024-11-22 - core.python - initial commit
 '''
 
@@ -20,8 +21,10 @@ import os
 import re
 import sys
 import logging
+import datetime
 import subprocess
-from typing import Any, Tuple, List, Union, Callable, Generator
+from dataclasses import dataclass, field
+from typing import Any, Tuple, List, Union, Callable, Generator, Dict, Optional
 
 # third party imports
 
@@ -282,3 +285,72 @@ def get_legal_python_name(text):
     if re.match(r'^\d', sofar):
         sofar = '_{}'.format(sofar)
     return sofar
+
+
+@dataclass
+class ModuleDocumentation(object):
+    '''
+    Description:
+        a documentation object that can analyze MY personal code style and make it a bit more of a data structure.
+    '''
+    author: str
+    email: str
+    date: Optional[datetime.datetime]
+    description: str
+    updates: Dict[datetime.datetime, list] = field(default_factory=lambda: {})
+
+    @classmethod
+    def parse(cls, text):
+        # type: (str) -> ModuleDocumentation
+        author_mo = re.search(r'author\:\s+([\w\ ]+)', text, flags=re.IGNORECASE)
+        author = author_mo.groups()[0] if author_mo else ''
+        email_mo = re.search(r'email\:\s+([\w\-\.]+@[\w-]+\.+[\w-]{2,})', text, flags=re.IGNORECASE)  # https://regex101.com/r/lHs2R3/1
+        email = email_mo.groups()[0] if email_mo else ''
+        date_mo = re.search(r'date\:\s+(\d{4}-\d{2}-\d{2})', text, flags=re.IGNORECASE)
+        date = datetime.datetime.strptime(date_mo.groups()[0], '%Y-%m-%d') if date_mo else None
+        description_idx = text.find('escription:') + len('escription:')
+        updates_idx = text.find('pdates:') + len('pdates:')
+        description_end = updates_idx - len('pdates:') - 1
+        description = text[description_idx:description_end].strip()
+        updates_text = text[updates_idx:]
+        updates: Dict[datetime.datetime, list] = {}
+        current_update_date = datetime.datetime.now()
+        previous_line_idx = -1  # preserve any indents
+        for line in updates_text.splitlines():
+            if not line.strip():
+                continue
+            update_date_mo = re.search(r'(\d{4}-\d{2}-\d{2})\s?-\s?', line, flags=re.IGNORECASE)
+            update_date = datetime.datetime.strptime(update_date_mo.groups()[0], '%Y-%m-%d') if update_date_mo else None
+            if update_date and update_date != current_update_date:
+                current_update_date = update_date
+                updates[current_update_date] = []
+            if update_date_mo:
+                update_desc = line[update_date_mo.end():].strip()
+                previous_line_idx = update_date_mo.end()
+            else:
+                update_desc = line[previous_line_idx:]
+            updates[current_update_date].append(update_desc)
+
+        return ModuleDocumentation(author=author, email=email, date=date, description=description, updates=updates)
+
+    def to_string(self):
+        tokens = []
+        for date in sorted(self.updates, reverse=True):
+            for m, message in enumerate(self.updates[date]):
+                if m == 0:
+                    tokens.append('    {} - {}'.format(date.strftime('%Y-%m-%d'), message))
+                else:
+                    tokens.append('                 {}'.format(message))
+        update_text = '\n'.join(tokens)
+        text = '''
+Author:         {}
+Email:          {}
+Date:           {}
+Description:
+
+{}
+
+Updates:
+{}
+'''.format(self.author, self.email, self.date.strftime('%Y-%m-%d'), self.description, update_text)
+        return text
