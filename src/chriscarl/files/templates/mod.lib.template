@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Author:         Chris Carl
-Email:          chrisbcarl@outlook.com
-Date:           2022-08-26
+Author:         {author}
+Email:          {email}
+Date:           {date}
 Description:
 
-Stub.
+{module_dot_path} is... TODO: lorem ipsum
+{default_description}
+
+Updates:
+    {date} - {module_dot_path} - initial commit
 '''
 
 # stdlib imports
@@ -19,19 +23,18 @@ if sys.path[0] == '':  # occurs in interactive mode
     sys.path = sys.path[1:] + ['']
 else:
     __old_path = []
-# this would import THIS file without "shadow module" hack
-# import the original unmodified module which can be used in modifications below
-import cannonical_shadow_module
-# polutes this "shadow module" locals with the original locals, allowing it to behave as normal
-from cannonical_shadow_module import *  # noqa: F403
-import logging  # noqa: E402  # pylint: disable=import-error
-from typing import Any, Tuple, Dict  # noqa: E402
+# without the above hack, "import {shadow_module}" would import THIS FILE rather than the intended original
+import {shadow_module}  # import the original unmodified module which can be used in the modifications below
+# polutes this "shadow" module's locals with the original locals, allowing it to behave as normal
+from {shadow_module} import *  # noqa: F403
+import logging
+from typing import Any, Tuple, Dict
 
 # third party imports
 
 # project imports
 
-SCRIPT_RELPATH = 'chriscarl/libraries/third/parameterized.py'
+SCRIPT_RELPATH = '{script_relpath}'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

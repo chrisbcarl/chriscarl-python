@@ -23,9 +23,10 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.lib.stdlib.unittest import assert_null_hypothesis
+from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
+import chriscarl.core.lib.stdlib.unittest as lib
 
 SCRIPT_RELPATH = 'tests/chriscarl/core/lib/stdlib/test_unittest.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -39,7 +40,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-class TestCase(unittest.TestCase):
+class TestCase(UnitTest):
 
     def setUp(self):
         return super().setUp()
@@ -62,7 +63,19 @@ class TestCase(unittest.TestCase):
             3,
             TypeError,
         ]
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_assert_subset(self):
+        variables = [
+            (lib.UnitTest.assert_subset, ([1, 2, 3], [1, 2, 3, 4])),
+            (lib.UnitTest.assert_subset, ('abc', 'dcba')),
+        ]
+        controls = [
+            True,
+            True,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+        self.assertRaises(AssertionError, lib.UnitTest.assert_subset, 'abc', ['a', 'b', 'c'])
 
 
 if __name__ == '__main__':
@@ -71,5 +84,6 @@ if __name__ == '__main__':
     tc.setUp()
 
     tc.test_assert_null_hypothesis()
+    tc.test_assert_subset()
 
     tc.tearDown()

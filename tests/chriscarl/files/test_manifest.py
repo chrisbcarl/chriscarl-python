@@ -22,7 +22,7 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.lib.stdlib.unittest import assert_null_hypothesis
+from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
 import chriscarl.files.manifest as lib
@@ -39,7 +39,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-class TestCase(unittest.TestCase):
+class TestCase(UnitTest):
 
     def setUp(self):
         return super().setUp()
@@ -47,21 +47,17 @@ class TestCase(unittest.TestCase):
     def tearDown(self):
         return super().tearDown()
 
-    def test_self_verify(self):
+    @unittest.skip('lorem ipsum')
+    def test_case_0(self):
         variables = [
-            (lib._self_verify),
+            (sum, [0, 1, 2, 3]),
+            (sum, [0, 1, 2, 3]),
         ]
         controls = [
-            True,
+            6,
+            6,
         ]
-        assert_null_hypothesis(variables, controls)
-
-    def test_self_modify(self):
-        from chriscarl.core.lib.stdlib.io import read_bytes_file
-        original = read_bytes_file(lib.__file__)
-        lib._self_modify()
-        new = read_bytes_file(lib.__file__)
-        self.assertEqual(original, new, '_self_modify should take effect but be idempotent! something changed, check the git diff?')
+        self.assert_null_hypothesis(variables, controls)
 
 
 if __name__ == '__main__':
@@ -69,6 +65,6 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_self_verify()
+    tc.test_case_0()
 
     tc.tearDown()

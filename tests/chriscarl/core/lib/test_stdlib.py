@@ -22,7 +22,7 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.lib.stdlib.unittest import assert_null_hypothesis
+from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
 import chriscarl.core.lib.stdlib as lib
@@ -39,7 +39,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-class TestCase(unittest.TestCase):
+class TestCase(UnitTest):
 
     def setUp(self):
         return super().setUp()
@@ -57,7 +57,7 @@ class TestCase(unittest.TestCase):
             6,
             6,
         ]
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
 
 if __name__ == '__main__':

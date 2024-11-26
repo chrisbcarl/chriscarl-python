@@ -17,9 +17,9 @@ Updates:
 from __future__ import absolute_import, print_function, division, with_statement  # , unicode_literals
 import os
 import sys
-import logging
+import logging{stdlib_import}
 
-# third party imports
+# third party imports{third_import}
 
 # project imports
 

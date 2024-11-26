@@ -24,7 +24,8 @@ from argparse import ArgumentParser
 # third party imports
 
 # project imports
-from chriscarl.core.functors.misc import LOG_LEVELS, ArgparseNiceFormat
+from chriscarl.core.lib.stdlib.logging import LOG_LEVELS
+from chriscarl.core.lib.stdlib.argparse import ArgparseNiceFormat
 from chriscarl.core.lib.stdlib.os import abspath, make_dirpath
 
 SCRIPT_RELPATH = '{script_relpath}'

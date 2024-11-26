@@ -3,13 +3,13 @@
 '''
 Author:         Chris Carl
 Email:          chrisbcarl@outlook.com
-Date:           2024-11-25
+Date:           2024-11-26
 Description:
 
-chriscarl.tools.lib.dev unit test.
+chriscarl.core.lib.stdlib.logging unit test.
 
 Updates:
-    2024-11-25 - tests.chriscarl.tools.lib.dev - initial commit
+    2024-11-26 - tests.chriscarl.core.lib.stdlib.logging - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -22,12 +22,12 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.lib.stdlib.unittest import assert_null_hypothesis
+from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
-import chriscarl.tools.lib.dev as lib
+import chriscarl.core.lib.stdlib.logging as lib
 
-SCRIPT_RELPATH = 'tests/chriscarl/tools/lib/test_dev.py'
+SCRIPT_RELPATH = 'tests/chriscarl/core/lib/stdlib/test_logging.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -39,7 +39,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-class TestCase(unittest.TestCase):
+class TestCase(UnitTest):
 
     def setUp(self):
         return super().setUp()
@@ -47,17 +47,25 @@ class TestCase(unittest.TestCase):
     def tearDown(self):
         return super().tearDown()
 
-    @unittest.skip('lorem ipsum')
-    def test_case_0(self):
+    def test_get_log_func(self):
+        sixtynine = lib.get_log_func(69)
         variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
+            (lib.get_log_func, 'DEBUG'),
+            (lib.get_log_func, 'INFO'),
+            (lib.get_log_func, 'WARNING'),
+            (lib.get_log_func, 'ERROR'),
+            (lib.get_log_func, 'CRITICAL'),
+            (sixtynine, 'plz'),
         ]
         controls = [
-            6,
-            6,
+            logging.debug,
+            logging.info,
+            logging.warning,
+            logging.error,
+            logging.critical,
+            None,
         ]
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
 
 if __name__ == '__main__':
@@ -65,6 +73,6 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0()
+    tc.test_get_log_func()
 
     tc.tearDown()

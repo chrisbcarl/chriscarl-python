@@ -23,7 +23,7 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.lib.stdlib.unittest import assert_null_hypothesis
+from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
 from chriscarl.core.functors import python as cp
@@ -71,7 +71,7 @@ class C(A, B):
         return 'A<[{},{},{}]({})+{}+{}>'.format(self.c, self.b, self.c, self.val, self.a2, self.b2)
 
 
-class TestCase(unittest.TestCase):
+class TestCase(UnitTest):
 
     def setUp(self):
         self.a = A()
@@ -116,7 +116,7 @@ class TestCase(unittest.TestCase):
             4,
             'weird default 3rd argument'
         ]
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
     @unittest.skip('TODO: pytest freaks out on mod')
     def test_hasgetset_attr_mod(self):
@@ -133,7 +133,7 @@ class TestCase(unittest.TestCase):
             None,
             70,
         ]
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
         mp.unmod(force=True)
 
     @unittest.skip('TODO: pytest freaks out on mod')
@@ -151,7 +151,7 @@ class TestCase(unittest.TestCase):
                 None,
                 71,
             ]
-            assert_null_hypothesis(variables, controls)
+            self.assert_null_hypothesis(variables, controls)
 
     def test_is_legal_python_name(self):
         variables = [
@@ -174,7 +174,7 @@ class TestCase(unittest.TestCase):
             False,
             False,
         ]
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
     def test_get_legal_python_name(self):
         variables = [
@@ -197,7 +197,7 @@ class TestCase(unittest.TestCase):
             '_',
             '_',
         ]
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
 
 if __name__ == '__main__':

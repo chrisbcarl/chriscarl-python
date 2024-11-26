@@ -10,6 +10,7 @@ core.lib.stdlib.os is all about file system traversal
 core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
 
 Updates:
+    2024-11-26 - core.lib.stdlib.os - added chdir context manager
     2024-11-24 - core.lib.stdlib.os - initial commit
 '''
 
@@ -56,3 +57,23 @@ def make_file_dirpath(*paths):
     dp = dirpath(*paths)
     if not os.path.isdir(dp):
         os.makedirs(dp)
+
+
+class chdir(object):
+    '''
+    >>> with ContextManager('/tmp'):
+    ...     os.chdir('/temp)
+    '''
+    pwd = ''
+    _pwd = ''
+
+    def __init__(self, pwd):
+        self.pwd = pwd
+
+    def __enter__(self):
+        self._pwd = os.getcwd()
+        os.chdir(self.pwd)
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        os.chdir(self._pwd)

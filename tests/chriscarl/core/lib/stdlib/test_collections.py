@@ -6,10 +6,10 @@ Email:          chrisbcarl@outlook.com
 Date:           2024-11-26
 Description:
 
-chriscarl.core.types.string unit test.
+chriscarl.core.lib.stdlib.collections unit test.
 
 Updates:
-    2024-11-26 - tests.chriscarl.core.types.string - initial commit
+    2024-11-26 - tests.chriscarl.core.lib.stdlib.collections - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -18,6 +18,7 @@ import os
 import sys
 import logging
 import unittest
+import collections
 
 # third party imports
 
@@ -25,9 +26,9 @@ import unittest
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
-import chriscarl.core.types.string as lib
+import chriscarl.core.lib.stdlib.collections as lib
 
-SCRIPT_RELPATH = 'tests/chriscarl/core/types/test_string.py'
+SCRIPT_RELPATH = 'tests/chriscarl/core/lib/stdlib/test_collections.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -42,21 +43,42 @@ LOGGER.addHandler(logging.NullHandler())
 class TestCase(UnitTest):
 
     def setUp(self):
+        self.od = collections.OrderedDict([(1, 1), (2, 2)])
+        self.ud = {1: 1, 2: 2}
         return super().setUp()
 
     def tearDown(self):
         return super().tearDown()
 
-    def test_find_index(self):
+    def test_unordered_dict(self):
         variables = [
-            (lib.find_index, ('abc', 'abcabcabc')),
-            (lib.find_index, ('abc', 'abbcabccabc')),
+            (lib.unordered_dict, self.od),
+            (lib.unordered_dict, [self.od, self.od]),
+            (lib.compare_ordered_dict, (self.od, self.ud)),
+            (lib.compare_ordered_dict, ([self.od, self.od], [self.ud, self.ud])),
         ]
         controls = [
-            [0, 3, 6],
-            [4, 8],
+            self.ud,
+            [self.ud, self.ud],
+            True,
+            True,
         ]
         self.assert_null_hypothesis(variables, controls)
+
+    def test_namedtuple_with_defaults(self):
+        Node = lib.namedtuple_with_defaults('Node', 'val left right', [1, 2, 3])
+        n = Node()
+
+        variables = [
+            (getattr, 'val'),
+            (getattr, 'left'),
+            (getattr, 'right'),
+        ]
+        controls = [
+            1,
+            2,
+            3,
+        ]
 
 
 if __name__ == '__main__':
@@ -64,6 +86,7 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_find_index()
+    tc.test_unordered_dict()
+    tc.test_namedtuple_with_defaults()
 
     tc.tearDown()

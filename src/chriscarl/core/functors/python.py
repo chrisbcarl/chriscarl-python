@@ -10,6 +10,7 @@ Python is lots of deep nerdy python shit that usually involves runtime fuckery.
 chriscarl.core files are non-self-referential, do very little importing, and define the bedrock from which other things do import.
 
 Updates:
+    2024-11-26 - core.python - added invocation support for partials
     2024-11-25 - core.python - added fallback check which strangely hasnt been triggered yet until I tried Iterable
                  core.python - added ModuleDocumentation
     2024-11-22 - core.python - initial commit
@@ -22,6 +23,7 @@ import re
 import sys
 import logging
 import datetime
+import functools
 import subprocess
 from dataclasses import dataclass, field
 from typing import Any, Tuple, List, Union, Callable, Generator, Dict, Optional
@@ -29,7 +31,7 @@ from typing import Any, Tuple, List, Union, Callable, Generator, Dict, Optional
 # third party imports
 
 # project imports
-from chriscarl.core.functors.misc import get_log_func
+from chriscarl.core.lib.stdlib.logging import get_log_func
 
 SCRIPT_RELPATH = 'chriscarl/core/functors/python.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -71,34 +73,45 @@ def invocation_just_arg_string(func, args, kwargs, varargs=None, varkwargs=None)
     tokens = []
     if args:
         tokens.append(arglist)
-    if kwargs:
-        tokens.append(kwarglist)
-    if varargs is not None or varkwargs is not None:
-        tokens.append(varlist)
+    if sys.version_info[0] > 2:
+        if varargs:
+            tokens.append('*{}'.format(varargs))
+        if kwargs:
+            tokens.append(kwarglist)
+        if varkwargs:
+            tokens.append('**{}'.format(varkwargs))
+    else:
+        if kwargs:
+            tokens.append(kwarglist)
+        if varargs is not None or varkwargs is not None:
+            tokens.append(varlist)
 
     return '{}'.format(', '.join(tokens))
 
 
+def get_func_name(func):
+    # type: (Callable) -> str
+    if isinstance(func, functools.partial):
+        func = func.func
+
+    try:
+        return func.__name__
+    except Exception:
+        pass
+
+    try:
+        # sys.version_info[0] == 2:
+        return func._Method__name  # type: ignore
+    except Exception:
+        pass
+
+    raise RuntimeError('could not determine name from func {}!'.format(func))
+
+
 def invocation_string(func, args=None, kwargs=None, varargs=None, varkwargs=None, func_name=None):
-    if args is None:
-        args = tuple()
-    if kwargs is None:
-        kwargs = dict()
-    if func_name is None:
-        func_name = ''
-        try:
-            func_name = func.__name__
-        except Exception:
-            pass
-
-        try:
-            func_name = func._Method__name  # sys.version_info[0] == 2:
-        except Exception:
-            pass
-
-        if not func_name:
-            raise NotImplementedError('couldnt find the funcs name for {}!?'.format(func))
-
+    args = args or tuple()
+    kwargs = kwargs or dict()
+    func_name = func_name or get_func_name(func)
     return '{}({})'.format(func_name, invocation_just_arg_string(func, args, kwargs, varargs=varargs, varkwargs=varkwargs))
 
 

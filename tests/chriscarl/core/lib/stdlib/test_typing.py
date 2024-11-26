@@ -24,7 +24,7 @@ from types import ModuleType
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.lib.stdlib.unittest import assert_null_hypothesis
+from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
 import chriscarl.core.lib.stdlib.typing as lib
@@ -42,7 +42,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-class TestCase(unittest.TestCase):
+class TestCase(UnitTest):
 
     def setUp(self):
         self.str = 'str'
@@ -91,7 +91,7 @@ class TestCase(unittest.TestCase):
             (lib.isof, (self.float, (str, int, float))),
         ]
         controls = [True for _ in variables]
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
     def test_easy_false(self):
         variables = [
@@ -116,7 +116,7 @@ class TestCase(unittest.TestCase):
         ]
         controls = [False for _ in variables]
 
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
     def test_med_true(self):
         variables = [
@@ -130,7 +130,7 @@ class TestCase(unittest.TestCase):
         ]
         controls = [True for _ in variables]
 
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
     def test_med_false(self):
         variables = [
@@ -144,7 +144,7 @@ class TestCase(unittest.TestCase):
         ]
         controls = [False for _ in variables]
 
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
     def test_hard_true(self):
         variables = [
@@ -177,7 +177,7 @@ class TestCase(unittest.TestCase):
         ]
         controls = [True for _ in variables]
 
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
     def test_hard_false(self):
         variables = [
@@ -193,7 +193,7 @@ class TestCase(unittest.TestCase):
         ]
         controls = [False for _ in variables]
 
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
     @unittest.skip('TODO: pytest freaks out on mod')
     def test_mod(self):

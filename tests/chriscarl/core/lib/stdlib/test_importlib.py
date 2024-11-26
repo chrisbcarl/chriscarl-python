@@ -22,7 +22,7 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.lib.stdlib.unittest import assert_null_hypothesis, assert_subset
+from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
 import chriscarl.core.lib.stdlib.importlib as lib
@@ -39,7 +39,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-class TestCase(unittest.TestCase):
+class TestCase(UnitTest):
 
     def setUp(self):
         return super().setUp()
@@ -50,7 +50,7 @@ class TestCase(unittest.TestCase):
     def test_walk_module_names_filepaths(self):
         known_libraries = ['logging', 'logging.config', 'logging.handlers']
         logging_libraries = [tpl[0] for tpl in lib.walk_module_names_filepaths(module=logging)]
-        assert_subset(known_libraries, logging_libraries)
+        self.assert_subset(known_libraries, logging_libraries)
 
     def test_walk_module(self):
         from chriscarl.core.types.list import sorted_list_by_frequency

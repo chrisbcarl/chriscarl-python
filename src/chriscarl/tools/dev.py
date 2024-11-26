@@ -10,6 +10,7 @@ Tool that is used to do lots of "dev" related things like git pushing, versionin
 
 Updates:
     2024-11-26 - tools.dev - moved code away from here and into tools.lib.dev
+                 tools.dev - added the audit mode and "hardcoded" it a bit more
     2024-11-25 - tools.dev - this thing is practically a work of art (lol its late). create/run both work and do it well.
                  tools.dev - added --tool generation, logging reports the fullpath which is so much more satisfying
                  tools.dev - FIX: reruns when not in --force mode had a logic bug which caused tests to be dumped in the wrong place
@@ -28,31 +29,22 @@ import os
 import sys
 import pydoc
 import logging
-import inspect
 from importlib import metadata
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Type, Callable, Tuple
-from argparse import _SubParsersAction, ArgumentParser, ArgumentError
+from typing import List, Optional, Dict, Type, Callable
+from argparse import _SubParsersAction, ArgumentParser, ArgumentError, Namespace
 
 # third party imports
 
 # project imports
 import chriscarl
-from chriscarl.core.constants import DATE, REPO_DIRPATH, TESTS_DIRPATH, PYPA_SRC_DIRPATH
-from chriscarl.core.functors.misc import LOG_LEVELS, ArgparseNiceFormat
-from chriscarl.core.functors.python import run_func_args_kwargs
-from chriscarl.core.lib.stdlib.io import read_text_file, write_text_file
-from chriscarl.core.lib.stdlib.os import make_dirpath, abspath
+from chriscarl.core.constants import REPO_DIRPATH, TESTS_DIRPATH, PYPA_SRC_DIRPATH
+from chriscarl.core.lib.stdlib.logging import LOG_LEVELS
+from chriscarl.core.lib.stdlib.argparse import ArgparseNiceFormat
+from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.json import read_json
-import chriscarl.files
-from chriscarl.files.manifest import (
-    FILEPATH_DEFAULT_DESCRIPTIONS_JSON,
-    FILEPATH_TEMPLATE,
-    FILEPATH_MOD_LIB_TEMPLATE,
-    FILEPATH_TEST_TEMPLATE,
-    FILEPATH_TOOL_TEMPLATE,
-)
-from chriscarl.tools.lib import dev
+from chriscarl.files import manifest
+from chriscarl.tools.shed import dev
 
 SCRIPT_RELPATH = 'chriscarl/tools/dev.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -122,9 +114,6 @@ class Mode:
         raise NotImplementedError()
 
 
-DEFAULT_DESCRIPTIONS = read_json(FILEPATH_DEFAULT_DESCRIPTIONS_JSON)
-
-
 @dataclass
 class Create(Mode):
     '''
@@ -132,20 +121,20 @@ class Create(Mode):
     Based on predefined templates, it will create directories, __init__'s, module file, and test cases for you.
 
     Examples:
-        1. dev create lib.whatever
+        - dev create lib.whatever
             # creates the following directory structure:
                 - src/chriscarl/__init__.py
                 - src/chriscarl/lib/__init__.py
                 - src/chriscarl/lib/whatever.py
                 - tests/chriscarl/test_lib.py
                 - tests/chriscarl/lib/test_whatever.py
-        2. dev create lib
+        - dev create lib
             # given you ran the above already which assumes certain things, creates the following directory structure:
                 - SKIP: src/chriscarl/__init__.py
                 - SKIP: src/chriscarl/lib/__init__.py
                 - SKIP: src/chriscarl/lib/whatever.py
                 - SKIP: tests/chriscarl/lib/test_whatever.py
-        2. dev create tools.fib --tool
+        - dev create tools.fib --tool
             # generate a tool with the following files
                 - SKIP: src/chriscarl/__init__.py
                 - src/chriscarl/tools/__init__.py
@@ -175,10 +164,10 @@ class Create(Mode):
 
     def run(self):
         # type: () -> int
-        return dev.create_modules_and_tests(
+        _, filepaths = dev.create_modules_and_tests(
             self.module,
             self.modules,
-            DEFAULT_DESCRIPTIONS,
+            read_json(manifest.FILEPATH_DEFAULT_DESCRIPTIONS_JSON),
             author=self.author,
             email=self.email,
             tests_dirpath=self.tests_dirpath,
@@ -186,6 +175,7 @@ class Create(Mode):
             tool=self.tool,
             no_test=self.no_test
         )
+        return len(filepaths) > 0
 
 
 @dataclass
@@ -210,11 +200,11 @@ class Run(Mode):
     Basically "run" any number of functions arbitrarily.
 
     Examples:
-        1. dev run --funcs "files._self_modify" "files._self_verify"
+        - dev run --funcs "files._self_modify" "files._self_verify"
             # runs the following code in the default root module
                 - chriscarl.files._self_modify()
                 - chriscarl.files._self_verify()
-        2. dev run --funcs "vars" "locals" "globals" --module "builtins"
+        - dev run --funcs "vars" "locals" "globals" --module "builtins"
             # runs the following code from a different module
                 - builtins.vars()
                 - builtins.locals()
@@ -239,17 +229,6 @@ class Run(Mode):
         return dev.run_functions_by_dot_path(self.module, self.funcs, print_help=self.print_help, log_level=self.log_level)
 
 
-AUDIT_FUNCS: Dict[str, Tuple[Callable, tuple, dict]] = {
-    'manifest-modify': (dev.audit_manifest_modify, tuple(), {}),
-    'manifest-verify': (dev.audit_manifest_verify, tuple(), {}),
-    'relpath': (dev.audit_relpath, (), {
-        'dirpath': REPO_DIRPATH,
-        'included_dirs': [PYPA_SRC_DIRPATH, TESTS_DIRPATH],
-        'force': True
-    }),
-}
-
-
 @dataclass
 class Audit(Mode):
     '''
@@ -257,33 +236,61 @@ class Audit(Mode):
     Things like relpath compliance, word replacing, swear jar, self-modification, etc.
 
     Examples:
-        1. dev audit manifest_modify
-        2. dev audit relpath
+        - dev audit relpath
+        - dev audit manifest-modify
     '''
     func: Callable
-    args: tuple
-    kwargs: dict
+    dirpath: str
+    dry: bool
+    included_dirs: List[str] = field(default_factory=lambda: [PYPA_SRC_DIRPATH, TESTS_DIRPATH])
+    tests_dirname: str = os.path.basename(TESTS_DIRPATH)
 
     @classmethod
     def argparser(cls, subparser_root=None):
         # type: (Optional[_SubParsersAction[ArgumentParser]]) -> ArgumentParser
         mode = super().argparser(subparser_root=subparser_root)
 
-        example_audit_func = list(AUDIT_FUNCS)[0]
-        funcs = mode.add_subparsers(help='which func do you want? run "{} {} -h" to get help on the {!r} func'.format(SCRIPT_NAME, example_audit_func, example_audit_func))
-        for k, v in AUDIT_FUNCS.items():
-            func, args, kwargs = v
-            audit_func_parser = funcs.add_parser(k, usage=pydoc.render_doc(func))
-            audit_func_parser.set_defaults(func=func)
-            audit_func_parser.set_defaults(args=args)
-            audit_func_parser.set_defaults(kwargs=kwargs)
-            Mode.add_common_arguments(audit_func_parser)
+        example_audit_func = 'tdd'
+        funcs = mode.add_subparsers(
+            help='which func do you want? run "{} {} {} -h" to get help on the {!r} func'.format(SCRIPT_NAME, cls.__name__.lower(), example_audit_func, example_audit_func)
+        )
+
+        manifest_modify = funcs.add_parser('manifest-modify', usage=pydoc.render_doc(dev.audit_manifest_modify))
+        manifest_modify.set_defaults(func=dev.audit_manifest_modify)
+        Audit.add_common_arguments(manifest_modify)
+
+        manifest_verify = funcs.add_parser('manifest-verify', usage=pydoc.render_doc(dev.audit_manifest_verify))
+        manifest_verify.set_defaults(func=dev.audit_manifest_verify)
+        Audit.add_common_arguments(manifest_verify)
+
+        relpath = funcs.add_parser('relpath', usage=pydoc.render_doc(dev.audit_relpath))
+        relpath.set_defaults(func=dev.audit_relpath)
+        Audit.add_common_arguments(relpath)
+
+        tdd = funcs.add_parser('tdd', usage=pydoc.render_doc(dev.audit_tdd))
+        tdd.set_defaults(func=dev.audit_tdd)
+        Audit.add_common_arguments(tdd)
 
         return mode
 
+    @staticmethod
+    def add_common_arguments(parser):
+        Mode.add_common_arguments(parser)
+        parser.add_argument('--dirpath', type=str, default=REPO_DIRPATH, help='where do we start crawling?')
+        parser.add_argument(
+            '--included_dirs', type=str, nargs='+', default=[PYPA_SRC_DIRPATH, TESTS_DIRPATH], help='any directories that you do care about, and run them relatively to dirpath?'
+        )
+        parser.add_argument('--dry', action='store_true', help='do not write?')
+        parser.add_argument('--tests-dirname', type=str, default=os.path.basename(TESTS_DIRPATH), help='name of the tests folder?')
+
     def run(self):
         # type: () -> int
-        return self.func(*self.args, **self.kwargs)
+        if self.func is dev.audit_relpath:
+            return dev.audit_relpath(dirpath=self.dirpath, included_dirs=self.included_dirs, dry=self.dry)
+        elif self.func is dev.audit_tdd:
+            return dev.audit_tdd(dirpath=self.dirpath, module_name=self.module, tests_dirname=self.tests_dirname)
+        else:
+            return self.func()
 
 
 MODE_MAP: Dict[str, Type[Mode]] = {
@@ -317,7 +324,7 @@ def main():
         raise ArgumentError(subparser, 'you have to provide an mode')
 
     Class = MODE_MAP[ns.mode]
-    mode = Class(**(vars(ns)))
+    mode = Class.from_parser(parser)
 
     logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=mode.log_level)
     LOGGER.debug(vars(mode))

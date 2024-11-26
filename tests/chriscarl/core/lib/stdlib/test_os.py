@@ -3,13 +3,13 @@
 '''
 Author:         Chris Carl
 Email:          chrisbcarl@outlook.com
-Date:           2024-11-25
+Date:           2024-11-26
 Description:
 
-chriscarl.tools.lib unit test.
+chriscarl.core.lib.stdlib.os unit test.
 
 Updates:
-    2024-11-25 - tests.chriscarl.tools.lib - initial commit
+    2024-11-26 - tests.chriscarl.core.lib.stdlib.os - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -17,17 +17,16 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-import unittest
 
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.lib.stdlib.unittest import assert_null_hypothesis
+from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
-import chriscarl.tools.lib as lib
+import chriscarl.core.lib.stdlib.os as lib
 
-SCRIPT_RELPATH = 'tests/chriscarl/tools/test_lib.py'
+SCRIPT_RELPATH = 'tests/chriscarl/core/lib/stdlib/test_os.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -39,7 +38,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-class TestCase(unittest.TestCase):
+class TestCase(UnitTest):
 
     def setUp(self):
         return super().setUp()
@@ -47,17 +46,27 @@ class TestCase(unittest.TestCase):
     def tearDown(self):
         return super().tearDown()
 
-    @unittest.skip('lorem ipsum')
-    def test_case_0(self):
+    def test_abspath(self):
         variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
+            (lib.abspath, ('/tmp', 'hello', 'world')),
+            (lib.abspath, ('~/tmp', 'hello', 'world')),
         ]
         controls = [
-            6,
-            6,
+            os.path.abspath('/tmp/hello/world'),
+            os.path.abspath(os.path.expanduser('~/tmp/hello/world')),
         ]
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_chdir(self):
+        variables = [
+            (lib.abspath, ('/tmp', 'hello', 'world')),
+            (lib.abspath, ('~/tmp', 'hello', 'world')),
+        ]
+        controls = [
+            os.path.abspath('/tmp/hello/world'),
+            os.path.abspath(os.path.expanduser('~/tmp/hello/world')),
+        ]
+        self.assert_null_hypothesis(variables, controls)
 
 
 if __name__ == '__main__':
@@ -65,6 +74,6 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0()
+    tc.test_abspath()
 
     tc.tearDown()

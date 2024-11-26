@@ -10,6 +10,7 @@ core.functors.misc is shit code that needs to be refactored and placed appropria
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2024-11-26 - core.functors.misc - removed logging / argparse and put them correctly away
     2024-11-22 - core.functors.misc - initial commit
 '''
 
@@ -18,8 +19,6 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-import argparse
-import functools
 from pathlib import Path
 from typing import Any, Tuple, Dict, List, Iterable, Union, Callable, Optional
 
@@ -274,20 +273,3 @@ def divide_chunks(lst, n):
     '''
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
-
-
-LOG_LEVELS = list(logging._nameToLevel)  # pylint: disable=(protected-access)
-
-
-def get_log_func(log_level='DEBUG'):
-    # type: (Union[str, int]) -> Callable
-    if isinstance(log_level, str):
-        log_level_int = logging._nameToLevel.get(log_level, 1)
-    else:
-        log_level_int = log_level
-    log = functools.partial(logging.log, log_level_int)
-    return log
-
-
-class ArgparseNiceFormat(argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
-    pass

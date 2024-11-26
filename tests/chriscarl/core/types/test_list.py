@@ -22,7 +22,7 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.lib.stdlib.unittest import assert_null_hypothesis
+from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
 import chriscarl.core.types.list as lib
@@ -39,7 +39,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-class TestCase(unittest.TestCase):
+class TestCase(UnitTest):
 
     def setUp(self):
         self.num_list = [1, 2, 2, 3, 3, 3]
@@ -55,7 +55,7 @@ class TestCase(unittest.TestCase):
         controls = [
             [1, 2, 3],
         ]
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
     def test_find_index(self):
         variables = [
@@ -68,7 +68,7 @@ class TestCase(unittest.TestCase):
             [i for i, ele in enumerate(self.num_list) if ele > 1],
             [i for i, ele in enumerate(self.num_list) if ele > 2],
         ]
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
     def test_sorted_list_by_frequency(self):
         variables = [
@@ -79,7 +79,7 @@ class TestCase(unittest.TestCase):
             [1, 2, 3],
             [3, 2, 1],
         ]
-        assert_null_hypothesis(variables, controls)
+        self.assert_null_hypothesis(variables, controls)
 
 
 if __name__ == '__main__':

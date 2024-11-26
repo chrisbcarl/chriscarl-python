@@ -45,7 +45,7 @@ def parameterized_name_func(func, param_num, param):
     '''
     Description:
         used during parameterized.expand and in my test cases.
-            >>> class AddTestCase(unittest.TestCase):
+            >>> class AddTestCase(UnitTest):
             >>>     @parameterized.expand([
             >>>         (2, 3, 5),
             >>>         (2, 4, 5),
