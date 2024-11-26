@@ -27,7 +27,7 @@ import builtins
 from chriscarl.core.functors import python as ccf_python
 from chriscarl.core.lib.stdlib import typing as cls_typing
 
-SCRIPT_RELPATH = 'chriscarl/core/constants.py'
+SCRIPT_RELPATH = 'chriscarl/mod/python.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

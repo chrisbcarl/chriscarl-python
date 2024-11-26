@@ -28,7 +28,7 @@ from types import ModuleType
 
 # project imports
 
-SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/python.py'
+SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/typing.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

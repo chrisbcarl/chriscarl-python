@@ -29,7 +29,7 @@ from chriscarl.core.lib.stdlib.unittest import assert_null_hypothesis
 from chriscarl.core.functors import python as cp
 from chriscarl.mod import python as mp
 
-SCRIPT_RELPATH = 'tests/libraries/third/test_unittest.py'
+SCRIPT_RELPATH = 'tests/chriscarl/mod/test_python.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

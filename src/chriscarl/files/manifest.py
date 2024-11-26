@@ -23,7 +23,7 @@ import logging
 
 # project imports
 
-SCRIPT_RELPATH = 'src/chriscarl/files/manifest.py'
+SCRIPT_RELPATH = 'chriscarl/files/manifest.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

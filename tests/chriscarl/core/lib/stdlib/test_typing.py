@@ -30,7 +30,7 @@ from chriscarl.core.lib.stdlib.unittest import assert_null_hypothesis
 import chriscarl.core.lib.stdlib.typing as lib
 import chriscarl.mod.python as mod
 
-SCRIPT_RELPATH = 'tests/libraries/third/test_unittest.py'
+SCRIPT_RELPATH = 'tests/chriscarl/core/lib/stdlib/test_typing.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
