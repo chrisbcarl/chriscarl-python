@@ -23,7 +23,7 @@ import logging
 
 # project imports
 
-SCRIPT_RELPATH = 'chriscarl/files/manifest.py'
+SCRIPT_RELPATH = 'src/chriscarl/files/manifest.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -49,60 +49,3 @@ FILEPATH_TEST_TEMPLATE = os.path.join(DIRPATH_TEMPLATES, 'test.template')
 FILEPATH_TOOL_TEMPLATE = os.path.join(DIRPATH_TEMPLATES, 'tool.template')
 
 # ###
-
-
-def _self_modify():
-    # type: () -> bool
-    '''
-    Description:
-        run this to update the DIRPATH_* and FILEPATH_* constants that represent actual file paths
-    '''
-    from chriscarl.core.functors.python import get_legal_python_name
-    me_filepath = os.path.join(SCRIPT_DIRPATH, '{}.py'.format(SCRIPT_NAME))
-    with open(me_filepath, 'r', encoding='utf-8') as r:
-        lines = r.read().splitlines()
-        indexes = [l for l, line in enumerate(lines) if line.startswith('# ###')]
-
-    cwd = os.getcwd()
-    os.chdir(SCRIPT_DIRPATH)
-    tokens = []
-    for d, _, fs in os.walk('./'):
-        if '__pycache__' in d:
-            continue
-        dirname = os.path.basename(d)
-        dupper = dirname.upper()
-        tokens.append("# {}".format(d))
-        if dupper:
-            tokens.append("DIRPATH_{} = os.path.join(SCRIPT_DIRPATH, '{}')".format(dupper, dirname))
-        else:
-            dupper = 'ROOT'
-            tokens.append("DIRPATH_ROOT = SCRIPT_DIRPATH")
-        for f in fs:
-            if '__init__' in f:
-                continue
-            pname = get_legal_python_name(f)
-            tokens.append("FILEPATH_{} = os.path.join(DIRPATH_{}, '{}')".format(pname.upper(), dupper, f))
-
-        tokens.append("")
-    os.chdir(cwd)
-
-    new_content = lines[0:indexes[0]] + ['# ###\n'] + tokens + lines[indexes[1]:]
-    with open(me_filepath, 'w', encoding='utf-8') as w:
-        w.write('\n'.join(new_content))
-    return True
-
-
-def _self_verify():
-    # type: () -> bool
-    '''
-    Description:
-        run this to check each of the DIRPATH_* and FILEPATH_* actually exist...
-    '''
-    lcls = dict(globals())
-    for k, v in lcls.items():
-        if k.startswith('DIRPATH') and not os.path.isdir(v):
-            raise OSError('dir {} at "{}" does not exist!'.format(k, v))
-    for k, v in lcls.items():
-        if k.startswith('FILEPATH') and not os.path.isfile(v):
-            raise OSError('file {} at "{}" does not exist!'.format(k, v))
-    return True
