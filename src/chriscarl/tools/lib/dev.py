@@ -37,7 +37,7 @@ from chriscarl.files.manifest import (
 )
 from chriscarl.files import manifest
 
-SCRIPT_RELPATH = 'src/chriscarl/tools/lib/dev.py'
+SCRIPT_RELPATH = 'chriscarl/tools/lib/dev.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -110,7 +110,7 @@ def audit_manifest_verify():
     return True
 
 
-SCRIPT_RELPLATH_REGEX = re.compile(r"SCRIPT_RELPATH = r?'[\d\w\-\\\/]+\.py'")
+SCRIPT_RELPLATH_REGEX = re.compile(r"SCRIPT_RELPATH = r?'[\d\w\-\\\/\.]+\.py'")
 IGNORED_DIRS = ['ignoreme', 'node_modules', '.git', '__pycache__', 'build', 'dist', 'venv', '.venv', '.pytest_cache']
 DEFAULT_EXTENSIONS = ['.py']
 
@@ -119,8 +119,8 @@ def audit_relpath(dirpath=os.getcwd(), extensions=DEFAULT_EXTENSIONS, included_d
     # type: (str, List[str], Optional[List[str]], List[str], bool) -> None
     '''
     Description:
-        find every file that contains        SCRIPT_RELPATH = 'src/chriscarl/tools/lib/dev.py'
-        and convert them into something like SCRIPT_RELPATH = 'src/chriscarl/tools/lib/dev.py'
+        find every file that contains        SCRIPT_RELPATH = 'chriscarl/tools/lib/dev.py'
+        and convert them into something like SCRIPT_RELPATH = 'chriscarl/tools/lib/dev.py'
 
     Arguments:
         dirpath: str
@@ -162,8 +162,11 @@ def audit_relpath(dirpath=os.getcwd(), extensions=DEFAULT_EXTENSIONS, included_d
                 filepaths.append(filepath)
 
         for filepath in filepaths:
+            use_filepath = filepath
             basename = os.path.basename(filename)
-            relpath = os.path.relpath(filepath, original_dirpath).replace('\\', '/')
+            relpath = os.path.relpath(use_filepath, original_dirpath).replace('\\', '/')
+            if 'src/' in relpath:
+                relpath = relpath.replace('src/', '')
             with open(filepath) as r:
                 contents = r.read()
             search = SCRIPT_RELPLATH_REGEX.search(contents)
@@ -181,7 +184,7 @@ def audit_relpath(dirpath=os.getcwd(), extensions=DEFAULT_EXTENSIONS, included_d
                     lines = contents[:search.end()].splitlines()
                     lineno = len(lines) + 1
                     charno = len(lines[-1])  # just a best effort
-                    LOGGER.info('replacing %s %r -> %r', '%s [line:%s; char:%s]: ', original_preview, replacement_preview, basename, lineno, charno)
+                    LOGGER.info('replacing %s %r -> %r', '{} [line:{}; char:{}]: '.format(basename, lineno, charno), original_preview, replacement_preview)
                     changes += 1
                     if force:
                         new_contents = SCRIPT_RELPLATH_REGEX.sub(replacement, contents)

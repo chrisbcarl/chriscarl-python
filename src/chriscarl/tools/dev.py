@@ -54,7 +54,7 @@ from chriscarl.files.manifest import (
 )
 from chriscarl.tools.lib import dev
 
-SCRIPT_RELPATH = 'src/chriscarl/tools/dev.py'
+SCRIPT_RELPATH = 'chriscarl/tools/dev.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

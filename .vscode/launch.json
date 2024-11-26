@@ -27,7 +27,9 @@
             "console": "integratedTerminal",
             "args": [
                 // "create", "core.lib.stdlib.importlib", "--force",
-                "run", "dir", "vars", "--module", "builtins", "--print-help",
+                // "run", "dir", "vars", "--module", "builtins", "--print-help",
+                "audit", "relpath",
+                //
                 "--log-level", "DEBUG",
             ]
         },
