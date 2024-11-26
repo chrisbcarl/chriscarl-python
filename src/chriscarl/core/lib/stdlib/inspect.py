@@ -6,11 +6,12 @@ Email:          chrisbcarl@chriscarl.com
 Date:           2024-11-24
 Description:
 
-inspect is all about the framerate
-core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
+
+core.lib.stdlib.inspect is all about the framerate
+core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
-    2024-11-24 - chriscarl.core.lib.stdlib.inspect - initial commit
+    2024-11-24 - core.lib.stdlib.inspect - initial commit
 '''
 
 # stdlib imports
@@ -25,7 +26,7 @@ from typing import Any, Set
 
 # project imports
 
-SCRIPT_RELPATH = 'chriscarl/core/functors/python.py'
+SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/inspect.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

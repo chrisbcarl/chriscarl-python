@@ -6,10 +6,11 @@ Email:          chrisbcarl@chriscarl.com
 Date:           2024-11-22
 Description:
 
-"Shadow module" that "shadows" the "unittest" module with extra functionality via side effects.
+core.lib.stdlib.unittest includes stuff I want all unit tests to have access to
+core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
-    2024-11-22 - chriscarl.libraries.uncore.stdlib.unittest - initial commit
+    2024-11-22 - core.lib.stdlib.unittest - initial commit
 '''
 
 # stdlib imports
@@ -27,7 +28,7 @@ from typing import Callable, Tuple, Iterable, List, Any, Union
 from chriscarl.core.functors.python import conform_func_args_kwargs, invocation_string
 from chriscarl.core.lib.stdlib.typing import isinstance_raise
 
-SCRIPT_RELPATH = 'chriscarl/libraries/third/unittest.py'
+SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/unittest.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

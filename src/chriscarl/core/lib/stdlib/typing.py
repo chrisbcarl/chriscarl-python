@@ -6,11 +6,11 @@ Email:          chrisbcarl@chriscarl.com
 Date:           2024-11-23
 Description:
 
-typing is tricky, but I think I can hack at it to make it useful.
-core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
+core.lib.stdlib.typing is tricky, but I think I can hack at it to make it useful.
+core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
-    2024-11-22 - chriscarl.core.lib.stdlib.typing - initial commit
+    2024-11-22 - core.lib.stdlib.typing - initial commit
 '''
 
 # stdlib imports
@@ -28,7 +28,7 @@ from types import ModuleType
 
 # project imports
 
-SCRIPT_RELPATH = 'chriscarl/core/functors/python.py'
+SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/python.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

@@ -6,11 +6,11 @@ Email:          chrisbcarl@chriscarl.com
 Date:           2024-11-24
 Description:
 
-inspect is all about the framerate
-core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
+core.lib.stdlib.json is all about making sure I dont have to write indent=4 or convert another datetime to string ever again
+core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
-    2024-11-24 - chriscarl.core.lib.stdlib.inspect - initial commit
+    2024-11-24 - core.lib.stdlib.json - initial commit
 '''
 
 # stdlib imports
@@ -26,7 +26,7 @@ from typing import Union
 # project imports
 from chriscarl.core.lib.stdlib.os import make_file_dirpath
 
-SCRIPT_RELPATH = 'chriscarl/core/functors/python.py'
+SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/json.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

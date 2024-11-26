@@ -3,7 +3,7 @@
     "core.functor": "functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.",
     "core.types": "pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.",
     "core.lib": "contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.",
-    "files": "glorified file to constant manifest",
+    "files": "elevate files so they can be used in python, either registering the path name or actually interacting with them like data cabinets.",
     "mod": "use clever and brittle hacks that modify behavior at runtime via side effect through the use of eval, exec, shadow techniques, and otherwise.",
     "mod.lib": "shadow the original module, and by virtue of import, modify the original modules behavior with overrides.",
     "tool": "define usually cli tools or mini applets that I or other people may find interesting or useful.",

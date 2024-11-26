@@ -6,10 +6,11 @@ Email:          chrisbcarl@outlook.com
 Date:           2024-11-22
 Description:
 
-Shit code that needs to be refactored and placed appropriately or removed entirely but i'm too stubborn to kill my darlings.
+core.functors.misc is shit code that needs to be refactored and placed appropriately or removed entirely but i'm too stubborn to kill my darlings.
+core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
-    2024-11-22 - chriscarl.misc - initial commit
+    2024-11-22 - core.functors.misc - initial commit
 '''
 
 # stdlib imports
@@ -26,7 +27,7 @@ from typing import Any, Tuple, Dict, List, Iterable, Union, Callable, Optional
 
 # project imports
 
-SCRIPT_RELPATH = 'chriscarl/misc.py'
+SCRIPT_RELPATH = 'chriscarl/core/functors/misc.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -115,10 +116,11 @@ def file_text(path=Path()):
         except UnicodeDecodeError as e:
             # https://gehrcke.de/2015/12/how-to-raise-unicodedecodeerror-in-python-3/
             # encoding = e[0]
-            obj = e[1]
-            start = e[2]
-            end = e[3]
-            reason = e[4]
+            obj = e.object  # e[1]
+            start = e.start  # e[2]
+            end = e.end  # e[3]
+            reason = e.reason  # e[4]
+            encoding = e.encoding
 
             length = len(obj)
             if start - 32 < 0:
@@ -131,7 +133,7 @@ def file_text(path=Path()):
                 end += 32
 
             msg = '{} at {}, repr: {}'.format(reason, path, repr(obj[start:end]))
-            raise UnicodeDecodeError(e[0], e[1], e[2], e[3], msg)
+            raise UnicodeDecodeError(encoding, obj, start, end, reason + msg)
 
 
 def locals_to_dict(locals_dict, ignore=[]):

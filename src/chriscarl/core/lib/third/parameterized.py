@@ -6,10 +6,11 @@ Email:          chrisbcarl@chriscarl.com
 Date:           2024-11-22
 Description:
 
-"Shadow module" that "shadows" the "parameterized" module with extra functionality via side effects.
+core.lib.third.parameterized just helps out with the pytest decorators for now
+core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
-    2024-11-22 - chriscarl.libraries.uncore.third.parameterized - initial commit
+    2024-11-22 - core.lib.third.parameterized - initial commit
 '''
 
 # stdlib imports
@@ -17,7 +18,7 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-from typing import Any, Tuple, Dict, Callable
+from typing import Callable
 
 # third party imports
 try:
@@ -27,7 +28,7 @@ except ImportError:
 
 # project imports
 
-SCRIPT_RELPATH = 'chriscarl/libraries/third/parameterized.py'
+SCRIPT_RELPATH = 'chriscarl/core/lib/third/parameterized.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

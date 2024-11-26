@@ -12,6 +12,7 @@ Updates:
     2024-11-25 - tools.dev - this thing is practically a work of art (lol its late). create/run both work and do it well.
                  tools.dev - added --tool generation, logging reports the fullpath which is so much more satisfying
                  tools.dev - FIX: reruns when not in --force mode had a logic bug which caused tests to be dumped in the wrong place
+                 tools.dev - added --no-test and dev create supports a list of modules
     2024-11-22 - tools.dev - initial commit
 
 # TODO: add git commit shit
@@ -42,7 +43,7 @@ from chriscarl.core.lib.stdlib.io import read_text_file, write_text_file
 from chriscarl.core.lib.stdlib.os import make_dirpath, abspath
 from chriscarl.core.lib.stdlib.json import read_json
 import chriscarl.files
-from chriscarl.files import (
+from chriscarl.files.manifest import (
     FILEPATH_DEFAULT_DESCRIPTIONS_JSON,
     FILEPATH_TEMPLATE,
     FILEPATH_MOD_LIB_TEMPLATE,
@@ -153,16 +154,18 @@ class Create(Mode):
     tests_dirpath: str = TESTS_DIRPATH
     force: bool = False
     tool: bool = False
+    no_test: bool = False
 
     @classmethod
     def argparser(cls, subparser_root=None):
         # type: (Optional[_SubParsersAction[ArgumentParser]]) -> ArgumentParser
         mode = super().argparser(subparser_root=subparser_root)
 
-        mode.add_argument('modules', type=str, help='space-separated, dot-separated module names, ex) "core.lib.stdlib.os" "core.lib.stdlib.sys"')
+        mode.add_argument('modules', type=str, nargs='+', default=[], help='space-separated, dot-separated module names, ex) "core.lib.stdlib.os" "core.lib.stdlib.sys"')
         mode.add_argument('--tests-dirpath', type=str, default=TESTS_DIRPATH, help='where should the tests go? core.lib will get a tests/module/core/test_lib.py')
         mode.add_argument('--force', '-f', action='store_true', help='overwrite file if exists?')
         mode.add_argument('--tool', '-t', action='store_true', help='make a tool out of this rather than a module (it still gets tests)')
+        mode.add_argument('--no-test', '-n', action='store_true', help='do not generate the test')
         Mode.add_common_arguments(mode)
 
         return mode
@@ -189,8 +192,8 @@ class Create(Mode):
             else:
                 root_directory = ''
             module_filename = '{}.py'.format(tokens[-1])
-            module_relpath = '/'.join([root_directory, *tokens[:-1], module_filename])
-            module_relpath = os.path.relpath(module_relpath, root_directory).replace('\\', '/')
+            module_filepath = '/'.join([root_directory, *tokens[:-1], module_filename])
+            module_relpath = os.path.relpath(module_filepath, root_directory).replace('\\', '/')
 
             # create directories
             LOGGER.info('module %d / %d - %s - step 1 - directories', m, len(self.modules) - 1, module)
@@ -239,12 +242,12 @@ class Create(Mode):
 
             # create module file
             LOGGER.info('module %d / %d - %s - step 3 - module', m, len(self.modules) - 1, module)
-            LOGGER.info('module %d / %d - %s - step 3 - module %r - "%s"', m, len(self.modules) - 1, module, token, module_relpath)
+            LOGGER.info('module %d / %d - %s - step 3 - module %r - "%s"', m, len(self.modules) - 1, module, token, module_filepath)
             doit = True
-            if os.path.isfile(module_relpath):
-                LOGGER.warning('module %d / %d - %s - step 3 - module %r - "%s" exists!', m, len(self.modules) - 1, module, token, module_relpath)
+            if os.path.isfile(module_filepath):
+                LOGGER.warning('module %d / %d - %s - step 3 - module %r - "%s" exists!', m, len(self.modules) - 1, module, token, module_filepath)
                 if self.force:
-                    LOGGER.critical('module %d / %d - %s - step 3 - module %r - "%s" exists! FORCING!', m, len(self.modules) - 1, module, token, module_relpath)
+                    LOGGER.critical('module %d / %d - %s - step 3 - module %r - "%s" exists! FORCING!', m, len(self.modules) - 1, module, token, module_filepath)
                 else:
                     doit = False
                     warnings += 1
@@ -271,50 +274,56 @@ class Create(Mode):
                     template = module_template
 
                 content = template.format(**template_kwargs)
-                write_text_file(module_relpath, content)
+                write_text_file(module_filepath, content)
 
-            # create test directories
-            LOGGER.info('module %d / %d - %s - step 4 - test directories', m, len(self.modules) - 1, module)
-            test_root_directory = abspath(self.tests_dirpath)
-            tests_base = os.path.basename(test_root_directory)
-            make_dirpath(test_root_directory)
+            if self.no_test:
+                LOGGER.warning('skipping test generation!')
+            else:
+                # create test directories
+                LOGGER.info('module %d / %d - %s - step 4 - test directories', m, len(self.modules) - 1, module)
+                test_root_directory = abspath(self.tests_dirpath)
+                tests_base = os.path.basename(test_root_directory)
+                make_dirpath(test_root_directory)
 
-            current_directory = os.path.relpath(test_root_directory, '').replace('\\', '/')
-            for t, token in enumerate(tokens[:-1]):
-                current_directory = '{}/{}'.format(current_directory, token)
-                LOGGER.info('module %d / %d - %s - step 4 - test directories from %r - "%s"!', m, len(self.modules) - 1, module, token, current_directory)
-                make_dirpath(current_directory)
+                current_directory = os.path.relpath(test_root_directory, '').replace('\\', '/')
+                for t, token in enumerate(tokens[:-1]):
+                    current_directory = '{}/{}'.format(current_directory, token)
+                    LOGGER.info('module %d / %d - %s - step 4 - test directories from %r - "%s"!', m, len(self.modules) - 1, module, token, current_directory)
+                    make_dirpath(current_directory)
 
-            # create tests
-            LOGGER.info('module %d / %d - %s - step 5 - tests')
-            current_directory = os.path.relpath(test_root_directory, '').replace('\\', '/')
-            for t, token in enumerate(tokens):
-                module_so_far = '.'.join(tokens[:t + 1])
-                test_relpath = '{}/test_{}.py'.format(current_directory, token)
-                LOGGER.info('module %d / %d - %s - step 5 - tests from %r - "%s"!', m, len(self.modules) - 1, module, token, test_relpath)
-                doit = True
-                if os.path.isfile(test_relpath):
-                    LOGGER.warning('module %d / %d - %s - step 5 - tests from %r - "%s" already exists!', m, len(self.modules) - 1, module, token, test_relpath)
-                    if self.force:
-                        LOGGER.critical('module %d / %d - %s - step 5 - tests from %r - "%s" already exists! FORCING!', m, len(self.modules) - 1, module, token, test_relpath)
-                    else:
-                        warnings += 1
-                        doit = False
+                # create tests
+                LOGGER.info('module %d / %d - %s - step 5 - tests')
+                current_directory = os.path.relpath(test_root_directory, '').replace('\\', '/')
+                for t, token in enumerate(tokens):
+                    module_so_far = '.'.join(tokens[:t + 1])
+                    test_relpath = '{}/test_{}.py'.format(current_directory, token)
+                    LOGGER.info('module %d / %d - %s - step 5 - tests from %r - "%s"!', m, len(self.modules) - 1, module, token, test_relpath)
+                    doit = True
+                    if os.path.isfile(test_relpath):
+                        LOGGER.warning('module %d / %d - %s - step 5 - tests from %r - "%s" already exists!', m, len(self.modules) - 1, module, token, test_relpath)
+                        if self.force:
+                            LOGGER.critical('module %d / %d - %s - step 5 - tests from %r - "%s" already exists! FORCING!', m, len(self.modules) - 1, module, token, test_relpath)
+                        else:
+                            warnings += 1
+                            doit = False
 
-                if doit:
-                    test_module_dot_path = '{}.{}'.format(tests_base, module_so_far)
-                    content = test_template.format(
-                        author=self.author,
-                        email=self.email,
-                        date=DATE,
-                        module_dot_path=module_so_far,
-                        test_module_dot_path=test_module_dot_path,
-                        script_relpath=test_relpath,
-                    )
-                    write_text_file(test_relpath, content)
+                    if doit:
+                        test_module_dot_path = '{}.{}'.format(tests_base, module_so_far)
+                        content = test_template.format(
+                            author=self.author,
+                            email=self.email,
+                            date=DATE,
+                            module_dot_path=module_so_far,
+                            test_module_dot_path=test_module_dot_path,
+                            script_relpath=test_relpath,
+                        )
+                        write_text_file(test_relpath, content)
 
-                current_directory = '{}/{}'.format(current_directory, token)
+                    current_directory = '{}/{}'.format(current_directory, token)
 
+        LOGGER.info('module generated at: "%s"', module_filepath)
+        if not self.no_test:
+            LOGGER.info('test generated at:   "%s"', test_relpath)
         return warnings
 
 

@@ -6,11 +6,11 @@ Email:          chrisbcarl@chriscarl.com
 Date:           2024-11-24
 Description:
 
-os is all about file system traversal
+core.lib.stdlib.os is all about file system traversal
 core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
 
 Updates:
-    2024-11-24 - chriscarl.core.lib.stdlib.os - initial commit
+    2024-11-24 - core.lib.stdlib.os - initial commit
 '''
 
 # stdlib imports
@@ -23,7 +23,7 @@ import logging
 
 # project imports
 
-SCRIPT_RELPATH = 'chriscarl/core/functors/python.py'
+SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/os.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

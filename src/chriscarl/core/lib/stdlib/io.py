@@ -6,11 +6,11 @@ Email:          chrisbcarl@chriscarl.com
 Date:           2024-11-24
 Description:
 
-io is all about basic input/output operations
-core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
+core.lib.stdlib.io is all about basic input/output operations
+core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
-    2024-11-24 - chriscarl.core.lib.stdlib.inspect - initial commit
+    2024-11-24 - core.lib.stdlib.io - initial commit
 '''
 
 # stdlib imports
@@ -24,7 +24,7 @@ import logging
 # project imports
 from chriscarl.core.lib.stdlib.os import make_file_dirpath
 
-SCRIPT_RELPATH = 'chriscarl/core/functors/python.py'
+SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/io.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

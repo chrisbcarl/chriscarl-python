@@ -6,11 +6,11 @@ Email:          chrisbcarl@outlook.com
 Date:           2024-11-22
 Description:
 
-Core files are non-self-referential, do very little importing, and define the bedrock from which other things do import.
-Constants are useful from lots of contexts
+core.constants are useful to have actual constants
+core are modules that define the bedrock from which other things do import. non-self-referential, low-import, etc.
 
 Updates:
-    2024-11-22 - chriscarl.core.constants - initial commit
+    2024-11-22 - core.constants - initial commit
 '''
 
 # stdlib imports
@@ -19,7 +19,6 @@ import os
 import sys
 import logging
 import datetime
-from typing import Any, Tuple, Dict, List, Iterable, Union
 
 # third party imports
 
