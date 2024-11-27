@@ -12,6 +12,7 @@ tool are modules that define usually cli tools or mini applets that I or other p
 Updates:
     2024-11-26 - tools.shed.dev - renamed from lib to shed since pytest got confused with multiple test_lib's
                  tools.shed.dev - added audit_tdd
+                 tools.shed.dev - FIX: if a dir already exists for a module, no action is taken rather than making a file as well
     2024-11-25 - tools.lib.dev - initial commit
 '''
 
@@ -316,6 +317,7 @@ def create_modules_and_tests(root_module, modules, descriptions, author='', emai
             module_filename = '{}.py'.format(tokens[-1])
             module_filepath = '/'.join([root_directory, *tokens[:-1], module_filename])
             module_relpath = os.path.relpath(module_filepath, root_directory).replace('\\', '/')
+            module_dirpath = '/'.join([root_directory, *tokens])
 
             # create directories
             LOGGER.info('module %d / %d - %s - step 1 - directories', m, len(modules) - 1, module)
@@ -365,16 +367,23 @@ def create_modules_and_tests(root_module, modules, descriptions, author='', emai
                     created_filepaths_dirpaths[0].append(abspath(current_init_relpath))
 
             # create module file
-            LOGGER.info('module %d / %d - %s - step 3 - module', m, len(modules) - 1, module)
-            LOGGER.info('module %d / %d - %s - step 3 - module %r - "%s"', m, len(modules) - 1, module, token, module_filepath)
-            doit = True
-            if os.path.isfile(module_filepath):
-                LOGGER.warning('module %d / %d - %s - step 3 - module %r - "%s" exists!', m, len(modules) - 1, module, token, module_filepath)
-                if force:
-                    LOGGER.critical('module %d / %d - %s - step 3 - module %r - "%s" exists! FORCING!', m, len(modules) - 1, module, token, module_filepath)
-                else:
-                    doit = False
-                    warnings += 1
+            if os.path.isdir(module_dirpath):
+                LOGGER.warning(
+                    'module %d / %d - %s - step 3 - module %r - "%s" exists as a dir not a module! Not removing or altering at all!', m,
+                    len(modules) - 1, module, token, module_dirpath
+                )
+                warnings += 1
+            else:
+                LOGGER.info('module %d / %d - %s - step 3 - module', m, len(modules) - 1, module)
+                LOGGER.info('module %d / %d - %s - step 3 - module %r - "%s"', m, len(modules) - 1, module, token, module_filepath)
+                doit = True
+                if os.path.isfile(module_filepath):
+                    LOGGER.warning('module %d / %d - %s - step 3 - module %r - "%s" exists!', m, len(modules) - 1, module, token, module_filepath)
+                    if force:
+                        LOGGER.critical('module %d / %d - %s - step 3 - module %r - "%s" exists! FORCING!', m, len(modules) - 1, module, token, module_filepath)
+                    else:
+                        doit = False
+                        warnings += 1
 
             if doit:
                 description_key_length = -1
