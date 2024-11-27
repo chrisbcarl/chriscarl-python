@@ -9,7 +9,7 @@ Description:
 Unit test for chriscarl.core.lib.stdlib.typing
 
 Updates:
-    2024-11-23 - tests.core.lib.stdlib.test_typing - initial commit
+    2024-11-23 - tests.core.lib.stdlib.test_case_0_typing - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -69,7 +69,7 @@ class TestCase(UnitTest):
         for _ in range(10):
             yield
 
-    def test_easy_true(self):
+    def test_case_0_easy_true(self):
         variables = [
             (lib.isof, (self.str, str)),
             (lib.isof, (self.int, int)),
@@ -93,7 +93,7 @@ class TestCase(UnitTest):
         controls = [True for _ in variables]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_easy_false(self):
+    def test_case_1_easy_false(self):
         variables = [
             (lib.isof, (self.dict, str)),
             (lib.isof, (self.dict, int)),
@@ -118,7 +118,7 @@ class TestCase(UnitTest):
 
         self.assert_null_hypothesis(variables, controls)
 
-    def test_med_true(self):
+    def test_case_2_med_true(self):
         variables = [
             (lib.isof, (self.int, typing.Union[int, float, str])),
             (lib.isof, (self.float, typing.Union[int, float, str])),
@@ -132,7 +132,7 @@ class TestCase(UnitTest):
 
         self.assert_null_hypothesis(variables, controls)
 
-    def test_med_false(self):
+    def test_case_3_med_false(self):
         variables = [
             (lib.isof, (self.tuple, typing.Union[int, float, str])),
             (lib.isof, (self.list, typing.Union[int, float, str])),
@@ -146,7 +146,7 @@ class TestCase(UnitTest):
 
         self.assert_null_hypothesis(variables, controls)
 
-    def test_hard_true(self):
+    def test_case_4_hard_true(self):
         variables = [
             (lib.isof, (self.str, typing.Any)),
             (lib.isof, (self.int, typing.Any)),
@@ -179,7 +179,7 @@ class TestCase(UnitTest):
 
         self.assert_null_hypothesis(variables, controls)
 
-    def test_hard_false(self):
+    def test_case_5_hard_false(self):
         variables = [
             (lib.isof, (self.generator, typing.Union[int, float])),
             (lib.isof, (self.callable, typing.Union[int, float])),
@@ -196,7 +196,7 @@ class TestCase(UnitTest):
         self.assert_null_hypothesis(variables, controls)
 
     @unittest.skip('TODO: pytest freaks out on mod')
-    def test_mod(self):
+    def test_case_6_mod(self):
         with mod.Mod():
             pass
 
@@ -206,11 +206,12 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_easy_true()
-    tc.test_easy_false()
-    tc.test_med_true()
-    tc.test_med_false()
-    tc.test_hard_true()
-    tc.test_hard_false()
+    tc.test_case_0_easy_true()
+    tc.test_case_1_easy_false()
+    tc.test_case_2_med_true()
+    tc.test_case_3_med_false()
+    tc.test_case_4_hard_true()
+    tc.test_case_5_hard_false()
+    tc.test_case_6_mod()
 
     tc.tearDown()

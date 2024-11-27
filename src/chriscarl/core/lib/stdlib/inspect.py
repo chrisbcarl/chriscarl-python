@@ -12,6 +12,7 @@ core.lib are modules that contain code that is about (but does not modify) the l
 
 Updates:
     2024-11-26 - core.lib.stdlib.inspect - added FunctionSpecification
+                 core.lib.stdlib.inspect - added get_variable_name_lineno
     2024-11-24 - core.lib.stdlib.inspect - initial commit
 '''
 
@@ -22,7 +23,7 @@ import sys
 import inspect
 import logging
 from dataclasses import dataclass
-from typing import Any, Set, Callable
+from typing import Any, Optional, Callable, List, Tuple
 
 # third party imports
 
@@ -42,35 +43,49 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-def get_variable_names(var, stack_frames=-1):
-    # type: (Any, int) -> Set[str]
+def get_variable_names_linenos(var, stack_frames=-1, ignore_frames=None):
+    # type: (Any, int, Optional[List[int]]) -> List[Tuple[str, int]]
     '''
     https://stackoverflow.com/a/18425523
     '''
-    names = []
-    if stack_frames < 1:
+    name_lineno: List[Tuple[str, int]] = []
+    ignore_frames = ignore_frames or []
+    if stack_frames < 1 and not ignore_frames:
         for frame_tuple in inspect.stack():
             frame = frame_tuple[0]
-            names += [k for k, v in frame.f_locals.items() if v is var]
+            lineno = frame_tuple[2]
+            name_lineno += [(k, lineno) for k, v in frame.f_locals.items() if v is var]
     else:
         for i, frame_tuple in enumerate(inspect.stack()):
+            if i in ignore_frames:
+                continue
             frame = frame_tuple[0]
+            lineno = frame_tuple[2]
+            name_lineno += [(k, lineno) for k, v in frame.f_locals.items() if v is var]
             if i == stack_frames:
-                names = [k for k, v in frame.f_locals.items() if v is var]
                 break
-    if len(names) == 0:
-        names.append('<anonymous>')
-    return set(names)
+    if len(name_lineno) == 0:
+        name_lineno.append(('<anonymous>', -1))
+    return name_lineno
+
+
+def get_variable_name_lineno(var, stack_frames=-1):
+    # type: (Any, int) -> Tuple[str, int]
+    '''
+    the most likely variable name is the last one from get_variable_names_linenos limited up to the stack frames
+    '''
+    names_linenos = get_variable_names_linenos(var, stack_frames=stack_frames + 1 if stack_frames != -1 else stack_frames, ignore_frames=[0, 1])
+    return names_linenos[-1]
 
 
 @dataclass
 class FunctionSpecification(object):
     _func: Callable
     name: str
-    positional_arguments: tuple
+    positional_arguments: List[str]
     optional_arguments: dict
-    varargs: tuple
-    varkwargs: dict
+    varargs: Optional[str]
+    varkwargs: Optional[str]
     # typing: dict
     defaults: dict
 

@@ -47,7 +47,7 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    def test_find_index(self):
+    def test_case_0_find_index(self):
         variables = [
             (lib.find_index, ('abc', 'abcabcabc')),
             (lib.find_index, ('abc', 'abbcabccabc')),
@@ -64,6 +64,6 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_find_index()
+    tc.test_case_0_find_index()
 
     tc.tearDown()

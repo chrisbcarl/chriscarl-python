@@ -47,7 +47,7 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    def test_get_log_func(self):
+    def test_case_0_get_log_func(self):
         sixtynine = lib.get_log_func(69)
         variables = [
             (lib.get_log_func, 'DEBUG'),
@@ -73,6 +73,6 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_get_log_func()
+    tc.test_case_0_get_log_func()
 
     tc.tearDown()

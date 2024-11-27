@@ -47,15 +47,16 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    @unittest.skip('lorem ipsum')
-    def test_case_0(self):
+    def test_case_0_get_variable_names_linenos(self):
+        a = 69
+        plz_for_the_love_of_god = 1089
         variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
+            (lib.get_variable_name_lineno, a),
+            (lib.get_variable_name_lineno, 1089),
         ]
         controls = [
-            6,
-            6,
+            ('a', 61),  # since the call occurs on 61
+            ('plz_for_the_love_of_god', 61),  # since the call occurs on 61
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -65,6 +66,6 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0()
+    tc.test_case_0_get_variable_names_linenos()
 
     tc.tearDown()

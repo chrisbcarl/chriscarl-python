@@ -9,15 +9,13 @@ DO NOT COMMIT THIS SHIT AS IS YET DO NOT FUCKING DO IT
         audit banned
         remove .pyc
         stubgen src\chriscarl -o dist/typing
-        pytest --cov=chriscarl tests/
+        pytest --cov=chriscarl tests/ --cov-report term-missing
             ---------- coverage:
             TOTAL                                            1333    695    48%
             =========================================================================================================== short test summary info ============================================================================================================
             FAILED tests/chriscarl/core/lib/stdlib/test_importlib.py::TestCase::test_walk_module - assert False
             =================================================================================================== 1 failed, 21 passed, 13 skipped in 1.82s ===
 
-    define the templates, check that everything matches the templates based on the path of the file
-    create module, therefore creates a test case for it
     commit, does all of the pre-commit and other shit i need to do
     implement the full workflow, partial workflow, etc.
     create a service which runs stubgen continually

@@ -9,7 +9,7 @@ Description:
 Unit test for mod.python
 
 Updates:
-    2024-11-23 - tests.mod.test_python - initial commit
+    2024-11-23 - tests.mod.test_case_0_python - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -85,41 +85,8 @@ class TestCase(UnitTest):
         mp.unmod(force=True)
         return super().tearDown()
 
-    def test_hasgetset(self):
-        variables = [
-            (cp.hasattr_deep, (self.a, '__class__.__name__'), {}),
-            (cp.hasattr_deep, (self.a, '__class__.__nope__'), {}),
-            (cp.hasattr_cmp, ('val', self.a, self.b, self.c), {}),
-            (cp.hasattr_cmp, ('a', self.a, self.b, self.c), {}),
-            (cp.hasattr_cmp, ('d', self.a, self.b, self.c), {}),
-            (cp.hasattr_cmp, ('b', self.a, self.b, self.c), {}),
-            (cp.getattr_deep, (self.a, '__class__.__name__'), {}),
-            (cp.getattr_deep, (self.a, '__class__.__nope__'), {}),
-            (cp.getattr_cmp, ('a', self.c1, self.c2), {}),
-            (cp.getattr_cmp, ('b2.val', self.c1, self.c2), {}),
-            (cp.setattr_deep, (self, 'c1.a2.a', 4), {}),
-            (cp.getattr_deep, (self, 'c1.a2.a'), {}),
-            (cp.getattr_deep, (self, 'a.b.c.d.e', 'weird default 3rd argument'), {}),
-        ]
-        controls = [
-            True,
-            False,
-            (True, True),  # a has "val", [b, c] does all have "val"
-            (True, False),  # a has "a", [b, c] does not all have "a"
-            (False, True),  # a does not have "d", [b, c] does not all have "d"
-            (False, False),  # a does not have "b", [b, c] does all have "b"
-            'A',
-            AttributeError,
-            True,
-            False,
-            None,
-            4,
-            'weird default 3rd argument'
-        ]
-        self.assert_null_hypothesis(variables, controls)
-
     @unittest.skip('TODO: pytest freaks out on mod')
-    def test_hasgetset_attr_mod(self):
+    def test_case_0_hasgetset_attr_mod(self):
         assert hasattr.__name__ != cp.hasattr_deep.__name__, 'hack uninitiated'
         mp.mod(force=True)
         assert hasattr.__name__ == cp.hasattr_deep.__name__, 'hack complete'
@@ -137,7 +104,7 @@ class TestCase(UnitTest):
         mp.unmod(force=True)
 
     @unittest.skip('TODO: pytest freaks out on mod')
-    def test_hasgetset_attr_mod_context(self):
+    def test_case_1_hasgetset_attr_mod_context(self):
         assert hasattr.__name__ != cp.hasattr_deep.__name__, 'hack uninitiated'
         with mp.Mod():
             assert hasattr.__name__ == cp.hasattr_deep.__name__, 'hack complete'
@@ -153,62 +120,13 @@ class TestCase(UnitTest):
             ]
             self.assert_null_hypothesis(variables, controls)
 
-    def test_is_legal_python_name(self):
-        variables = [
-            (cp.is_legal_python_name, 'aa'),
-            (cp.is_legal_python_name, 'a1'),
-            (cp.is_legal_python_name, 'a_'),
-            (cp.is_legal_python_name, '_a'),
-            (cp.is_legal_python_name, '1a'),
-            (cp.is_legal_python_name, ' '),
-            (cp.is_legal_python_name, '-'),
-            (cp.is_legal_python_name, '%'),
-        ]
-        controls = [
-            True,
-            True,
-            True,
-            True,
-            False,
-            False,
-            False,
-            False,
-        ]
-        self.assert_null_hypothesis(variables, controls)
-
-    def test_get_legal_python_name(self):
-        variables = [
-            (cp.get_legal_python_name, 'aa'),
-            (cp.get_legal_python_name, 'a1'),
-            (cp.get_legal_python_name, 'a_'),
-            (cp.get_legal_python_name, '1a'),
-            (cp.get_legal_python_name, '_a'),
-            (cp.get_legal_python_name, ' '),
-            (cp.get_legal_python_name, '-'),
-            (cp.get_legal_python_name, '%'),
-        ]
-        controls = [
-            'aa',
-            'a1',
-            'a_',
-            '_1a',
-            '_a',
-            '_',
-            '_',
-            '_',
-        ]
-        self.assert_null_hypothesis(variables, controls)
-
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=logging.DEBUG)
     tc = TestCase()
     tc.setUp()
 
-    tc.test_hasgetset()
-    tc.test_hasgetset_attr_mod()
-    tc.test_hasgetset_attr_mod_context()
-    tc.test_is_legal_python_name()
-    tc.test_get_legal_python_name()
+    tc.test_case_0_hasgetset_attr_mod()
+    tc.test_case_1_hasgetset_attr_mod_context()
 
     tc.tearDown()

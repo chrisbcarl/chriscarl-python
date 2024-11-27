@@ -3,13 +3,13 @@
 '''
 Author:         Chris Carl
 Email:          chrisbcarl@outlook.com
-Date:           2024-11-25
+Date:           2024-11-26
 Description:
 
 chriscarl.files unit test.
 
 Updates:
-    2024-11-25 - tests.chriscarl.files - initial commit
+    2024-11-26 - tests.chriscarl.files - initial commit
 '''
 
 # stdlib imports (expected to work)

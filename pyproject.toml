@@ -39,6 +39,12 @@ build-backend = "poetry.core.masonry.api"
 testpaths = [
     "tests",
 ]
+addopts = [
+    # https://docs.pytest.org/en/latest/explanation/goodpractices.html#test-discovery
+    # https://docs.pytest.org/en/latest/explanation/goodpractices.html#which-import-mode
+    # allows you to have 2 test file names that are exaclty the same like a/test_lib.py and b/test_lib.py
+    "--import-mode=importlib",
+]
 
 
 [[tool.mypy.overrides]]

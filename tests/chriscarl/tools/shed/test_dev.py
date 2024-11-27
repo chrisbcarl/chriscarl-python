@@ -17,12 +17,13 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-import unittest
 
 # third party imports
 
 # project imports (expected to work)
 from chriscarl.core.lib.stdlib.unittest import UnitTest
+from chriscarl.core.lib.stdlib.os import abspath
+from chriscarl.core.constants import REPO_DIRPATH, PYPA_SRC_DIRPATH, TESTS_DIRPATH
 
 # test imports
 import chriscarl.tools.shed.dev as lib
@@ -47,32 +48,69 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    def test_create_modules_and_tests(self):
+    def test_case_0_create_modules_and_tests(self):
         variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
+            (lib.create_modules_and_tests, (
+                'test',
+                ['a.b.c'],
+            ), dict(tests_dirname='tests', cwd=self.tempdir, force=True)),
         ]
         controls = [
-            6,
-            6,
+            [
+                ('__init__', 'test', abspath(self.tempdir, 'src/test/__init__.py')),
+                ('__init__', 'test.a', abspath(self.tempdir, 'src/test/a/__init__.py')),
+                ('__init__', 'test.a.b', abspath(self.tempdir, 'src/test/a/b/__init__.py')),
+                ('module', 'test.a.b.c', abspath(self.tempdir, 'src/test/a/b/c.py')),
+                ('test', 'test', abspath(self.tempdir, 'tests/test_test.py')),
+                ('test', 'test.a', abspath(self.tempdir, 'tests/test/test_a.py')),
+                ('test', 'test.a.b', abspath(self.tempdir, 'tests/test/a/test_b.py')),
+                ('test', 'test.a.b.c', abspath(self.tempdir, 'tests/test/a/b/test_c.py')),
+            ],
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_audit_manifest_verify(self):
+    def test_case_1_run_functions_by_dot_path(self):
+        variables = [
+            (lib.run_functions_by_dot_path, ('builtins', ['vars'])),
+        ]
+        controls = [
+            0,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_2_audit_manifest_verify(self):
         variables = [
             (lib.audit_manifest_verify),
         ]
         controls = [
-            True,
+            0,
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_audit_manifest_modify(self):
+    def test_case_3_audit_manifest_modify(self):
         from chriscarl.core.lib.stdlib.io import read_bytes_file
         original = read_bytes_file(lib.__file__)
         lib.audit_manifest_modify()
         new = read_bytes_file(lib.__file__)
         self.assertEqual(original, new, '_self_modify should take effect but be idempotent! something changed, check the git diff?')
+
+    def test_case_4_audit_relpath(self):
+        variables = [
+            (lib.audit_relpath, (), dict(dirpath=REPO_DIRPATH, included_dirs=[PYPA_SRC_DIRPATH, TESTS_DIRPATH])),
+        ]
+        controls = [
+            0,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_5_audit_tdd(self):
+        variables = [
+            (lib.audit_tdd, (), dict(dirpath=REPO_DIRPATH, module_name='test', dry=False, tests_dirname='tests', cwd=self.tempdir, force=True)),
+        ]
+        controls = [
+            0,
+        ]
+        self.assert_null_hypothesis(variables, controls)
 
 
 if __name__ == '__main__':
@@ -80,8 +118,11 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_create_modules_and_tests()
-    tc.test_audit_manifest_verify()
-    tc.test_audit_manifest_modify()
+    tc.test_case_0_create_modules_and_tests()
+    tc.test_case_1_run_functions_by_dot_path()
+    tc.test_case_2_audit_manifest_verify()
+    tc.test_case_3_audit_manifest_modify()
+    tc.test_case_4_audit_relpath()
+    tc.test_case_5_audit_tdd()
 
     tc.tearDown()

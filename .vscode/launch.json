@@ -5,14 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "[Python] - Current",
+            "name": "[python] - Current",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
         },
         {
-            "name": "[Python] - Current (!justMyCode)",
+            "name": "[python] - Current (!justMyCode)",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
@@ -20,7 +20,17 @@
             "justMyCode": false,
         },
         {
-            "name": "[Tools] - dev",
+            "name": "[pytest] - Current",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "${file}",
+            ],
+            "justMyCode": false,
+        },
+        {
+            "name": "[tools] - dev",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/src/chriscarl/tools/dev.py",
@@ -29,9 +39,11 @@
                 // "create", "core.lib.stdlib.importlib", "--force",
                 // "run", "dir", "vars", "--module", "builtins", "--print-help",
                 // "audit", "relpath",
-                "audit", "tdd",
+                "audit",
+                "tdd",
                 //
-                "--log-level", "DEBUG",
+                "--log-level",
+                "DEBUG",
             ]
         },
     ]

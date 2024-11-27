@@ -9,7 +9,7 @@ Description:
 Unit test for chriscarl.core.lib.stdlib.unittest
 
 Updates:
-    2024-11-23 - tests.core.lib.stdlib.test_unittest - initial commit
+    2024-11-23 - tests.core.lib.stdlib.test_case_0_unittest - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -48,7 +48,7 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    def test_assert_null_hypothesis(self):
+    def test_case_0_assert_null_hypothesis(self):
         variables = [
             (print),
             (print, ''),
@@ -65,7 +65,7 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_assert_subset(self):
+    def test_case_1_assert_subset(self):
         variables = [
             (lib.UnitTest.assert_subset, ([1, 2, 3], [1, 2, 3, 4])),
             (lib.UnitTest.assert_subset, ('abc', 'dcba')),
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_assert_null_hypothesis()
-    tc.test_assert_subset()
+    tc.test_case_0_assert_null_hypothesis()
+    tc.test_case_1_assert_subset()
 
     tc.tearDown()

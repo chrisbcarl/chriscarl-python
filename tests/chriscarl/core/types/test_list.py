@@ -48,7 +48,7 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    def test_dedupe(self):
+    def test_case_0_dedupe(self):
         variables = [
             (lib.dedupe, self.num_list),
         ]
@@ -57,7 +57,7 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_find_index(self):
+    def test_case_1_find_index(self):
         variables = [
             (lib.find_index, (lambda x: x > 0, self.num_list)),
             (lib.find_index, (lambda x: x > 1, self.num_list)),
@@ -70,7 +70,7 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_sorted_list_by_frequency(self):
+    def test_case_2_sorted_list_by_frequency(self):
         variables = [
             (lib.sorted_list_by_frequency, self.num_list, dict(ascending=True)),
             (lib.sorted_list_by_frequency, self.num_list, dict(ascending=False)),
@@ -87,8 +87,8 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_dedupe()
-    tc.test_find_index()
-    tc.test_sorted_list_by_frequency()
+    tc.test_case_0_dedupe()
+    tc.test_case_1_find_index()
+    tc.test_case_2_sorted_list_by_frequency()
 
     tc.tearDown()

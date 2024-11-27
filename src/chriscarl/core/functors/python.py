@@ -26,7 +26,7 @@ import datetime
 import functools
 import subprocess
 from dataclasses import dataclass, field
-from typing import Any, Tuple, List, Union, Callable, Generator, Dict, Optional
+from typing import Any, Tuple, List, Union, Callable, Generator, Dict, Optional, Iterable
 
 # third party imports
 
@@ -50,14 +50,17 @@ _setattr = setattr
 
 
 def invocation_arg_string(args):
+    # type: (Iterable) -> str
     return ', '.join(str(a) for a in args)
 
 
 def invocation_kwarg_string(kwargs):
+    # type: (dict) -> str
     return ', '.join('{}={!r}'.format(str(k), v) for k, v in kwargs.items())
 
 
 def invocation_vararg_string(varargs=None, varkwargs=None):
+    # type: (Optional[str], Optional[str]) -> str
     if varargs is not None and varkwargs is not None:
         return '*{}, **{}'.format(varargs, varkwargs)
     elif varargs is not None:
@@ -67,6 +70,7 @@ def invocation_vararg_string(varargs=None, varkwargs=None):
 
 
 def invocation_just_arg_string(func, args, kwargs, varargs=None, varkwargs=None):
+    # type: (Callable, Iterable, dict, Optional[str], Optional[str]) -> str
     arglist = invocation_arg_string(args)
     kwarglist = invocation_kwarg_string(kwargs)
     varlist = invocation_vararg_string(varargs=varargs, varkwargs=varkwargs)
@@ -109,6 +113,7 @@ def get_func_name(func):
 
 
 def invocation_string(func, args=None, kwargs=None, varargs=None, varkwargs=None, func_name=None):
+    # type: (Callable, Optional[Union[tuple, list]], Optional[dict], Optional[str], Optional[str], Optional[str]) -> str
     args = args or tuple()
     kwargs = kwargs or dict()
     func_name = func_name or get_func_name(func)
@@ -147,7 +152,7 @@ def hasattr_cmp(key, *objs):
             bool - whether the FIRST object had the deeply nested attribute
             bool - whether all objects are the same way as the first object
     '''
-    if not len(objs) > 1:
+    if len(objs) < 2:
         raise ValueError('must supply multiple objects')
 
     A = objs[0]
@@ -195,7 +200,7 @@ def getattr_cmp(key, *objs):
     Returns:
         bool
     '''
-    if not len(objs) > 1:
+    if len(objs) < 2:
         raise ValueError('must supply multiple objects')
 
     A = objs[0]

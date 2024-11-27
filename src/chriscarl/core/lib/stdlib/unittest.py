@@ -11,6 +11,7 @@ core.lib are modules that contain code that is about (but does not modify) the l
 
 Updates:
     2024-11-26 - core.lib.stdlib.unittest - added UnitTest as a class
+                 core.lib.stdlib.unittest - assertions now outline the line above itself so that they make more sense
     2024-11-22 - core.lib.stdlib.unittest - initial commit
 '''
 
@@ -25,6 +26,7 @@ import unittest
 import subprocess
 import tempfile
 from typing import Callable, Tuple, Iterable, List, Any, Union
+from types import TracebackType
 
 # third party imports
 
@@ -92,52 +94,68 @@ class UnitTest(unittest.TestCase):
             break_idx: int
                 set this to get an input pause so that you can "catch yourself" kind of like print debugging.
         '''
-        isinstance_raise(variables, List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]])
-        isinstance_raise(variables, List[Any])
+        try:
+            isinstance_raise(variables, List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]])
+            isinstance_raise(variables, List[Any])
 
-        if len(variables) != len(controls):
-            raise ValueError('len(variables) != len(controls): {} != {}'.format(len(variables), len(controls)))
+            if len(variables) != len(controls):
+                raise ValueError('len(variables) != len(controls): {} != {}'.format(len(variables), len(controls)))
 
-        variables = conform_func_args_kwargs(variables)
-        for e, tpl in enumerate(variables):
-            func, args, kwargs = tpl
-            control = controls[e]
-            inv_str = invocation_string(func, args=args, kwargs=kwargs)
-            status = 'experiment {} / {} - {}'.format(e, len(variables) - 1, inv_str)
+            variables = conform_func_args_kwargs(variables)
+            for e, tpl in enumerate(variables):
+                func, args, kwargs = tpl
+                control = controls[e]
+                inv_str = invocation_string(func, args=args, kwargs=kwargs)
+                status = 'experiment {} / {} - {}'.format(e, len(variables) - 1, inv_str)
 
-            # stacklevel has a bug in it somewhere such that lazy formatting isnt correctly using THIS frame, but the stacklevel frame
-            LOGGER.debug(status, stacklevel=2)
+                # stacklevel has a bug in it somewhere such that lazy formatting isnt correctly using THIS frame, but the stacklevel frame
+                LOGGER.debug(status, stacklevel=2)
 
-            if break_idx > -1 and break_idx == e:
-                try:
-                    filepath = sys.modules[func.__module__].__file__
-                    # https://stackoverflow.com/questions/39453951/open-file-at-specific-line-in-vscode
-                    # TODO: code --goto "<filepath>:<linenumber>:<x-coordinates>"
-                    subprocess.Popen(['code', '--goto', filepath], shell=True)
-                    input('!!! BREAK IDX ENCOUNTERED - {} !!!\nPress any key to continue (or actually set breakpoints)...'.format(status))
-                except KeyboardInterrupt:
-                    sys.exit(2)  # SIGINT-ish
+                if break_idx > -1 and break_idx == e:
+                    try:
+                        filepath = sys.modules[func.__module__].__file__
+                        # https://stackoverflow.com/questions/39453951/open-file-at-specific-line-in-vscode
+                        # TODO: code --goto "<filepath>:<linenumber>:<x-coordinates>"
+                        subprocess.Popen(['code', '--goto', filepath], shell=True)
+                        input('!!! BREAK IDX ENCOUNTERED - {} !!!\nPress any key to continue (or actually set breakpoints)...'.format(status))
+                    except KeyboardInterrupt:
+                        sys.exit(2)  # SIGINT-ish
 
-            if inspect.isclass(control) and issubclass(control, Exception):
-                try:
+                if inspect.isclass(control) and issubclass(control, Exception):
+                    try:
+                        experiment = func(*args, **kwargs)
+                        assert False, '{} failed to accept null hypothesis (experiment raises exception): {} not encountered, got a real result instead {}!'.format(
+                            status, control, experiment
+                        )
+                    except Exception as ex:
+                        experiment = ex
+                    assert issubclass(type(experiment), control), '{} failed to accept null hypothesis (control != experiment): {} != {}!'.format(status, control, experiment)
+
+                else:
                     experiment = func(*args, **kwargs)
-                    assert False, '{} failed to accept null hypothesis (experiment raises exception): {} not encountered, got a real result instead {}!'.format(
-                        status, control, experiment
-                    )
-                except Exception as ex:
-                    experiment = ex
-                assert issubclass(type(experiment), control), '{} failed to accept null hypothesis (control != experiment): {} != {}!'.format(status, control, experiment)
+                    if inspect.isgenerator(experiment) or isinstance(experiment, (map, filter)):
+                        LOGGER.debug('{} encountered a generator... expanding.'.format(status))
+                        experiment = list(experiment)  # expand it out
+                    assert experiment == control, '{} failed to accept null hypothesis (control != experiment): {} != {}'.format(status, control, experiment)
 
-            else:
-                experiment = func(*args, **kwargs)
-                if inspect.isgenerator(experiment) or isinstance(experiment, (map, filter)):
-                    LOGGER.debug('{} encountered a generator... expanding.'.format(status))
-                    experiment = list(experiment)  # expand it out
-                assert experiment == control, '{} failed to accept null hypothesis (control != experiment): {} != {}'.format(status, control, experiment)
-
-            # stacklevel has a bug in it somewhere such that lazy formatting isnt correctly using THIS frame, but the stacklevel frame
-            LOGGER.info('{} = {}'.format(status, control), stacklevel=2)
-        return True
+                # stacklevel has a bug in it somewhere such that lazy formatting isnt correctly using THIS frame, but the stacklevel frame
+                LOGGER.info('{} = {}'.format(status, control), stacklevel=2)
+            return True
+        except AssertionError as ae:
+            # https://stackoverflow.com/a/58821552
+            exc_info = sys.exc_info()
+            traceback = exc_info[2]
+            back_frame = traceback.tb_frame.f_back
+            back_tb = TracebackType(tb_next=None, tb_frame=back_frame, tb_lasti=back_frame.f_lasti, tb_lineno=back_frame.f_lineno)
+            raise AssertionError(str(ae)).with_traceback(back_tb)
+        # NOTE: for now I want natural exceptions to raise naturally so that the traceback is fully accurate
+        # except Exception as ex:
+        #     exc_info = sys.exc_info()
+        #     type_ = exc_info[0]
+        #     traceback = exc_info[2]
+        #     back_frame = traceback.tb_frame.f_back
+        #     back_tb = TracebackType(tb_next=None, tb_frame=back_frame, tb_lasti=back_frame.f_lasti, tb_lineno=back_frame.f_lineno)
+        #     raise type_(*ex.args).with_traceback(back_tb)
 
     @staticmethod
     def assert_subset(subset, superset):

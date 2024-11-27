@@ -62,6 +62,7 @@ DEFAULT_ROOT_LIB = chriscarl.__name__
 DEFAULT_METADATA = metadata.metadata(DEFAULT_ROOT_LIB)
 DEFAULT_AUTHOR = DEFAULT_METADATA.json['author']
 DEFAULT_EMAIL = DEFAULT_METADATA.json['author_email']
+DEFAULT_TESTS_DIRNAME = os.path.basename(TESTS_DIRPATH)
 
 
 @dataclass
@@ -143,10 +144,11 @@ class Create(Mode):
                 - tests/chriscarl/tools/test_fib.py
     '''
     modules: List[str] = field(default_factory=lambda: [])
-    tests_dirpath: str = TESTS_DIRPATH
+    tests_dirname: str = DEFAULT_TESTS_DIRNAME
     force: bool = False
     tool: bool = False
     no_test: bool = False
+    no_module: bool = False
 
     @classmethod
     def argparser(cls, subparser_root=None):
@@ -154,10 +156,11 @@ class Create(Mode):
         mode = super().argparser(subparser_root=subparser_root)
 
         mode.add_argument('modules', type=str, nargs='+', default=[], help='space-separated, dot-separated module names, ex) "core.lib.stdlib.os" "core.lib.stdlib.sys"')
-        mode.add_argument('--tests-dirpath', type=str, default=TESTS_DIRPATH, help='where should the tests go? core.lib will get a tests/module/core/test_lib.py')
+        mode.add_argument('--tests-dirname', type=str, default=DEFAULT_TESTS_DIRNAME, help='where should the tests go? core.lib will get a tests/module/core/test_lib.py')
         mode.add_argument('--force', '-f', action='store_true', help='overwrite file if exists?')
         mode.add_argument('--tool', '-t', action='store_true', help='make a tool out of this rather than a module (it still gets tests)')
         mode.add_argument('--no-test', '-n', action='store_true', help='do not generate the test')
+        mode.add_argument('--no-module', action='store_true', help='do not generate the modules')
         Mode.add_common_arguments(mode)
 
         return mode
@@ -167,13 +170,14 @@ class Create(Mode):
         _, filepaths = dev.create_modules_and_tests(
             self.module,
             self.modules,
-            read_json(manifest.FILEPATH_DEFAULT_DESCRIPTIONS_JSON),
+            descriptions=read_json(manifest.FILEPATH_DEFAULT_DESCRIPTIONS_JSON),
             author=self.author,
             email=self.email,
-            tests_dirpath=self.tests_dirpath,
+            tests_dirname=self.tests_dirname,
             force=self.force,
             tool=self.tool,
-            no_test=self.no_test
+            no_test=self.no_test,
+            no_module=self.no_module,
         )
         return len(filepaths) > 0
 
@@ -243,7 +247,7 @@ class Audit(Mode):
     dirpath: str
     dry: bool
     included_dirs: List[str] = field(default_factory=lambda: [PYPA_SRC_DIRPATH, TESTS_DIRPATH])
-    tests_dirname: str = os.path.basename(TESTS_DIRPATH)
+    tests_dirname: str = DEFAULT_TESTS_DIRNAME
 
     @classmethod
     def argparser(cls, subparser_root=None):
@@ -281,14 +285,26 @@ class Audit(Mode):
             '--included_dirs', type=str, nargs='+', default=[PYPA_SRC_DIRPATH, TESTS_DIRPATH], help='any directories that you do care about, and run them relatively to dirpath?'
         )
         parser.add_argument('--dry', action='store_true', help='do not write?')
-        parser.add_argument('--tests-dirname', type=str, default=os.path.basename(TESTS_DIRPATH), help='name of the tests folder?')
+        parser.add_argument('--tests-dirname', type=str, default=DEFAULT_TESTS_DIRNAME, help='name of the tests folder?')
 
     def run(self):
         # type: () -> int
         if self.func is dev.audit_relpath:
             return dev.audit_relpath(dirpath=self.dirpath, included_dirs=self.included_dirs, dry=self.dry)
         elif self.func is dev.audit_tdd:
-            return dev.audit_tdd(dirpath=self.dirpath, module_name=self.module, tests_dirname=self.tests_dirname)
+            return dev.audit_tdd(
+                dirpath=self.dirpath,
+                module_name=self.module,
+                tests_dirname=self.tests_dirname,
+                dry=self.dry,
+                descriptions=read_json(manifest.FILEPATH_DEFAULT_DESCRIPTIONS_JSON),
+                author=self.author,
+                email=self.email,
+                force=False,
+                tool=False,
+                no_test=False,
+                no_module=True,
+            )
         else:
             return self.func()
 

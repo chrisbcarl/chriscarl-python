@@ -46,7 +46,7 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    def test_abspath(self):
+    def test_case_0_abspath(self):
         variables = [
             (lib.abspath, ('/tmp', 'hello', 'world')),
             (lib.abspath, ('~/tmp', 'hello', 'world')),
@@ -57,7 +57,7 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_chdir(self):
+    def test_case_1_chdir(self):
         variables = [
             (lib.abspath, ('/tmp', 'hello', 'world')),
             (lib.abspath, ('~/tmp', 'hello', 'world')),
@@ -74,6 +74,7 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_abspath()
+    tc.test_case_0_abspath()
+    tc.test_case_1_chdir()
 
     tc.tearDown()

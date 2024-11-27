@@ -50,7 +50,7 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    def test_unordered_dict(self):
+    def test_case_0_unordered_dict(self):
         variables = [
             (lib.unordered_dict, self.od),
             (lib.unordered_dict, [self.od, self.od]),
@@ -65,7 +65,7 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_namedtuple_with_defaults(self):
+    def test_case_1_namedtuple_with_defaults(self):
         Node = lib.namedtuple_with_defaults('Node', 'val left right', [1, 2, 3])
         n = Node()
 
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_unordered_dict()
-    tc.test_namedtuple_with_defaults()
+    tc.test_case_0_unordered_dict()
+    tc.test_case_1_namedtuple_with_defaults()
 
     tc.tearDown()

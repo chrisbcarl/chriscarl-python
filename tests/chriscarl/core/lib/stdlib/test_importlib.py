@@ -47,12 +47,12 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    def test_walk_module_names_filepaths(self):
+    def test_case_0_walk_module_names_filepaths(self):
         known_libraries = ['logging', 'logging.config', 'logging.handlers']
         logging_libraries = [tpl[0] for tpl in lib.walk_module_names_filepaths(module=logging)]
         self.assert_subset(known_libraries, logging_libraries)
 
-    def test_walk_module(self):
+    def test_case_1_walk_module(self):
         from chriscarl.core.types.list import sorted_list_by_frequency
         exceptions = [tpl[1] for tpl in lib.walk_module(module=logging)]
         most_common_exceptions = sorted_list_by_frequency(exceptions)
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_walk_module_names_filepaths()
-    tc.test_walk_module()
+    tc.test_case_0_walk_module_names_filepaths()
+    tc.test_case_1_walk_module()
 
     tc.tearDown()
