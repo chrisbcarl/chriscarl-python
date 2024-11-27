@@ -113,7 +113,7 @@ def get_func_name(func):
 
 
 def invocation_string(func, args=None, kwargs=None, varargs=None, varkwargs=None, func_name=None):
-    # type: (Callable, Optional[Union[tuple, list]], Optional[dict], Optional[str], Optional[str], Optional[str]) -> str
+    # type: (Callable, Optional[Iterable], Optional[dict], Optional[str], Optional[str], Optional[str]) -> str
     args = args or tuple()
     kwargs = kwargs or dict()
     func_name = func_name or get_func_name(func)
