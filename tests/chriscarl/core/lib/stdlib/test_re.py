@@ -57,6 +57,23 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_1_find_lineno_colno(self):
+        doc = '''chriscarl.core.lib.stdlib.re unit test.
+Updates:
+    2024-11-27 - tests.chriscarl.core.lib.stdlib.re - initial commit'''
+        variables = [
+            (lib.find_lineno_colno, ('re', doc)),
+        ]
+        controls = [
+            [
+                (1, 13),
+                (1, 27),
+                (3, 36),
+                (3, 50),
+            ],
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=logging.DEBUG)
@@ -64,5 +81,6 @@ if __name__ == '__main__':
     tc.setUp()
 
     tc.test_case_0_find_index()
+    tc.test_case_1_find_lineno_colno()
 
     tc.tearDown()

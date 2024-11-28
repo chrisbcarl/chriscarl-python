@@ -36,6 +36,7 @@ from chriscarl.core.lib.stdlib.io import read_text_file, write_text_file
 from chriscarl.core.lib.stdlib.json import read_json
 from chriscarl.core.lib.stdlib.os import make_dirpath, abspath, chdir, walk
 from chriscarl.core.lib.stdlib.importlib import walk_dirpath_for_module_files
+from chriscarl.core.lib.stdlib.re import find_index
 from chriscarl.files import manifest
 
 SCRIPT_RELPATH = 'chriscarl/tools/shed/dev.py'
@@ -487,3 +488,31 @@ def audit_tdd(
         return len(results)
 
     return ret
+
+
+def audit_banned(root_dirpath, words, word_case_insensitive=True, extensions=None, ignore=None, include=None, file_case_insensitive=True):
+    # type: (str, List[str], bool, Optional[List[str]], Optional[List[str]], Optional[List[str]], bool) -> Generator[str, None, None]
+    findings = {}
+    findings_fmt = '{{:>{}s}} - %s'
+    longest = 0
+    for relpath in walk(root_dirpath, extensions=extensions, ignore=ignore, include=include, case_insensitive=file_case_insensitive, relpath=True):
+        if len(relpath) > longest:
+            longest = len(relpath)
+        contents = read_text_file(relpath)
+        file_findings = file_findings[relpath] = {}
+        for word in words:
+            indexes = list(find_index(word, contents, case_insensitive=word_case_insensitive))
+            if indexes:
+                file_findings[word] = indexes
+        for banned_word in words:
+            if banned_word in relpath:
+                file_banned.append(banned_word)
+            elif banned_word in contents:  # case sensitive
+                file_banned.append(banned_word)
+            elif banned_word.lower() in low_contents:  # case insensitive
+                file_banned.append(banned_word)
+        if file_banned:
+            findings.append((relpath, file_banned))
+    findings_fmt = findings_fmt.format(longest)
+    for relpath, file_banned in findings:
+        LOGGER.info(findings_fmt.format(relpath, '; '.join(file_banned)))

@@ -94,16 +94,16 @@ def walk(root_dirpath, extensions=None, ignore=None, include=None, case_insensit
         if ignore and any(re.search(ign, dirpath, flags=re.IGNORECASE if not case_insensitive else 0) for ign in ignore):
             continue
         for filename in filenames:
+            if extensions:
+                _, ext = os.path.splitext(filename)
+                if not any(ext.endswith(ele) for ele in extensions):
+                    continue
             rel = os.path.relpath(os.path.join(dirpath, filename), root_dirpath).replace('\\', '/')
             bname = os.path.basename(filename)
             if include and not any(re.search(inc, rel, flags=re.IGNORECASE if not case_insensitive else 0) for inc in include):
                 continue
             if ignore and any(re.search(ign, rel, flags=re.IGNORECASE if not case_insensitive else 0) for ign in ignore):
                 continue
-            if extensions:
-                _, ext = os.path.splitext(filename)
-                if not any(ext.endswith(ele) for ele in extensions):
-                    continue
             if relpath:
                 yield rel
             elif basename:

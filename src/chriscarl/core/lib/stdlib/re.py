@@ -19,7 +19,7 @@ import os
 import sys
 import logging
 import re
-from typing import Generator
+from typing import Generator, Tuple
 
 # third party imports
 
@@ -41,3 +41,13 @@ def find_index(find_text, within, case_insensitive=True):
     # type: (str, str, bool) -> Generator[int, None, None]
     for mo in re.finditer(find_text, within, flags=re.IGNORECASE if not case_insensitive else 0):
         yield mo.start()
+
+
+def find_lineno_colno(find_text, within, case_insensitive=True):
+    # type: (str, str, bool) -> Generator[Tuple[int, int], None, None]
+    '''
+    NOTE: line no and col no are 1-indexed
+    '''
+    for l, line in enumerate(within.splitlines()):
+        for mo in re.finditer(find_text, line, flags=re.IGNORECASE if not case_insensitive else 0):
+            yield l + 1, mo.start() + 1

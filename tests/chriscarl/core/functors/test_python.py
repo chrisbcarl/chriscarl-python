@@ -222,6 +222,19 @@ class TestCase(UnitTest):
         md = lib.ModuleDocumentation.parse(lib.__doc__)
         self.assertEqual(md.to_string(), lib.__doc__, 'ModuleDocumentation class parse -> to_string not 1:1!')
 
+    def test_case_8_abbreviate_arg(self):
+        variables = [
+            (lib.abbreviate_arg, ('abcdefghijklmnop', ), dict(chars=3)),
+            (lib.abbreviate_arg, ('abcdefghijklmnop', ), dict(chars=6)),
+            (lib.abbreviate_arg, ('abcdefghijklmnop', ), dict(chars=8)),
+        ]
+        controls = [
+            "'...'",
+            "'abc...'",
+            "'abcde...'",
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=logging.DEBUG)
@@ -235,5 +248,7 @@ if __name__ == '__main__':
     tc.test_case_4_get_legal_python_name()
     tc.test_case_5_conform_func_args_kwargs()
     tc.test_case_6_run_func_args_kwargs()
+    tc.test_case_7_ModuleDocumentation()
+    tc.test_case_8_abbreviate_arg()
 
     tc.tearDown()
