@@ -39,8 +39,8 @@
                 // "create", "core.lib.stdlib.importlib", "--force",
                 // "run", "dir", "vars", "--module", "builtins", "--print-help",
                 // "audit", "relpath",
-                "audit",
-                "tdd",
+                // "audit", "tdd",
+                "audit", "banned", "--words-additional", "fuck", "shit",
                 //
                 "--log-level",
                 "DEBUG",

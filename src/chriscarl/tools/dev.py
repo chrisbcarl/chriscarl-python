@@ -27,6 +27,7 @@ Updates:
 from __future__ import absolute_import, print_function, division, with_statement  # , unicode_literals
 import os
 import sys
+import re
 import pydoc
 import logging
 from importlib import metadata
@@ -43,6 +44,7 @@ from chriscarl.core.lib.stdlib.logging import LOG_LEVELS
 from chriscarl.core.lib.stdlib.argparse import ArgparseNiceFormat
 from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.json import read_json
+from chriscarl.core.lib.stdlib.io import read_text_file
 from chriscarl.files import manifest
 from chriscarl.tools.shed import dev
 
@@ -63,6 +65,7 @@ DEFAULT_METADATA = metadata.metadata(DEFAULT_ROOT_LIB)
 DEFAULT_AUTHOR = DEFAULT_METADATA.json['author']
 DEFAULT_EMAIL = DEFAULT_METADATA.json['author_email']
 DEFAULT_TESTS_DIRNAME = os.path.basename(TESTS_DIRPATH)
+DEFAULT_BANNED_WORDS_FILEPATH = 'ignoreme/_banned'
 
 
 @dataclass
@@ -248,6 +251,8 @@ class Audit(Mode):
     dry: bool
     included_dirs: List[str] = field(default_factory=lambda: ['src/', 'tests'])
     tests_dirname: str = DEFAULT_TESTS_DIRNAME
+    words_filepath: str = DEFAULT_BANNED_WORDS_FILEPATH
+    words_additional: List[str] = field(default_factory=lambda: [])
 
     @classmethod
     def argparser(cls, subparser_root=None):
@@ -275,6 +280,10 @@ class Audit(Mode):
         tdd.set_defaults(func=dev.audit_tdd)
         Audit.add_common_arguments(tdd)
 
+        banned = funcs.add_parser('banned', usage=pydoc.render_doc(dev.audit_banned))
+        banned.set_defaults(func=dev.audit_banned)
+        Audit.add_common_arguments(banned)
+
         return mode
 
     @staticmethod
@@ -284,6 +293,8 @@ class Audit(Mode):
         parser.add_argument('--included_dirs', type=str, nargs='+', default=['src/', 'tests/'], help='any directories that you do care about, and run them relatively to dirpath?')
         parser.add_argument('--dry', action='store_true', help='do not write?')
         parser.add_argument('--tests-dirname', type=str, default=DEFAULT_TESTS_DIRNAME, help='name of the tests folder?')
+        parser.add_argument('--words-filepath', type=str, default=DEFAULT_BANNED_WORDS_FILEPATH, help='filepath with a bunch of words you want banned?')
+        parser.add_argument('--words-additional', type=str, nargs='+', default=[], help='add some other words in addition to the filepath or if the file doesnt exist?')
 
     def run(self):
         # type: () -> int
@@ -303,6 +314,14 @@ class Audit(Mode):
                 no_test=False,
                 no_module=True,
             )
+        elif self.func is dev.audit_banned:
+            words = []
+            if os.path.isfile(self.words_filepath):
+                words_content = read_text_file(self.words_filepath)
+                words.extend([ele.strip() for ele in re.split(r'\s+', words_content) if ele.strip()])
+            words.extend(self.words_additional)
+            findings = dev.audit_banned(self.dirpath, words, include=self.included_dirs)
+            return sum(len(v) for v in findings.values())
         else:
             return self.func()
 

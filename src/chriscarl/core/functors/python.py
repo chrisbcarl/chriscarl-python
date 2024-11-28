@@ -10,6 +10,7 @@ Python is lots of deep nerdy python shit that usually involves runtime fuckery.
 chriscarl.core files are non-self-referential, do very little importing, and define the bedrock from which other things do import.
 
 Updates:
+    2024-11-27 - core.python - added abbreviate_arg
     2024-11-26 - core.python - added invocation support for partials
     2024-11-25 - core.python - added fallback check which strangely hasnt been triggered yet until I tried Iterable
                  core.python - added ModuleDocumentation
@@ -49,9 +50,24 @@ _getattr = getattr
 _setattr = setattr
 
 
+def abbreviate_arg(arg, chars=32):
+    # type: (Any, int) -> str
+    '''
+    '''
+    if chars < 3:
+        raise ValueError("you cant have an abbreviation less than 3... that would leave out '...' as an option...")
+    if isinstance(arg, str):
+        str_a = str(arg)
+        token = "'{}'".format(str_a[:chars - 3] + "...")
+    else:
+        str_a = repr(arg)
+        token = str_a if len(str_a) < chars else str_a[:chars - 3] + '...'
+    return token
+
+
 def invocation_arg_string(args):
     # type: (Iterable) -> str
-    return ', '.join(str(a) for a in args)
+    return ', '.join(abbreviate_arg(arg) for arg in args)
 
 
 def invocation_kwarg_string(kwargs):

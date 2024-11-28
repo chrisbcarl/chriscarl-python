@@ -10,6 +10,7 @@ tools.shed.dev is the "shed" in which all of the "tools" go to pick one up.
 tool are modules that define usually cli tools or mini applets that I or other people may find interesting or useful.
 
 Updates:
+    2024-11-27 - tools.shed.dev - added audit_banned and it works!
     2024-11-26 - tools.shed.dev - renamed from lib to shed since pytest got confused with multiple test_lib's
                  tools.shed.dev - added audit_tdd
                  tools.shed.dev - FIX: if a dir already exists for a module, no action is taken rather than making a file as well
@@ -24,7 +25,7 @@ import re
 import pydoc
 import logging
 import importlib
-from typing import List, Union, Tuple, Callable, Any, Optional
+from typing import List, Union, Tuple, Callable, Any, Optional, Dict
 
 # third party imports
 
@@ -36,7 +37,7 @@ from chriscarl.core.lib.stdlib.io import read_text_file, write_text_file
 from chriscarl.core.lib.stdlib.json import read_json
 from chriscarl.core.lib.stdlib.os import make_dirpath, abspath, chdir, walk
 from chriscarl.core.lib.stdlib.importlib import walk_dirpath_for_module_files
-from chriscarl.core.lib.stdlib.re import find_index
+from chriscarl.core.lib.stdlib.re import find_lineno_colno
 from chriscarl.files import manifest
 
 SCRIPT_RELPATH = 'chriscarl/tools/shed/dev.py'
@@ -330,7 +331,7 @@ def audit_manifest_verify():
 
 
 SCRIPT_RELPLATH_REGEX = re.compile(r"SCRIPT_RELPATH = r?'[\d\w\-\\\/\.]+\.py'")
-IGNORED_DIRS = ['ignoreme', 'node_modules', '.git', '__pycache__', 'build', 'dist', 'venv', '.venv', '.pytest_cache']
+IGNORED_DIRS = ['ignoreme', 'node_modules', '.git', '__pycache__', 'build', 'dist', 'venv', '.venv', '.pytest_cache', '.mypy_cache']
 DEFAULT_EXTENSIONS = ['.py']
 
 
@@ -490,29 +491,29 @@ def audit_tdd(
     return ret
 
 
-def audit_banned(root_dirpath, words, word_case_insensitive=True, extensions=None, ignore=None, include=None, file_case_insensitive=True):
-    # type: (str, List[str], bool, Optional[List[str]], Optional[List[str]], Optional[List[str]], bool) -> Generator[str, None, None]
-    findings = {}
-    findings_fmt = '{{:>{}s}} - %s'
+def audit_banned(root_dirpath, words, word_case_insensitive=True, extensions=None, ignore=IGNORED_DIRS, include=None, file_case_insensitive=True):
+    # type: (str, List[str], bool, Optional[List[str]], Optional[List[str]], Optional[List[str]], bool) -> Dict[str, Dict[str, List[Tuple[int, int]]]]
+    findings: Dict[str, Dict[str, List[Tuple[int, int]]]] = {}
+    words = sorted(set(words))
     longest = 0
+    hit = set()
     for relpath in walk(root_dirpath, extensions=extensions, ignore=ignore, include=include, case_insensitive=file_case_insensitive, relpath=True):
         if len(relpath) > longest:
             longest = len(relpath)
         contents = read_text_file(relpath)
-        file_findings = file_findings[relpath] = {}
+        file_findings = findings[relpath] = {}
         for word in words:
-            indexes = list(find_index(word, contents, case_insensitive=word_case_insensitive))
-            if indexes:
-                file_findings[word] = indexes
-        for banned_word in words:
-            if banned_word in relpath:
-                file_banned.append(banned_word)
-            elif banned_word in contents:  # case sensitive
-                file_banned.append(banned_word)
-            elif banned_word.lower() in low_contents:  # case insensitive
-                file_banned.append(banned_word)
-        if file_banned:
-            findings.append((relpath, file_banned))
-    findings_fmt = findings_fmt.format(longest)
-    for relpath, file_banned in findings:
-        LOGGER.info(findings_fmt.format(relpath, '; '.join(file_banned)))
+            lineno_colno = list(find_lineno_colno(word, contents, case_insensitive=word_case_insensitive))
+            if lineno_colno:
+                hit.add(word)
+                file_findings[word] = lineno_colno
+                for lineno, colno in lineno_colno:
+                    LOGGER.warning('File "%s", line %d, col %d - %r', relpath, lineno, colno, word)
+        if not file_findings:
+            del findings[relpath]
+    hits = sum(len(v) for v in findings.values())
+    if hits > 0:
+        LOGGER.error('encountered %d hits of %d banned words among %d files! banned: %s', hits, len(hit), len(findings), sorted(hit))
+    else:
+        LOGGER.info('clean as a whistle')
+    return findings
