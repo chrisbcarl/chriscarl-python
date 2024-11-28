@@ -22,7 +22,7 @@ DO NOT COMMIT THIS SHIT AS IS YET DO NOT FUCKING DO IT
         stubgen src\chriscarl -o dist/typing
 - on commit
     scan for and replace / remove
-        f' strings
+        f' strings - f'\w
     stubgen src\chriscarl -o dist/typing
     make sure all files in files have a corresponding constant
 - logging

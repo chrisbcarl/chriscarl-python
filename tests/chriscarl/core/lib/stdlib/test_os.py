@@ -41,7 +41,19 @@ LOGGER.addHandler(logging.NullHandler())
 class TestCase(UnitTest):
 
     def setUp(self):
-        return super().setUp()
+        setUp = super().setUp()
+        from chriscarl.core.lib.stdlib.io import write_text_file
+        write_text_file('{}/a.txt'.format(self.tempdir), '')
+        write_text_file('{}/a/b.txt'.format(self.tempdir), '')
+        write_text_file('{}/a/b/c.txt'.format(self.tempdir), '')
+        write_text_file('{}/a/b/c/d.txt'.format(self.tempdir), '')
+        self.relpaths = [
+            'a.txt',
+            'a/b.txt',
+            'a/b/c.txt',
+            'a/b/c/d.txt',
+        ]
+        return setUp
 
     def tearDown(self):
         return super().tearDown()
@@ -68,6 +80,31 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_2_walk(self):
+        abspaths = [lib.abspath(self.tempdir, relfile) for relfile in self.relpaths]
+        basenames = [os.path.basename(relfile) for relfile in self.relpaths]
+        ignore_dirs = ['ignoreme', 'node_modules', '.git', '__pycache__', 'build', 'dist', 'venv', '.venv', '.pytest_cache']
+        extensions = ['.py']
+
+        ignore = list(lib.walk('./', extensions=extensions, ignore=ignore_dirs, include=None))
+        include = list(lib.walk('./', extensions=extensions, ignore=ignore_dirs, include=['src/', 'tests/']))
+
+        variables = [
+            (lib.walk, (self.tempdir, ), dict(extensions=['.txt'], relpath=True)),
+            (lib.walk, (self.tempdir, ), dict(extensions=['.txt'], basename=True)),
+            (lib.walk, (self.tempdir, ), dict(extensions=['.txt'])),
+            (lib.walk, ('./', ), dict(extensions=extensions, ignore=ignore_dirs, include=None)),
+            (lib.walk, ('./', ), dict(extensions=extensions, ignore=ignore_dirs, include=['src/', 'tests/'])),
+        ]
+        controls = [
+            self.relpaths,
+            basenames,
+            abspaths,
+            include,
+            ignore,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=logging.DEBUG)
@@ -76,5 +113,6 @@ if __name__ == '__main__':
 
     tc.test_case_0_abspath()
     tc.test_case_1_chdir()
+    tc.test_case_2_walk()
 
     tc.tearDown()

@@ -34,7 +34,7 @@ from chriscarl.core.constants import DATE, REPO_DIRPATH
 from chriscarl.core.functors.python import run_func_args_kwargs
 from chriscarl.core.lib.stdlib.io import read_text_file, write_text_file
 from chriscarl.core.lib.stdlib.json import read_json
-from chriscarl.core.lib.stdlib.os import make_dirpath, abspath, chdir
+from chriscarl.core.lib.stdlib.os import make_dirpath, abspath, chdir, walk
 from chriscarl.core.lib.stdlib.importlib import walk_dirpath_for_module_files
 from chriscarl.files import manifest
 
@@ -353,36 +353,15 @@ def audit_relpath(dirpath=os.getcwd(), extensions=DEFAULT_EXTENSIONS, included_d
             do not write?
     '''
     original_dirpath = abspath(dirpath)
-    included_dirs = included_dirs or []
-    included_dirs = [abspath(dp) for dp in included_dirs]
     LOGGER.debug('going through "%s"...', original_dirpath)
     extensions = extensions or []
     chars = 128  # if verbose else 16
     changes = 0
 
     try:
-        filepaths = []
-        for dirpath, dirnames, filenames in os.walk(original_dirpath):
-            # https://stackoverflow.com/questions/31449731/how-to-skip-directories-in-os-walk-python-2-7
-            skip_these = []
-            for dirname in dirnames:
-                if dirname in ignored_dirs:
-                    skip_these.append(dirname)
-            for skip in skip_these:
-                dirnames.remove(skip)
-            if not any(included_dir in dirpath for included_dir in included_dirs):
-                continue
-            for filename in filenames:
-                _, ext = os.path.splitext(filename)
-                if ext not in extensions:
-                    continue
-                filepath = os.path.join(dirpath, filename)
-                filepaths.append(filepath)
-
-        for filepath in filepaths:
-            use_filepath = filepath
-            basename = os.path.basename(filename)
-            relpath = os.path.relpath(use_filepath, original_dirpath).replace('\\', '/')
+        for filepath in walk(original_dirpath, extensions=extensions, include=included_dirs, ignore=ignored_dirs, case_insensitive=True):
+            basename = os.path.basename(filepath)
+            relpath = os.path.relpath(filepath, original_dirpath).replace('\\', '/')
             if 'src/' in relpath:
                 relpath = relpath.replace('src/', '')
             with open(filepath) as r:
@@ -412,8 +391,8 @@ def audit_relpath(dirpath=os.getcwd(), extensions=DEFAULT_EXTENSIONS, included_d
         if dry and changes > 0:
             LOGGER.warning('remember to remove --dry if youd like to flush these changes.')
     except Exception:
-        LOGGER.error('something happened trying to replace relpaths on filename {!r}'.format(filename), exc_info=True)
-        LOGGER.debug(locals())
+        LOGGER.error('exception on filepath "%s"', filepath)
+        LOGGER.debug(locals(), exc_info=True)
         return 1
     return 0
 

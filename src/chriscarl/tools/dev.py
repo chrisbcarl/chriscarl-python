@@ -38,7 +38,7 @@ from argparse import _SubParsersAction, ArgumentParser, ArgumentError, Namespace
 
 # project imports
 import chriscarl
-from chriscarl.core.constants import REPO_DIRPATH, TESTS_DIRPATH, PYPA_SRC_DIRPATH
+from chriscarl.core.constants import REPO_DIRPATH, TESTS_DIRPATH
 from chriscarl.core.lib.stdlib.logging import LOG_LEVELS
 from chriscarl.core.lib.stdlib.argparse import ArgparseNiceFormat
 from chriscarl.core.lib.stdlib.os import abspath
@@ -246,7 +246,7 @@ class Audit(Mode):
     func: Callable
     dirpath: str
     dry: bool
-    included_dirs: List[str] = field(default_factory=lambda: [PYPA_SRC_DIRPATH, TESTS_DIRPATH])
+    included_dirs: List[str] = field(default_factory=lambda: ['src/', 'tests'])
     tests_dirname: str = DEFAULT_TESTS_DIRNAME
 
     @classmethod
@@ -281,9 +281,7 @@ class Audit(Mode):
     def add_common_arguments(parser):
         Mode.add_common_arguments(parser)
         parser.add_argument('--dirpath', type=str, default=REPO_DIRPATH, help='where do we start crawling?')
-        parser.add_argument(
-            '--included_dirs', type=str, nargs='+', default=[PYPA_SRC_DIRPATH, TESTS_DIRPATH], help='any directories that you do care about, and run them relatively to dirpath?'
-        )
+        parser.add_argument('--included_dirs', type=str, nargs='+', default=['src/', 'tests/'], help='any directories that you do care about, and run them relatively to dirpath?')
         parser.add_argument('--dry', action='store_true', help='do not write?')
         parser.add_argument('--tests-dirname', type=str, default=DEFAULT_TESTS_DIRNAME, help='name of the tests folder?')
 
