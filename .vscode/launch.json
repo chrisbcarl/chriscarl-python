@@ -37,11 +37,13 @@
             "console": "integratedTerminal",
             "args": [
                 // "create", "core.functors.parse", "--force",
-                "create", "a.b", "--cwd", "/tmp", "--module", "test", "--force",
+                // "create", "mod.lib.stdlib.logging", "--force",
+                // "create", "a.b", "--cwd", "/tmp", "--module", "test", "--force",
                 // "run", "dir", "vars", "--module", "builtins", "--print-help",
                 // "audit", "relpath",
                 // "audit", "tdd",
                 // "audit", "banned", "--words-additional", "fuck", "shit",
+                "audit", "stubs",
                 //
                 "--log-level",
                 "DEBUG",

@@ -6,10 +6,10 @@ Email:          chrisbcarl@outlook.com
 Date:           2024-11-23
 Description:
 
-Unit test for mod.python
+chriscarl.mod.python unit test.
 
 Updates:
-    2024-11-23 - tests.mod.test_case_0_python - initial commit
+    2024-11-23 - tests.chriscarl.mod.python - initial commit
 '''
 
 # stdlib imports (expected to work)

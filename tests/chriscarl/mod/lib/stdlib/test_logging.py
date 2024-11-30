@@ -6,10 +6,10 @@ Email:          chrisbcarl@outlook.com
 Date:           2024-11-29
 Description:
 
-chriscarl.mod unit test.
+chriscarl.mod.lib.stdlib.logging unit test.
 
 Updates:
-    2024-11-29 - tests.chriscarl.mod - initial commit
+    2024-11-29 - tests.chriscarl.mod.lib.stdlib.logging - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -25,9 +25,9 @@ import unittest
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
-import chriscarl.mod as lib
+import chriscarl.mod.lib.stdlib.logging as lib
 
-SCRIPT_RELPATH = 'tests/chriscarl/test_mod.py'
+SCRIPT_RELPATH = 'tests/chriscarl/mod/lib/stdlib/test_logging.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

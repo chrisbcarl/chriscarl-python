@@ -6,10 +6,10 @@ Email:          chrisbcarl@outlook.com
 Date:           2024-11-23
 Description:
 
-Unit test for chriscarl.core.lib.stdlib.unittest
+chriscarl.core.lib.stdlib.unittest unit test.
 
 Updates:
-    2024-11-23 - tests.core.lib.stdlib.test_case_0_unittest - initial commit
+    2024-11-23 - tests.chriscarl.core.lib.stdlib.unittest - initial commit
 '''
 
 # stdlib imports (expected to work)

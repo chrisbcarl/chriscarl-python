@@ -3,13 +3,13 @@
 '''
 Author:         Chris Carl
 Email:          chrisbcarl@outlook.com
-Date:           2024-11-26
+Date:           2024-11-29
 Description:
 
 chriscarl.mod.lib.stdlib unit test.
 
 Updates:
-    2024-11-26 - tests.chriscarl.mod.lib.stdlib - initial commit
+    2024-11-29 - tests.chriscarl.mod.lib.stdlib - initial commit
 '''
 
 # stdlib imports (expected to work)

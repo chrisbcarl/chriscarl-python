@@ -9,7 +9,7 @@ Description:
 Tool that is used to do lots of "dev" related things like git pushing, versioning, publishing, templating, conforming, etc.
 
 Updates:
-    2024-11-29 - tools.dev - added stubgen, clean, and test
+    2024-11-29 - tools.dev - added stubs, clean, and test
     2024-11-26 - tools.dev - moved code away from here and into tools.lib.dev
                  tools.dev - added the audit mode and "hardcoded" it a bit more
     2024-11-25 - tools.dev - this thing is practically a work of art (lol its late). create/run both work and do it well.
@@ -288,9 +288,9 @@ class Audit(Mode):
         banned.set_defaults(func=dev.audit_banned)
         Audit.add_common_arguments(banned)
 
-        stubgen = funcs.add_parser('stubgen', usage=pydoc.render_doc(dev.audit_stubgen))
-        stubgen.set_defaults(func=dev.audit_stubgen)
-        Audit.add_common_arguments(stubgen)
+        stubs = funcs.add_parser('stubs', usage=pydoc.render_doc(dev.audit_stubs))
+        stubs.set_defaults(func=dev.audit_stubs)
+        Audit.add_common_arguments(stubs)
 
         clean = funcs.add_parser('clean', usage=pydoc.render_doc(dev.audit_clean))
         clean.set_defaults(func=dev.audit_clean)
@@ -341,8 +341,8 @@ class Audit(Mode):
             words.extend(self.words_additional)
             findings = dev.audit_banned(self.dirpath, words, include=self.included_dirs)
             return sum(len(v) for v in findings.values())
-        elif self.func is dev.audit_stubgen:
-            return dev.audit_stubgen(self.dirpath, module_name=self.module)
+        elif self.func is dev.audit_stubs:
+            return dev.audit_stubs(self.dirpath, module_name=self.module)
         elif self.func is dev.audit_clean:
             return dev.audit_clean(dirpath=self.dirpath)
         elif self.func is dev.audit_test:

@@ -6,10 +6,10 @@ Email:          chrisbcarl@outlook.com
 Date:           2024-11-23
 Description:
 
-Unit test for chriscarl.core.lib.stdlib.typing
+chriscarl.core.lib.stdlib.typing unit test.
 
 Updates:
-    2024-11-23 - tests.core.lib.stdlib.test_case_0_typing - initial commit
+    2024-11-23 - tests.chriscarl.core.lib.stdlib.typing - initial commit
 '''
 
 # stdlib imports (expected to work)

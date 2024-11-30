@@ -10,7 +10,7 @@ tools.shed.dev is the "shed" in which all of the "tools" go to pick one up.
 tool are modules that define usually cli tools or mini applets that I or other people may find interesting or useful.
 
 Updates:
-    2024-11-28 - tools.shed.dev - added audit_clean, audit_stubgen, audit_test
+    2024-11-28 - tools.shed.dev - added audit_clean, audit_stubs, audit_test
     2024-11-27 - tools.shed.dev - added audit_banned and it works!
     2024-11-26 - tools.shed.dev - renamed from lib to shed since pytest got confused with multiple test_lib's
                  tools.shed.dev - added audit_tdd
@@ -42,10 +42,10 @@ from chriscarl.core.functors.python import run_func_args_kwargs, get_legal_pytho
 from chriscarl.core.functors.parse import PytestCoverage
 from chriscarl.core.lib.stdlib.io import read_text_file, write_text_file
 from chriscarl.core.lib.stdlib.json import read_json
-from chriscarl.core.lib.stdlib.os import make_dirpath, abspath, chdir, walk
+from chriscarl.core.lib.stdlib.os import make_dirpath, abspath, chdir, walk, make_file_dirpath
 from chriscarl.core.lib.stdlib.importlib import walk_dirpath_for_module_files
 from chriscarl.core.lib.stdlib.re import find_lineno_colno
-from chriscarl.core.lib.stdlib.subprocess import run
+from chriscarl.core.lib.stdlib.subprocess import run, launch_editor
 from chriscarl.files import manifest
 
 SCRIPT_RELPATH = 'chriscarl/tools/shed/dev.py'
@@ -69,6 +69,7 @@ def create_modules_and_tests(
         module_template = read_text_file(manifest.FILEPATH_TEMPLATE)
         test_template = read_text_file(manifest.FILEPATH_TEST_TEMPLATE)
         tool_template = read_text_file(manifest.FILEPATH_TOOL_TEMPLATE)
+        mod_lib_template = read_text_file(manifest.FILEPATH_MOD_LIB_TEMPLATE)
         created_type_module_filepaths: List[Tuple[str, str, str]] = []
         src_dirname = 'src'
         warnings = 0
@@ -129,11 +130,11 @@ def create_modules_and_tests(
 
                 # create module file
                 module_relpath = '{}/{}.py'.format(src_dirname, '/'.join(tokens))
-                module_dirpath = '{}/{}'.format(src_dirname, '/'.join(tokens[:-1]))
-                if os.path.isdir(module_dirpath):
+                module_bad_dirpath = '{}/{}'.format(src_dirname, '/'.join(tokens))
+                if os.path.isdir(module_bad_dirpath):
                     LOGGER.warning(
                         'module %d / %d - %s - step 3 - module %r - "%s" exists as a dir not a module! Not removing or altering at all!', m,
-                        len(modules) - 1, module, token, module_dirpath
+                        len(modules) - 1, module, token, module_bad_dirpath
                     )
                     warnings += 1
                 else:
@@ -161,10 +162,13 @@ def create_modules_and_tests(
                         email=email,
                         module_dot_path=module,
                         date=DATE,
-                        script_relpath=module_relpath,
+                        script_relpath=module_relpath.replace('src/', ''),
                     )
                     template = module_template
-                    if tool:
+                    if module.startswith('mod.lib'):
+                        template = mod_lib_template
+                        template_kwargs.update(dict(shadow_module=tokens[-1], default_description=default_description))
+                    elif tool:
                         template = tool_template
                     else:
                         stdlib_import, third_import = '', ''
@@ -225,10 +229,12 @@ def create_modules_and_tests(
 
                     current_directory = '{}/{}'.format(current_directory, token)
 
-            if not no_module:
-                LOGGER.info('module generated at: "%s"', module_relpath)
             if not no_test:
                 LOGGER.info('test generated at:   "%s"', test_relpath)
+                launch_editor(test_relpath)
+            if not no_module:
+                LOGGER.info('module generated at: "%s"', module_relpath)
+                launch_editor(module_relpath)
         return created_type_module_filepaths
 
 
@@ -513,7 +519,7 @@ def audit_banned(root_dirpath, words, word_case_insensitive=True, extensions=Non
     return findings
 
 
-def audit_stubgen(dirpath=REPO_DIRPATH, module_name=chriscarl.__name__):
+def audit_stubs(dirpath=REPO_DIRPATH, module_name=chriscarl.__name__):
     # type: (str, str) -> int
     '''
     Description:
@@ -533,14 +539,25 @@ def audit_stubgen(dirpath=REPO_DIRPATH, module_name=chriscarl.__name__):
             return exit_code
 
         LOGGER.info('generating shadow module stub files that are exclusive to %r', chriscarl.__name__)
-        modded_libs = abspath('dist_typing', chriscarl.__name__, 'mod/lib')
+        modded_libs = abspath(dist_typing, chriscarl.__name__, 'mod/lib')
         generated = 0
         for src in walk(modded_libs, extensions=['.pyi'], ignore=['__init__']):
             name = os.path.splitext(os.path.basename(src))[0]
-            dst = abspath(dist_typing, name, '__init__.py')
-            make_dirpath(dst)
-            shutil.copy2(src, dst)
-            LOGGER.debug('moved stubgenned "%s" to "%s"', os.path.relpath(src, dirpath), os.path.relpath(dst, dirpath))
+            LOGGER.debug('generating stub file for module %r', name)
+            cmd = ['stubgen', '-m', name, '-o', 'dist/typing']
+            subprocess.check_call(cmd, cwd=dirpath)
+
+            shadow_pyi_text = read_text_file(src)
+            shadow_pyi_lines = shadow_pyi_text.splitlines()[1:]  # everything but the actual from shadow import *
+
+            dst = abspath(dist_typing, name, '__init__.pyi')
+            with open(dst, 'a', encoding='utf-8') as a:
+                a.write('\n')
+                a.write('# SHADOW MODULE SHIT FROM CHRISCARL #\n')
+                for line in shadow_pyi_lines:
+                    a.write('{}\n'.format(line))
+
+            LOGGER.debug('appended to stub file "%s" from "%s"', dst, src)
             generated += 1
         LOGGER.info('generated %d shadow module stub files', generated)
 
