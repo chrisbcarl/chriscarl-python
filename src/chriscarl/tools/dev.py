@@ -339,12 +339,12 @@ class Audit(Mode):
                 words_content = read_text_file(self.words_filepath)
                 words.extend([ele.strip() for ele in re.split(r'\s+', words_content) if ele.strip()])
             words.extend(self.words_additional)
-            findings = dev.audit_banned(self.dirpath, words, include=self.included_dirs)
+            findings = dev.audit_banned(self.cwd, words, include=self.included_dirs)
             return sum(len(v) for v in findings.values())
         elif self.func is dev.audit_stubs:
             return dev.audit_stubs(self.dirpath, module_name=self.module)
         elif self.func is dev.audit_clean:
-            return dev.audit_clean(dirpath=self.dirpath)
+            return dev.audit_clean(dirpath=self.cwd)
         elif self.func is dev.audit_test:
             return dev.audit_test(dirpath=self.dirpath, module=self.module, tests_dirname=self.tests_dirname, threshold=self.threshold)
         else:

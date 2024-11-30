@@ -38,14 +38,20 @@ LOGGER.addHandler(logging.NullHandler())
 
 def read_text_file(filepath, encoding='utf-8'):
     # type: (str, str) -> str
-    with open(filepath, 'r', encoding=encoding) as r:
-        return r.read()
+    try:
+        with open(filepath, 'r', encoding=encoding) as r:
+            return r.read()
+    except UnicodeDecodeError as ude:
+        raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason))
 
 
 def read_bytes_file(filepath):
     # type: (str) -> bytes
-    with open(filepath, 'rb') as rb:
-        return rb.read()
+    try:
+        with open(filepath, 'rb') as rb:
+            return rb.read()
+    except UnicodeDecodeError as ude:
+        raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason))
 
 
 def write_text_file(filepath, content, encoding='utf-8'):

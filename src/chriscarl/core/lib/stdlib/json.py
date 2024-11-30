@@ -40,14 +40,20 @@ LOGGER.addHandler(logging.NullHandler())
 
 def read_json(filepath, encoding='utf-8'):
     # type: (str, str) -> dict
-    with open(filepath, 'r', encoding=encoding) as r:
-        return json.load(r)
+    try:
+        with open(filepath, 'r', encoding=encoding) as r:
+            return json.load(r)
+    except UnicodeDecodeError as ude:
+        raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason))
 
 
 def read_json_list(filepath, encoding='utf-8'):
     # type: (str, str) -> list
-    with open(filepath, 'r', encoding=encoding) as r:
-        return json.load(r)
+    try:
+        with open(filepath, 'r', encoding=encoding) as r:
+            return json.load(r)
+    except UnicodeDecodeError as ude:
+        raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason))
 
 
 def write_json(filepath, content, encoding='utf-8', indent=4):
