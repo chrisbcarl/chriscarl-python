@@ -61,9 +61,9 @@ LOGGER.addHandler(logging.NullHandler())
 
 
 def create_modules_and_tests(
-    root_module, modules, descriptions=None, author='', email='', tests_dirname='tests', cwd=os.getcwd(), force=False, tool=False, no_test=False, no_module=False
+    root_module, modules, descriptions=None, author='', email='', tests_dirname='tests', cwd=os.getcwd(), force=False, tool=False, no_test=False, no_module=False, launch=False
 ):
-    # type: (str, List[str], Optional[dict], str, str, str, str, bool, bool, bool, bool) -> List[Tuple[str, str, str]]
+    # type: (str, List[str], Optional[dict], str, str, str, str, bool, bool, bool, bool, bool) -> List[Tuple[str, str, str]]
     with chdir(cwd):
         descriptions = descriptions or read_json(manifest.FILEPATH_DEFAULT_DESCRIPTIONS_JSON)
         module_template = read_text_file(manifest.FILEPATH_TEMPLATE)
@@ -231,10 +231,12 @@ def create_modules_and_tests(
 
             if not no_test:
                 LOGGER.info('test generated at:   "%s"', test_relpath)
-                launch_editor(test_relpath)
+                if launch:
+                    launch_editor(test_relpath)
             if not no_module:
                 LOGGER.info('module generated at: "%s"', module_relpath)
-                launch_editor(module_relpath)
+                if launch:
+                    launch_editor(module_relpath)
         return created_type_module_filepaths
 
 

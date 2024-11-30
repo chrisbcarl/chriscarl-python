@@ -53,7 +53,7 @@ class TestCase(UnitTest):
             (lib.create_modules_and_tests, (
                 'test',
                 ['a.b.c'],
-            ), dict(tests_dirname='tests', cwd=self.tempdir, force=True)),
+            ), dict(tests_dirname='tests', cwd=self.tempdir, force=True, launch=False)),
         ]
         controls = [
             [
