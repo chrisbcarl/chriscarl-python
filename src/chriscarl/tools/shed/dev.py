@@ -10,11 +10,15 @@ tools.shed.dev is the "shed" in which all of the "tools" go to pick one up.
 tool are modules that define usually cli tools or mini applets that I or other people may find interesting or useful.
 
 Updates:
+    2024-11-28 - tools.shed.dev - added audit_clean, audit_stubgen, audit_test
     2024-11-27 - tools.shed.dev - added audit_banned and it works!
     2024-11-26 - tools.shed.dev - renamed from lib to shed since pytest got confused with multiple test_lib's
                  tools.shed.dev - added audit_tdd
                  tools.shed.dev - FIX: if a dir already exists for a module, no action is taken rather than making a file as well
     2024-11-25 - tools.lib.dev - initial commit
+
+TODO:
+    - clean up the argument names--cwd/dirpath/root_dirpath, module/module_name, its a mess.
 '''
 
 # stdlib imports
@@ -25,6 +29,8 @@ import re
 import pydoc
 import logging
 import importlib
+import subprocess
+import shutil
 from typing import List, Union, Tuple, Callable, Any, Optional, Dict
 
 # third party imports
@@ -32,12 +38,14 @@ from typing import List, Union, Tuple, Callable, Any, Optional, Dict
 # project imports
 import chriscarl
 from chriscarl.core.constants import DATE, REPO_DIRPATH
-from chriscarl.core.functors.python import run_func_args_kwargs
+from chriscarl.core.functors.python import run_func_args_kwargs, get_legal_python_name
+from chriscarl.core.functors.parse import PytestCoverage
 from chriscarl.core.lib.stdlib.io import read_text_file, write_text_file
 from chriscarl.core.lib.stdlib.json import read_json
 from chriscarl.core.lib.stdlib.os import make_dirpath, abspath, chdir, walk
 from chriscarl.core.lib.stdlib.importlib import walk_dirpath_for_module_files
 from chriscarl.core.lib.stdlib.re import find_lineno_colno
+from chriscarl.core.lib.stdlib.subprocess import run
 from chriscarl.files import manifest
 
 SCRIPT_RELPATH = 'chriscarl/tools/shed/dev.py'
@@ -56,70 +64,52 @@ def create_modules_and_tests(
     root_module, modules, descriptions=None, author='', email='', tests_dirname='tests', cwd=os.getcwd(), force=False, tool=False, no_test=False, no_module=False
 ):
     # type: (str, List[str], Optional[dict], str, str, str, str, bool, bool, bool, bool) -> List[Tuple[str, str, str]]
-    pwd = os.getcwd()
-    os.chdir(cwd)
-    try:
+    with chdir(cwd):
         descriptions = descriptions or read_json(manifest.FILEPATH_DEFAULT_DESCRIPTIONS_JSON)
+        module_template = read_text_file(manifest.FILEPATH_TEMPLATE)
+        test_template = read_text_file(manifest.FILEPATH_TEST_TEMPLATE)
+        tool_template = read_text_file(manifest.FILEPATH_TOOL_TEMPLATE)
         created_type_module_filepaths: List[Tuple[str, str, str]] = []
+        src_dirname = 'src'
         warnings = 0
         for m, module in enumerate(modules):
             if module.startswith(root_module):
                 raise ValueError('you provided root module {} and module {}, you dont need the root in the 2nd.'.format(root_module, module))
 
-            tokens = [root_module] + module.split('.')
-            module_template = read_text_file(manifest.FILEPATH_TEMPLATE)
-            test_template = read_text_file(manifest.FILEPATH_TEST_TEMPLATE)
-            tool_template = read_text_file(manifest.FILEPATH_TOOL_TEMPLATE)
-
-            LOGGER.info('inspecting ./src or ./src/%s convention', root_module)
-            root_src_directory = 'src/{}'.format(root_module)
-            root_directory = root_module
-            if not any([os.path.isdir(root_src_directory), os.path.isdir(root_src_directory)]):
-                LOGGER.critical('did not detect src directory or legacy directory! default creating src directory "%s"', root_src_directory)
-                make_dirpath(root_src_directory)
-                root_directory = 'src'
-            elif os.path.isdir(root_src_directory):
-                root_directory = 'src'
-            else:
-                root_directory = ''
-            module_filename = '{}.py'.format(tokens[-1])
-            module_filepath = '/'.join([root_directory, *tokens[:-1], module_filename])
-            module_relpath = os.path.relpath(module_filepath, root_directory).replace('\\', '/')
-            module_dirpath = '/'.join([root_directory, *tokens])
+        for m, module in enumerate(modules):
+            tokens = [root_module] + module.split('.')  # ['module', 'a', 'b']
 
             if no_module:
                 LOGGER.warning('skipping module generation!')
             else:
                 # create directories
                 LOGGER.info('module %d / %d - %s - step 1 - directories', m, len(modules) - 1, module)
-                current_directory = root_directory
-                for t, token in enumerate(tokens[:-1]):
-                    current_directory = '{}/{}'.format(current_directory, token)
-                    current_bad_relpath = '{}/{}.py'.format(root_directory, token)
-                    LOGGER.info('module %d / %d - %s - step 1 - directory from %r - "%s"!', m, len(modules) - 1, module, token, current_directory)
+                for t, token in enumerate(tokens[:-1]):  # ['module', 'a']
+                    directory = '{}/{}'.format(src_dirname, '/'.join(tokens[:t + 1]))
+                    current_bad_relpath = '{}.py'.format(directory)
+                    LOGGER.info('module %d / %d - %s - step 1 - directory from %r - "%s"!', m, len(modules) - 1, module, token, directory)
                     if os.path.isfile(current_bad_relpath):
                         LOGGER.warning(
                             'module %d / %d - %s - step 1 - directory from %r - "%s" is a file "%s"!', m,
-                            len(modules) - 1, module, token, current_directory, current_bad_relpath
+                            len(modules) - 1, module, token, directory, current_bad_relpath
                         )
                         if force:
                             LOGGER.critical(
                                 'module %d / %d - %s - step 1 - directory from %r - "%s" is a file "%s"! FORCING!', m,
-                                len(modules) - 1, module, token, current_directory, current_bad_relpath
+                                len(modules) - 1, module, token, directory, current_bad_relpath
                             )
                             os.remove(current_bad_relpath)
                         else:
                             warnings += 1
                             continue
-                    make_dirpath(current_directory)
+                    make_dirpath(directory)
 
                 # create inits
                 LOGGER.info('module %d / %d - %s - step 2 - __init__.py', m, len(modules) - 1, module)
-                current_directory = root_directory
-                for t, token in enumerate(tokens[:-1]):
+                for t, token in enumerate(tokens[:-1]):  # ['module', 'a']
+                    directory = '{}/{}'.format(src_dirname, '/'.join(tokens[:t + 1]))
                     module_so_far = '.'.join(tokens[:t + 1])
-                    current_directory = '{}/{}'.format(current_directory, token)
-                    current_init_relpath = '{}/__init__.py'.format(current_directory)
+                    current_init_relpath = '{}/__init__.py'.format(directory)
                     LOGGER.info('module %d / %d - %s - step 2 - __init__.py from %r - "%s"', m, len(modules) - 1, module, token, current_init_relpath)
                     doit = True
                     if os.path.isfile(current_init_relpath):
@@ -138,6 +128,8 @@ def create_modules_and_tests(
                         created_type_module_filepaths.append(('__init__', module_so_far, abspath(current_init_relpath)))
 
                 # create module file
+                module_relpath = '{}/{}.py'.format(src_dirname, '/'.join(tokens))
+                module_dirpath = '{}/{}'.format(src_dirname, '/'.join(tokens[:-1]))
                 if os.path.isdir(module_dirpath):
                     LOGGER.warning(
                         'module %d / %d - %s - step 3 - module %r - "%s" exists as a dir not a module! Not removing or altering at all!', m,
@@ -146,12 +138,12 @@ def create_modules_and_tests(
                     warnings += 1
                 else:
                     LOGGER.info('module %d / %d - %s - step 3 - module', m, len(modules) - 1, module)
-                    LOGGER.info('module %d / %d - %s - step 3 - module %r - "%s"', m, len(modules) - 1, module, token, module_filepath)
+                    LOGGER.info('module %d / %d - %s - step 3 - module %r - "%s"', m, len(modules) - 1, module, token, module_relpath)
                     doit = True
-                    if os.path.isfile(module_filepath):
-                        LOGGER.warning('module %d / %d - %s - step 3 - module %r - "%s" exists!', m, len(modules) - 1, module, token, module_filepath)
+                    if os.path.isfile(module_relpath):
+                        LOGGER.warning('module %d / %d - %s - step 3 - module %r - "%s" exists!', m, len(modules) - 1, module, token, module_relpath)
                         if force:
-                            LOGGER.critical('module %d / %d - %s - step 3 - module %r - "%s" exists! FORCING!', m, len(modules) - 1, module, token, module_filepath)
+                            LOGGER.critical('module %d / %d - %s - step 3 - module %r - "%s" exists! FORCING!', m, len(modules) - 1, module, token, module_relpath)
                         else:
                             doit = False
                             warnings += 1
@@ -183,8 +175,8 @@ def create_modules_and_tests(
                         template_kwargs.update(dict(default_description=default_description, stdlib_import=stdlib_import, third_import=third_import))
 
                     content = template.format(**template_kwargs)
-                    write_text_file(module_filepath, content)
-                    created_type_module_filepaths.append(('module', '.'.join(tokens), abspath(module_filepath)))
+                    write_text_file(module_relpath, content)
+                    created_type_module_filepaths.append(('module', '.'.join(tokens), abspath(module_relpath)))
 
             if no_test:
                 LOGGER.warning('skipping test generation!')
@@ -202,7 +194,7 @@ def create_modules_and_tests(
                     make_dirpath(current_directory)
 
                 # create tests
-                LOGGER.info('module %d / %d - %s - step 5 - tests')
+                LOGGER.info('module %d / %d - %s - step 5 - tests', m, len(modules) - 1, module)
                 current_directory = os.path.relpath(test_root_directory, '').replace('\\', '/')
                 for t, token in enumerate(tokens):
                     module_so_far = '.'.join(tokens[:t + 1])
@@ -234,12 +226,10 @@ def create_modules_and_tests(
                     current_directory = '{}/{}'.format(current_directory, token)
 
             if not no_module:
-                LOGGER.info('module generated at: "%s"', module_filepath)
+                LOGGER.info('module generated at: "%s"', module_relpath)
             if not no_test:
                 LOGGER.info('test generated at:   "%s"', test_relpath)
         return created_type_module_filepaths
-    finally:
-        os.chdir(pwd)
 
 
 def run_functions_by_dot_path(root_module, func_names, print_help=False, log_level='DEBUG'):
@@ -276,7 +266,6 @@ def audit_manifest_modify():
         update the files manifest
         run this to update the DIRPATH_* and FILEPATH_* constants that represent actual file paths
     '''
-    from chriscarl.core.functors.python import get_legal_python_name
     importlib.reload(manifest)
     LOGGER.info('analyzing "%s"', manifest.__file__)
     manifest_filepath = abspath(manifest.__file__)
@@ -354,49 +343,50 @@ def audit_relpath(dirpath=os.getcwd(), extensions=DEFAULT_EXTENSIONS, included_d
         dry: bool
             do not write?
     '''
-    original_dirpath = abspath(dirpath)
-    LOGGER.debug('going through "%s"...', original_dirpath)
-    extensions = extensions or []
-    chars = 128  # if verbose else 16
-    changes = 0
+    with chdir(dirpath):
+        original_dirpath = abspath(dirpath)
+        LOGGER.debug('going through "%s"...', original_dirpath)
+        extensions = extensions or []
+        chars = 128  # if verbose else 16
+        changes = 0
 
-    try:
-        for filepath in walk(original_dirpath, extensions=extensions, include=included_dirs, ignore=ignored_dirs, case_insensitive=True):
-            basename = os.path.basename(filepath)
-            relpath = os.path.relpath(filepath, original_dirpath).replace('\\', '/')
-            if 'src/' in relpath:
-                relpath = relpath.replace('src/', '')
-            with open(filepath) as r:
-                contents = r.read()
-            search = SCRIPT_RELPLATH_REGEX.search(contents)
-            LOGGER.debug('%s: "%s"', 'something' if bool(search) else 'notathing', filepath)
-            if search:
-                replacement = replacement_preview = "SCRIPT_RELPATH = '{}'".format(relpath)
-                original = original_preview = search.string[search.start():search.end()]
-                if len(original) > chars:
-                    original_preview = original_preview[0:chars - 3] + '...'
-                if len(replacement_preview) > chars:
-                    replacement_preview = replacement_preview[0:chars - 3] + '...'
+        try:
+            for filepath in walk(original_dirpath, extensions=extensions, include=included_dirs, ignore=ignored_dirs, case_insensitive=True):
+                basename = os.path.basename(filepath)
+                relpath = os.path.relpath(filepath, original_dirpath).replace('\\', '/')
+                if 'src/' in relpath:
+                    relpath = relpath.replace('src/', '')
+                with open(filepath) as r:
+                    contents = r.read()
+                search = SCRIPT_RELPLATH_REGEX.search(contents)
+                LOGGER.debug('%s: "%s"', 'something' if bool(search) else 'notathing', filepath)
+                if search:
+                    replacement = replacement_preview = "SCRIPT_RELPATH = '{}'".format(relpath)
+                    original = original_preview = search.string[search.start():search.end()]
+                    if len(original) > chars:
+                        original_preview = original_preview[0:chars - 3] + '...'
+                    if len(replacement_preview) > chars:
+                        replacement_preview = replacement_preview[0:chars - 3] + '...'
 
-                if replacement != original_preview:
-                    LOGGER.debug('replacing %s %r %r', relpath, replacement, original_preview)
-                    lines = contents[:search.end()].splitlines()
-                    lineno = len(lines) + 1
-                    charno = len(lines[-1])  # just a best effort
-                    changes += 1
-                    if not dry:
-                        LOGGER.info('replacing %s %r -> %r', '{} [line:{}; char:{}]: '.format(basename, lineno, charno), original_preview, replacement_preview)
-                        new_contents = SCRIPT_RELPLATH_REGEX.sub(replacement, contents)
-                        with open(filepath, 'w') as w:
-                            w.write(new_contents)
-        LOGGER.info('%d changes', changes)
-        if dry and changes > 0:
-            LOGGER.warning('remember to remove --dry if youd like to flush these changes.')
-    except Exception:
-        LOGGER.error('exception on filepath "%s"', filepath)
-        LOGGER.debug(locals(), exc_info=True)
-        return 1
-    return 0
+                    if replacement != original_preview:
+                        LOGGER.debug('replacing %s %r %r', relpath, replacement, original_preview)
+                        lines = contents[:search.end()].splitlines()
+                        lineno = len(lines) + 1
+                        charno = len(lines[-1])  # just a best effort
+                        changes += 1
+                        if not dry:
+                            LOGGER.info('replacing %s %r -> %r', '{} [line:{}; char:{}]: '.format(basename, lineno, charno), original_preview, replacement_preview)
+                            new_contents = SCRIPT_RELPLATH_REGEX.sub(replacement, contents)
+                            with open(filepath, 'w') as w:
+                                w.write(new_contents)
+            LOGGER.info('%d changes', changes)
+            if dry and changes > 0:
+                LOGGER.warning('remember to remove --dry if youd like to flush these changes.')
+        except Exception:
+            LOGGER.error('exception on filepath "%s"', filepath)
+            LOGGER.debug(locals(), exc_info=True)
+            return 1
+        return 0
 
 
 def audit_tdd(
@@ -419,13 +409,14 @@ def audit_tdd(
         check to see which files have a corresponding test, which files do not, and which tests are abandoned
         this wont work on non-pypa repo packages like installed or .pyc packaged packages.
     '''
-    top_module_name = module_name
-    src_to_test = {}
-    src_to_file = {}
-    test_to_src = {}
-    test_to_file = {}
-    # test_module_prepend = 'tests.test_'
     with chdir(dirpath):
+        top_module_name = module_name
+        src_to_test = {}
+        src_to_file = {}
+        test_to_src = {}
+        test_to_file = {}
+        # test_module_prepend = 'tests.test_'
+
         # src
         for module_name, filepath in walk_dirpath_for_module_files(module_name):
             tokens = module_name.split('.')
@@ -472,21 +463,24 @@ def audit_tdd(
     if dry:
         LOGGER.critical('skipping test creation for the %d modules that are missing them! pass dry=True to generate them!', len(create_these_modules))
     else:
-        LOGGER.critical('creating tests for the %d modules that are missing them!', len(create_these_modules))
-        results = create_modules_and_tests(
-            top_module_name,
-            create_these_modules,
-            descriptions=descriptions or read_json(manifest.FILEPATH_DEFAULT_DESCRIPTIONS_JSON),
-            author=author,
-            email=email,
-            tests_dirname=tests_dirname,
-            cwd=cwd,
-            force=force,
-            tool=tool,
-            no_test=no_test,
-            no_module=no_module,
-        )
-        return len(results)
+        if len(create_these_modules) > 0:
+            LOGGER.critical('creating tests for the %d modules that are missing them!', len(create_these_modules))
+            results = create_modules_and_tests(
+                top_module_name,
+                create_these_modules,
+                descriptions=descriptions or read_json(manifest.FILEPATH_DEFAULT_DESCRIPTIONS_JSON),
+                author=author,
+                email=email,
+                tests_dirname=tests_dirname,
+                cwd=cwd,
+                force=force,
+                tool=tool,
+                no_test=no_test,
+                no_module=no_module,
+            )
+            return len(results)
+        else:
+            LOGGER.info('%d modules are missing tests! good job.', len(create_these_modules))
 
     return ret
 
@@ -517,3 +511,81 @@ def audit_banned(root_dirpath, words, word_case_insensitive=True, extensions=Non
     else:
         LOGGER.info('clean as a whistle')
     return findings
+
+
+def audit_stubgen(dirpath=REPO_DIRPATH, module_name=chriscarl.__name__):
+    # type: (str, str) -> int
+    '''
+    Description:
+        generate .pyi files that contain type hints. in the case of MY module, it will also create augmented typehints for the shadow modules
+    '''
+    with chdir(dirpath):
+        dist_typing = abspath(dirpath, 'dist/typing')
+        if os.path.isdir(dist_typing):
+            LOGGER.info('removing stale typings in "%s"', dist_typing)
+            shutil.rmtree(dist_typing)
+        root_src_directory = 'src/{}'.format(module_name)
+        cmd = ['stubgen', root_src_directory, '-o', 'dist/typing']
+        exit_code = subprocess.check_call(cmd, cwd=dirpath)
+
+        if module_name != chriscarl.__name__:
+            LOGGER.info('skipping shadow module feature that is exclusive to %r', chriscarl.__name__)
+            return exit_code
+
+        LOGGER.info('generating shadow module stub files that are exclusive to %r', chriscarl.__name__)
+        modded_libs = abspath('dist_typing', chriscarl.__name__, 'mod/lib')
+        generated = 0
+        for src in walk(modded_libs, extensions=['.pyi'], ignore=['__init__']):
+            name = os.path.splitext(os.path.basename(src))[0]
+            dst = abspath(dist_typing, name, '__init__.py')
+            make_dirpath(dst)
+            shutil.copy2(src, dst)
+            LOGGER.debug('moved stubgenned "%s" to "%s"', os.path.relpath(src, dirpath), os.path.relpath(dst, dirpath))
+            generated += 1
+        LOGGER.info('generated %d shadow module stub files', generated)
+
+    return exit_code
+
+
+def audit_clean(dirpath=REPO_DIRPATH):
+    # type: (str) -> int
+    '''
+    Description:
+        clean up the repository, mostly means .pyc files
+    '''
+    with chdir(dirpath):
+        pycs = 0
+        for pyc in walk(dirpath, extensions=['.pyc']):
+            try:
+                os.remove(pyc)
+                pycs += 1
+            except OSError:
+                LOGGER.error('unable to remove pyc "%s"', pyc)
+                LOGGER.debug('traceback', exc_info=True)
+        LOGGER.info('removed %d pycs', pycs)
+
+    return pycs
+
+
+def audit_test(dirpath=REPO_DIRPATH, module=chriscarl.__name__, tests_dirname='tests', threshold=0.69):
+    # type: (str, str, str, float) -> int
+    '''
+    Description:
+        run pytest coverage and call out anything below a certain threshold
+    '''
+    with chdir(dirpath):
+        cmd = ['pytest', '--cov={}'.format(module), '{}/'.format(tests_dirname), '--cov-report', 'term-missing']
+        _, output = run(cmd, cwd=dirpath)
+
+    below = [pc for pc in PytestCoverage.parse(output) if pc.cover < threshold]
+    if below:
+        LOGGER.warning('encountered %d items below the %0.2f%% threshold!', len(below), threshold)
+        for pc in below:
+            LOGGER.warning('"%s" (%d%%)', pc.name, pc.cover * 100)
+            for missing in pc.missing:
+                LOGGER.warning('    "%s", line %s', pc.name, missing)
+        LOGGER.warning('encountered %d items below the %0.2f%% threshold!', len(below), threshold)
+    else:
+        LOGGER.info('encountered %d items below the %0.2f%% threshold!', len(below), threshold)
+
+    return len(below)

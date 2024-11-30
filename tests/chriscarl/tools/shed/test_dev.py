@@ -105,10 +105,29 @@ class TestCase(UnitTest):
 
     def test_case_5_audit_tdd(self):
         variables = [
-            (lib.audit_tdd, (), dict(dirpath=REPO_DIRPATH, module_name='test', dry=False, tests_dirname='tests', cwd=self.tempdir, force=True)),
+            (lib.audit_tdd, (), dict(dirpath=REPO_DIRPATH, dry=False, tests_dirname='tests', cwd=self.tempdir, force=True)),
         ]
         controls = [
             0,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_6_audit_banned(self):
+        import re
+        from chriscarl.core.lib.stdlib.io import read_text_file
+        from chriscarl.core.lib.stdlib.os import abspath
+        from chriscarl.core.constants import REPO_DIRPATH
+        _banned = abspath(REPO_DIRPATH, 'ignoreme/_banned')
+        included_dirs = ['src/', 'tests']
+        words = []
+        if os.path.isfile(_banned):
+            words_content = read_text_file(_banned)
+            words.extend([ele.strip() for ele in re.split(r'\s+', words_content) if ele.strip()])
+        variables = [
+            (lib.audit_banned, (REPO_DIRPATH, words), dict(include=included_dirs)),
+        ]
+        controls = [
+            {},
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -124,5 +143,6 @@ if __name__ == '__main__':
     tc.test_case_3_audit_manifest_modify()
     tc.test_case_4_audit_relpath()
     tc.test_case_5_audit_tdd()
+    tc.test_case_6_audit_banned()
 
     tc.tearDown()

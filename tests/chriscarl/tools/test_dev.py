@@ -47,17 +47,11 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    @unittest.skip('lorem ipsum')
-    def test_case_0(self):
-        variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
-        ]
-        controls = [
-            6,
-            6,
-        ]
-        self.assert_null_hypothesis(variables, controls)
+    def test_case_0_no_arg_conflicts(self):
+        lib.Mode.argparser()
+        lib.Create.argparser()
+        lib.Run.argparser()
+        lib.Audit.argparser()
 
 
 if __name__ == '__main__':
@@ -65,6 +59,6 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0()
+    tc.test_case_0_no_arg_conflicts()
 
     tc.tearDown()
