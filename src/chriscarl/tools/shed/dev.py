@@ -260,7 +260,7 @@ def run_functions_by_dot_path(root_module, func_names, print_help=False, log_lev
 
 
 def audit_manifest_modify():
-    # type: () -> bool
+    # type: () -> int
     '''
     Description:
         update the files manifest
@@ -298,7 +298,7 @@ def audit_manifest_modify():
     LOGGER.info('writing %d lines of filepath content', len(tokens))
     with open(manifest_filepath, 'w', encoding='utf-8') as w:
         w.write('\n'.join(new_content))
-    return True
+    return 0
 
 
 def audit_manifest_verify():
