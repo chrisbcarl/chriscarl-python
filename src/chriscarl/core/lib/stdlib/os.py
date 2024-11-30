@@ -69,16 +69,22 @@ class chdir(object):
     '''
     pwd = ''
     _pwd = ''
+    mkdir = True
 
-    def __init__(self, pwd):
+    def __init__(self, pwd, mkdir=True):
         self.pwd = pwd
+        self.mkdir = mkdir
 
     def __enter__(self):
+        LOGGER.debug('chdir to   "%s" from "%s"', self.pwd, self._pwd)
         self._pwd = os.getcwd()
+        if self.mkdir:
+            make_dirpath(self.pwd)
         os.chdir(self.pwd)
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
+        LOGGER.debug('chdir undo "%s" from "%s"', self._pwd, self.pwd)
         os.chdir(self._pwd)
 
 

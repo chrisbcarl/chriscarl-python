@@ -42,20 +42,48 @@ LOGGER.addHandler(logging.NullHandler())
 class TestCase(UnitTest):
 
     def setUp(self):
+        self.dict = {
+            'str': 'str',
+            'int': 1,
+            'float': 3.14,
+            'bool': False,
+            'list': [1, 2, 3],
+            'dict': {
+                'key': 'value'
+            },
+        }
         return super().setUp()
 
     def tearDown(self):
         return super().tearDown()
 
-    @unittest.skip('lorem ipsum')
-    def test_case_0(self):
+    def test_case_0_write_read(self):
         variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
+            (lib.write_json, (self.tempfile, self.dict)),
+            (lib.read_json, (self.tempfile)),
+            (lib.read_json_list, (self.tempfile)),  # non list and list are the same, its just a type hint
         ]
         controls = [
-            6,
-            6,
+            None,
+            self.dict,
+            self.dict,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_1_dict_to_string(self):
+        variables = [
+            (lib.dict_to_string, {}, dict(indent=None)),
+            (lib.dict_to_string, {
+                1: 1
+            }, dict(indent=None)),
+            (lib.dict_to_string, {
+                '1': '1'
+            }, dict(indent=None)),
+        ]
+        controls = [
+            r'{}',
+            r'{"1": 1}',
+            r'{"1": "1"}',
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -65,6 +93,7 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0()
+    tc.test_case_0_write_read()
+    tc.test_case_1_dict_to_string()
 
     tc.tearDown()

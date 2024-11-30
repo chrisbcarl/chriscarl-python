@@ -3,13 +3,13 @@
 '''
 Author:         Chris Carl
 Email:          chrisbcarl@outlook.com
-Date:           2024-11-26
+Date:           2024-11-29
 Description:
 
 chriscarl.core.functors unit test.
 
 Updates:
-    2024-11-26 - tests.chriscarl.core.functors - initial commit
+    2024-11-29 - tests.chriscarl.core.functors - initial commit
 '''
 
 # stdlib imports (expected to work)

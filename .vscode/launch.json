@@ -36,11 +36,12 @@
             "program": "${workspaceFolder}/src/chriscarl/tools/dev.py",
             "console": "integratedTerminal",
             "args": [
-                // "create", "core.lib.stdlib.importlib", "--force",
+                // "create", "core.functors.parse", "--force",
+                "create", "a.b", "--cwd", "/tmp", "--module", "test", "--force",
                 // "run", "dir", "vars", "--module", "builtins", "--print-help",
                 // "audit", "relpath",
                 // "audit", "tdd",
-                "audit", "banned", "--words-additional", "fuck", "shit",
+                // "audit", "banned", "--words-additional", "fuck", "shit",
                 //
                 "--log-level",
                 "DEBUG",

@@ -47,17 +47,19 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    @unittest.skip('lorem ipsum')
-    def test_case_0(self):
+    def test_case_0_run(self):
         variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
+            (lib.run, 'echo hello world'),
+            (lib.run, ['echo', 'hello', 'world']),
         ]
         controls = [
-            6,
-            6,
+            (0, 'hello world\n'),
+            (0, 'hello world\n'),
         ]
         self.assert_null_hypothesis(variables, controls)
+
+    def test_case_1_launch_filepath(self):
+        lib.launch_editor(__file__)
 
 
 if __name__ == '__main__':
@@ -65,6 +67,7 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0()
+    tc.test_case_0_run()
+    tc.test_case_1_launch_filepath()
 
     tc.tearDown()

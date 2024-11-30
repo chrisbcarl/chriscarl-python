@@ -1,0 +1,348 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.6, pytest-8.3.3, pluggy-1.5.0
+rootdir: C:\Users\chris\src\chriscarl-python
+configfile: pyproject.toml
+plugins: cov-6.0.0
+collected 65 items
+
+tests\chriscarl\core\functors\test_misc.py s                             [  1%]
+tests\chriscarl\core\functors\test_parse.py s                            [  3%]
+tests\chriscarl\core\functors\test_python.py .........                   [ 16%]
+tests\chriscarl\core\lib\stdlib\test_argparse.py s                       [ 18%]
+tests\chriscarl\core\lib\stdlib\test_collections.py ..                   [ 21%]
+tests\chriscarl\core\lib\stdlib\test_importlib.py ..                     [ 24%]
+tests\chriscarl\core\lib\stdlib\test_inspect.py .                        [ 26%]
+tests\chriscarl\core\lib\stdlib\test_io.py s                             [ 27%]
+tests\chriscarl\core\lib\stdlib\test_json.py s                           [ 29%]
+tests\chriscarl\core\lib\stdlib\test_logging.py .                        [ 30%]
+tests\chriscarl\core\lib\stdlib\test_os.py ...                           [ 35%]
+tests\chriscarl\core\lib\stdlib\test_re.py ..                            [ 38%]
+tests\chriscarl\core\lib\stdlib\test_subprocess.py .                     [ 40%]
+tests\chriscarl\core\lib\stdlib\test_typing.py ......s                   [ 50%]
+tests\chriscarl\core\lib\stdlib\test_unittest.py ..                      [ 53%]
+tests\chriscarl\core\lib\test_stdlib.py s                                [ 55%]
+tests\chriscarl\core\lib\test_third.py s                                 [ 56%]
+tests\chriscarl\core\lib\third\test_parameterized.py s                   [ 58%]
+tests\chriscarl\core\test_constants.py s                                 [ 60%]
+tests\chriscarl\core\test_functors.py s                                  [ 61%]
+tests\chriscarl\core\test_lib.py s                                       [ 63%]
+tests\chriscarl\core\test_types.py s                                     [ 64%]
+tests\chriscarl\core\types\test_list.py ...                              [ 69%]
+tests\chriscarl\core\types\test_string.py .                              [ 70%]
+tests\chriscarl\files\test_manifest.py s                                 [ 72%]
+tests\chriscarl\mod\lib\test_stdlib.py s                                 [ 73%]
+tests\chriscarl\mod\lib\test_third.py s                                  [ 75%]
+tests\chriscarl\mod\test_lib.py s                                        [ 76%]
+tests\chriscarl\mod\test_python.py ss                                    [ 80%]
+tests\chriscarl\test_core.py s                                           [ 81%]
+tests\chriscarl\test_files.py s                                          [ 83%]
+tests\chriscarl\test_mod.py s                                            [ 84%]
+tests\chriscarl\test_tools.py s                                          [ 86%]
+tests\chriscarl\tools\shed\test_dev.py F....F                            [ 95%]
+tests\chriscarl\tools\test_dev.py s                                      [ 96%]
+tests\chriscarl\tools\test_shed.py s                                     [ 98%]
+tests\test_chriscarl.py s                                                [100%]
+
+================================== FAILURES ===================================
+________________ TestCase.test_case_0_create_modules_and_tests ________________
+
+variables = [(<function create_modules_and_tests at 0x0000024378299620>, ('test', ['a.b.c']), {'cwd': 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx', 'force': True, 'tests_dirname': 'tests'})]
+controls = [[('__init__', 'test', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\src\\test\\__init__.py'), ('__init__', 't...est_test.py'), ('test', 'test.a', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\test_a.py'), ...]]
+break_idx = -1
+
+    @staticmethod
+    def assert_null_hypothesis(variables, controls, break_idx=-1):
+        # (List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]], Tuple[Callable, tuple, dict]]], List[Any], int) -> bool
+        '''
+        Description:
+            h0 (the "null" hypothesis) is that there is no relationship between the variables and the function, therefore the control group will reflect the experiment results
+            the goal here is "fail to fail to reject the null hypothesis"
+            >>> variables = [
+            >>>     (sum, ([1, 2, 3],), {}),
+            >>>     (len, ([1, 2, 3]), {}),
+            >>>     (len, 1),
+            >>> ]
+            >>> controls = [6, 3, TypeError]
+            >>> assert_null_hypothesis(variables, controls)
+        Arguments:
+            variables: List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]]
+                basically:
+                    (func)
+                    (func, arg)
+                    (func, kwargs)
+                    (func, arg, kwargs)
+                    (func, args tuple)
+                    (func, args tuple, kwargs)
+            controls: List[Any]
+            break_idx: int
+                set this to get an input pause so that you can "catch yourself" kind of like print debugging.
+        '''
+        try:
+            isinstance_raise(variables, List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]])
+            isinstance_raise(variables, List[Any])
+
+            if len(variables) != len(controls):
+                raise ValueError('len(variables) != len(controls): {} != {}'.format(len(variables), len(controls)))
+
+            variables = conform_func_args_kwargs(variables)
+            for e, tpl in enumerate(variables):
+                func, args, kwargs = tpl
+                control = controls[e]
+                inv_str = invocation_string(func, args=args, kwargs=kwargs)
+                status = 'experiment {} / {} - {}'.format(e, len(variables) - 1, inv_str)
+
+                # stacklevel has a bug in it somewhere such that lazy formatting isnt correctly using THIS frame, but the stacklevel frame
+                LOGGER.debug(status, stacklevel=2)
+
+                if break_idx > -1 and break_idx == e:
+                    try:
+                        filepath = sys.modules[func.__module__].__file__
+                        # https://stackoverflow.com/questions/39453951/open-file-at-specific-line-in-vscode
+                        # TODO: code --goto "<filepath>:<linenumber>:<x-coordinates>"
+                        subprocess.Popen(['code', '--goto', filepath], shell=True)
+                        input('!!! BREAK IDX ENCOUNTERED - {} !!!\nPress any key to continue (or actually set breakpoints)...'.format(status))
+                    except KeyboardInterrupt:
+                        sys.exit(2)  # SIGINT-ish
+
+                if inspect.isclass(control) and issubclass(control, Exception):
+                    try:
+                        experiment = func(*args, **kwargs)
+                        assert False, '{} failed to accept null hypothesis (experiment raises exception): {} not encountered, got a real result instead {}!'.format(
+                            status, control, experiment
+                        )
+                    except Exception as ex:
+                        experiment = ex
+                    assert issubclass(type(experiment), control), '{} failed to accept null hypothesis (control != experiment): {} != {}!'.format(status, control, experiment)
+
+                else:
+                    experiment = func(*args, **kwargs)
+                    if inspect.isgenerator(experiment) or isinstance(experiment, (map, filter)):
+                        LOGGER.debug('{} encountered a generator... expanding.'.format(status))
+                        experiment = list(experiment)  # expand it out
+>                   assert experiment == control, '{} failed to accept null hypothesis (control != experiment): {} != {}'.format(status, control, experiment)
+E                   AssertionError: experiment 0 / 0 - create_modules_and_tests('test...', ['a.b.c'], tests_dirname='tests', cwd='C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx', force=True) failed to accept null hypothesis (control != experiment): [('__init__', 'test', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\src\\test\\__init__.py'), ('__init__', 'test.a', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\src\\test\\a\\__init__.py'), ('__init__', 'test.a.b', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\src\\test\\a\\b\\__init__.py'), ('module', 'test.a.b.c', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\src\\test\\a\\b\\c.py'), ('test', 'test', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test_test.py'), ('test', 'test.a', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\test_a.py'), ('test', 'test.a.b', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\a\\test_b.py'), ('test', 'test.a.b.c', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\a\\b\\test_c.py')] != [('__init__', 'test', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\test\\test\\__init__.py'), ('__init__', 'test.a', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\test\\test\\a\\__init__.py'), ('__init__', 'test.a.b', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\test\\test\\a\\b\\__init__.py'), ('module', 'test.a.b.c', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\test\\a\\b\\c.py'), ('test', 'test', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test_test.py'), ('test', 'test.a', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\test_a.py'), ('test', 'test.a.b', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\a\\test_b.py'), ('test', 'test.a.b.c', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\a\\b\\test_c.py')]
+
+src\chriscarl\core\lib\stdlib\unittest.py:139: AssertionError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.chriscarl.tools.shed.test_dev.TestCase testMethod=test_case_0_create_modules_and_tests>
+
+    def test_case_0_create_modules_and_tests(self):
+        variables = [
+            (lib.create_modules_and_tests, (
+                'test',
+                ['a.b.c'],
+            ), dict(tests_dirname='tests', cwd=self.tempdir, force=True)),
+        ]
+        controls = [
+            [
+                ('__init__', 'test', abspath(self.tempdir, 'src/test/__init__.py')),
+                ('__init__', 'test.a', abspath(self.tempdir, 'src/test/a/__init__.py')),
+                ('__init__', 'test.a.b', abspath(self.tempdir, 'src/test/a/b/__init__.py')),
+                ('module', 'test.a.b.c', abspath(self.tempdir, 'src/test/a/b/c.py')),
+                ('test', 'test', abspath(self.tempdir, 'tests/test_test.py')),
+                ('test', 'test.a', abspath(self.tempdir, 'tests/test/test_a.py')),
+                ('test', 'test.a.b', abspath(self.tempdir, 'tests/test/a/test_b.py')),
+                ('test', 'test.a.b.c', abspath(self.tempdir, 'tests/test/a/b/test_c.py')),
+            ],
+        ]
+>       self.assert_null_hypothesis(variables, controls)
+
+tests\chriscarl\tools\shed\test_dev.py:70:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\chriscarl\core\lib\stdlib\unittest.py:150: in assert_null_hypothesis
+    raise AssertionError(str(ae)).with_traceback(back_tb)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tests.chriscarl.tools.shed.test_dev.TestCase testMethod=test_case_0_create_modules_and_tests>
+
+    def test_case_0_create_modules_and_tests(self):
+        variables = [
+            (lib.create_modules_and_tests, (
+                'test',
+                ['a.b.c'],
+            ), dict(tests_dirname='tests', cwd=self.tempdir, force=True)),
+        ]
+        controls = [
+            [
+                ('__init__', 'test', abspath(self.tempdir, 'src/test/__init__.py')),
+                ('__init__', 'test.a', abspath(self.tempdir, 'src/test/a/__init__.py')),
+                ('__init__', 'test.a.b', abspath(self.tempdir, 'src/test/a/b/__init__.py')),
+                ('module', 'test.a.b.c', abspath(self.tempdir, 'src/test/a/b/c.py')),
+                ('test', 'test', abspath(self.tempdir, 'tests/test_test.py')),
+                ('test', 'test.a', abspath(self.tempdir, 'tests/test/test_a.py')),
+                ('test', 'test.a.b', abspath(self.tempdir, 'tests/test/a/test_b.py')),
+                ('test', 'test.a.b.c', abspath(self.tempdir, 'tests/test/a/b/test_c.py')),
+            ],
+        ]
+>       self.assert_null_hypothesis(variables, controls)
+E       AssertionError: experiment 0 / 0 - create_modules_and_tests('test...', ['a.b.c'], tests_dirname='tests', cwd='C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx', force=True) failed to accept null hypothesis (control != experiment): [('__init__', 'test', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\src\\test\\__init__.py'), ('__init__', 'test.a', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\src\\test\\a\\__init__.py'), ('__init__', 'test.a.b', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\src\\test\\a\\b\\__init__.py'), ('module', 'test.a.b.c', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\src\\test\\a\\b\\c.py'), ('test', 'test', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test_test.py'), ('test', 'test.a', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\test_a.py'), ('test', 'test.a.b', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\a\\test_b.py'), ('test', 'test.a.b.c', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\a\\b\\test_c.py')] != [('__init__', 'test', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\test\\test\\__init__.py'), ('__init__', 'test.a', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\test\\test\\a\\__init__.py'), ('__init__', 'test.a.b', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\test\\test\\a\\b\\__init__.py'), ('module', 'test.a.b.c', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\test\\a\\b\\c.py'), ('test', 'test', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test_test.py'), ('test', 'test.a', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\test_a.py'), ('test', 'test.a.b', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\a\\test_b.py'), ('test', 'test.a.b.c', 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpbwpfyxsx\\tests\\test\\a\\b\\test_c.py')]
+
+tests\chriscarl\tools\shed\test_dev.py:70: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  chriscarl.tools.shed.dev:dev.py:72 did not detect src directory or legacy directory! default creating src directory "src/test"
+_______________________ TestCase.test_case_5_audit_tdd ________________________
+
+variables = [(<function audit_tdd at 0x0000024378299940>, (), {'cwd': 'C:\\Users\\chris\\AppData\\Local\\Temp\\tmpldf8eatb', 'dirpath': 'C:\\Users\\chris\\src\\chriscarl-python\\src\\chriscarl\\../../', 'dry': False, 'force': True, ...})]
+controls = [0], break_idx = -1
+
+    @staticmethod
+    def assert_null_hypothesis(variables, controls, break_idx=-1):
+        # (List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]], Tuple[Callable, tuple, dict]]], List[Any], int) -> bool
+        '''
+        Description:
+            h0 (the "null" hypothesis) is that there is no relationship between the variables and the function, therefore the control group will reflect the experiment results
+            the goal here is "fail to fail to reject the null hypothesis"
+            >>> variables = [
+            >>>     (sum, ([1, 2, 3],), {}),
+            >>>     (len, ([1, 2, 3]), {}),
+            >>>     (len, 1),
+            >>> ]
+            >>> controls = [6, 3, TypeError]
+            >>> assert_null_hypothesis(variables, controls)
+        Arguments:
+            variables: List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]]
+                basically:
+                    (func)
+                    (func, arg)
+                    (func, kwargs)
+                    (func, arg, kwargs)
+                    (func, args tuple)
+                    (func, args tuple, kwargs)
+            controls: List[Any]
+            break_idx: int
+                set this to get an input pause so that you can "catch yourself" kind of like print debugging.
+        '''
+        try:
+            isinstance_raise(variables, List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]])
+            isinstance_raise(variables, List[Any])
+
+            if len(variables) != len(controls):
+                raise ValueError('len(variables) != len(controls): {} != {}'.format(len(variables), len(controls)))
+
+            variables = conform_func_args_kwargs(variables)
+            for e, tpl in enumerate(variables):
+                func, args, kwargs = tpl
+                control = controls[e]
+                inv_str = invocation_string(func, args=args, kwargs=kwargs)
+                status = 'experiment {} / {} - {}'.format(e, len(variables) - 1, inv_str)
+
+                # stacklevel has a bug in it somewhere such that lazy formatting isnt correctly using THIS frame, but the stacklevel frame
+                LOGGER.debug(status, stacklevel=2)
+
+                if break_idx > -1 and break_idx == e:
+                    try:
+                        filepath = sys.modules[func.__module__].__file__
+                        # https://stackoverflow.com/questions/39453951/open-file-at-specific-line-in-vscode
+                        # TODO: code --goto "<filepath>:<linenumber>:<x-coordinates>"
+                        subprocess.Popen(['code', '--goto', filepath], shell=True)
+                        input('!!! BREAK IDX ENCOUNTERED - {} !!!\nPress any key to continue (or actually set breakpoints)...'.format(status))
+                    except KeyboardInterrupt:
+                        sys.exit(2)  # SIGINT-ish
+
+                if inspect.isclass(control) and issubclass(control, Exception):
+                    try:
+                        experiment = func(*args, **kwargs)
+                        assert False, '{} failed to accept null hypothesis (experiment raises exception): {} not encountered, got a real result instead {}!'.format(
+                            status, control, experiment
+                        )
+                    except Exception as ex:
+                        experiment = ex
+                    assert issubclass(type(experiment), control), '{} failed to accept null hypothesis (control != experiment): {} != {}!'.format(status, control, experiment)
+
+                else:
+                    experiment = func(*args, **kwargs)
+                    if inspect.isgenerator(experiment) or isinstance(experiment, (map, filter)):
+                        LOGGER.debug('{} encountered a generator... expanding.'.format(status))
+                        experiment = list(experiment)  # expand it out
+>                   assert experiment == control, '{} failed to accept null hypothesis (control != experiment): {} != {}'.format(status, control, experiment)
+E                   AssertionError: experiment 0 / 0 - audit_tdd(dirpath='C:\\Users\\chris\\src\\chriscarl-python\\src\\chriscarl\\../../', module_name='test', dry=False, tests_dirname='tests', cwd='C:\\Users\\chris\\AppData\\Local\\Temp\\tmpldf8eatb', force=True) failed to accept null hypothesis (control != experiment): 0 != 37
+
+src\chriscarl\core\lib\stdlib\unittest.py:139: AssertionError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.chriscarl.tools.shed.test_dev.TestCase testMethod=test_case_5_audit_tdd>
+
+    def test_case_5_audit_tdd(self):
+        variables = [
+            (lib.audit_tdd, (), dict(dirpath=REPO_DIRPATH, module_name='test', dry=False, tests_dirname='tests', cwd=self.tempdir, force=True)),
+        ]
+        controls = [
+            0,
+        ]
+>       self.assert_null_hypothesis(variables, controls)
+
+tests\chriscarl\tools\shed\test_dev.py:113:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\chriscarl\core\lib\stdlib\unittest.py:150: in assert_null_hypothesis
+    raise AssertionError(str(ae)).with_traceback(back_tb)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tests.chriscarl.tools.shed.test_dev.TestCase testMethod=test_case_5_audit_tdd>
+
+    def test_case_5_audit_tdd(self):
+        variables = [
+            (lib.audit_tdd, (), dict(dirpath=REPO_DIRPATH, module_name='test', dry=False, tests_dirname='tests', cwd=self.tempdir, force=True)),
+        ]
+        controls = [
+            0,
+        ]
+>       self.assert_null_hypothesis(variables, controls)
+E       AssertionError: experiment 0 / 0 - audit_tdd(dirpath='C:\\Users\\chris\\src\\chriscarl-python\\src\\chriscarl\\../../', module_name='test', dry=False, tests_dirname='tests', cwd='C:\\Users\\chris\\AppData\\Local\\Temp\\tmpldf8eatb', force=True) failed to accept null hypothesis (control != experiment): 0 != 37
+
+tests\chriscarl\tools\shed\test_dev.py:113: AssertionError
+------------------------------ Captured log call ------------------------------
+CRITICAL chriscarl.tools.shed.dev:dev.py:482 37 orphaned tests detected! ['tests\\chriscarl\\core\\functors\\test_misc.py', 'tests\\chriscarl\\core\\functors\\test_parse.py', 'tests\\chriscarl\\core\\functors\\test_python.py', 'tests\\chriscarl\\core\\lib\\stdlib\\test_argparse.py', 'tests\\chriscarl\\core\\lib\\stdlib\\test_collections.py', 'tests\\chriscarl\\core\\lib\\stdlib\\test_importlib.py', 'tests\\chriscarl\\core\\lib\\stdlib\\test_inspect.py', 'tests\\chriscarl\\core\\lib\\stdlib\\test_io.py', 'tests\\chriscarl\\core\\lib\\stdlib\\test_json.py', 'tests\\chriscarl\\core\\lib\\stdlib\\test_logging.py', 'tests\\chriscarl\\core\\lib\\stdlib\\test_os.py', 'tests\\chriscarl\\core\\lib\\stdlib\\test_re.py', 'tests\\chriscarl\\core\\lib\\stdlib\\test_subprocess.py', 'tests\\chriscarl\\core\\lib\\stdlib\\test_typing.py', 'tests\\chriscarl\\core\\lib\\stdlib\\test_unittest.py', 'tests\\chriscarl\\core\\lib\\test_stdlib.py', 'tests\\chriscarl\\core\\lib\\test_third.py', 'tests\\chriscarl\\core\\lib\\third\\test_parameterized.py', 'tests\\chriscarl\\core\\test_constants.py', 'tests\\chriscarl\\core\\test_functors.py', 'tests\\chriscarl\\core\\test_lib.py', 'tests\\chriscarl\\core\\test_types.py', 'tests\\chriscarl\\core\\types\\test_list.py', 'tests\\chriscarl\\core\\types\\test_string.py', 'tests\\chriscarl\\files\\test_manifest.py', 'tests\\chriscarl\\mod\\lib\\test_stdlib.py', 'tests\\chriscarl\\mod\\lib\\test_third.py', 'tests\\chriscarl\\mod\\test_lib.py', 'tests\\chriscarl\\mod\\test_python.py', 'tests\\chriscarl\\test_core.py', 'tests\\chriscarl\\test_files.py', 'tests\\chriscarl\\test_mod.py', 'tests\\chriscarl\\test_tools.py', 'tests\\chriscarl\\tools\\shed\\test_dev.py', 'tests\\chriscarl\\tools\\test_dev.py', 'tests\\chriscarl\\tools\\test_shed.py', 'tests\\test_chriscarl.py']
+
+---------- coverage: platform win32, python 3.12.6-final-0 -----------
+Name                                                Stmts   Miss  Cover   Missing
+---------------------------------------------------------------------------------
+src\chriscarl\__init__.py                               0      0   100%
+src\chriscarl\chriscarl\__init__.py                     0      0   100%
+src\chriscarl\chriscarl\core\__init__.py                0      0   100%
+src\chriscarl\chriscarl\core\functors\__init__.py       0      0   100%
+src\chriscarl\core\__init__.py                          0      0   100%
+src\chriscarl\core\constants.py                        23      1    96%   32
+src\chriscarl\core\functors\__init__.py                 0      0   100%
+src\chriscarl\core\functors\misc.py                   126     93    26%   33, 48, 105-135, 140-141, 145-149, 154-157, 161-167, 171-174, 200-212, 217-225, 230-235, 240-253, 257-263, 267, 274-275
+src\chriscarl\core\functors\parse.py                   40     16    60%   33, 52-69
+src\chriscarl\core\functors\python.py                 221     29    87%   41, 58, 81, 83, 98, 102-107, 119-128, 230-231, 261, 268, 272, 288-296
+src\chriscarl\core\lib\__init__.py                      0      0   100%
+src\chriscarl\core\lib\stdlib\__init__.py               0      0   100%
+src\chriscarl\core\lib\stdlib\argparse.py              20      1    95%   35
+src\chriscarl\core\lib\stdlib\collections.py           34      2    94%   32, 45
+src\chriscarl\core\lib\stdlib\importlib.py             57      7    88%   36, 67, 70, 89, 112-114
+src\chriscarl\core\lib\stdlib\inspect.py               78     30    62%   38, 54-57, 68, 93-116, 119, 125-129, 150-152
+src\chriscarl\core\lib\stdlib\io.py                    28      4    86%   31, 60-62
+src\chriscarl\core\lib\stdlib\json.py                  29      7    76%   33, 49-50, 55-57, 61
+src\chriscarl\core\lib\stdlib\logging.py               24      1    96%   32
+src\chriscarl\core\lib\stdlib\os.py                    65      2    97%   34, 106
+src\chriscarl\core\lib\stdlib\re.py                    22      1    95%   32
+src\chriscarl\core\lib\stdlib\subprocess.py            26      1    96%   34
+src\chriscarl\core\lib\stdlib\typing.py                84     13    85%   35, 54, 59, 91, 95, 100-103, 108, 122, 145, 155-156
+src\chriscarl\core\lib\stdlib\unittest.py              90     13    86%   41, 62-63, 66-67, 102, 115-122, 127
+src\chriscarl\core\lib\third\__init__.py                0      0   100%
+src\chriscarl\core\lib\third\parameterized.py          20      4    80%   26-27, 35, 57
+src\chriscarl\core\types\__init__.py                    0      0   100%
+src\chriscarl\core\types\list.py                       34      1    97%   31
+src\chriscarl\core\types\string.py                     21      1    95%   31
+src\chriscarl\files\__init__.py                         0      0   100%
+src\chriscarl\files\manifest.py                        21      1    95%   30
+src\chriscarl\mod\__init__.py                           0      0   100%
+src\chriscarl\mod\lib\__init__.py                       0      0   100%
+src\chriscarl\mod\lib\stdlib\__init__.py                0      0   100%
+src\chriscarl\mod\lib\third\__init__.py                 0      0   100%
+src\chriscarl\mod\python.py                            41     13    68%   34, 56-59, 65-68, 78, 81-82, 85
+src\chriscarl\tools\__init__.py                         0      0   100%
+src\chriscarl\tools\dev.py                            216    120    44%   55, 86-89, 94-99, 104-105, 110-114, 118-119, 160-170, 174-186, 227-233, 237, 262-301, 305-312, 316-348, 363-396, 400
+src\chriscarl\tools\shed\__init__.py                    0      0   100%
+src\chriscarl\tools\shed\dev.py                       400    175    56%   54, 67, 69, 75, 89, 104, 114-126, 139-148, 155-159, 165-170, 189, 193, 195, 203, 227-232, 266, 273-280, 336, 339, 376-402, 405-409, 443-449, 451-457, 476-478, 485, 488-502, 511-534, 543-568, 577-588, 597-621
+---------------------------------------------------------------------------------
+TOTAL                                                1720    536    69%
+
+=========================== short test summary info ===========================
+FAILED tests/chriscarl/tools/shed/test_dev.py::TestCase::test_case_0_create_modules_and_tests
+FAILED tests/chriscarl/tools/shed/test_dev.py::TestCase::test_case_5_audit_tdd
+================== 2 failed, 37 passed, 26 skipped in 3.62s ===================

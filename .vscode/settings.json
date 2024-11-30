@@ -1,4 +1,6 @@
 {
+    // vscode editor
+    "task.allowAutomaticTasks": "on",
     "editor.wordWrap": "off",
     "search.exclude": {
         "**/*py*cache*": true,  // covers ./.pytest_cache and __pycache__
@@ -8,6 +10,7 @@
         "**/*py*cache*": true,  // covers ./.pytest_cache and __pycache__
         "**/*.venv*": true,
     },
+    // vscode language
     "[python]": {
         "editor.defaultFormatter": "eeyore.yapf",
         "editor.formatOnSave": true,
@@ -18,8 +21,20 @@
     // stubgen src\chriscarl -o dist/typing
     "python.analysis.stubPath": "${workspaceFolder}\\dist\\typing",
     "python.analysis.extraPaths": ["${workspaceFolder}\\src"],
+
+    // mypy extension
     "mypy-type-checker.args": [
         // "--ignore-missing-imports",
         "--follow-imports=silent"
     ],
+
+    // run on save extension
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": "\\.(py)$",
+                "cmd": "echo stubgen ${relativeFile} -o dist/typing && ${workspaceFolder}/.venv/scripts/stubgen ${relativeFile} -o dist/typing"
+            },
+        ],
+    },
 }

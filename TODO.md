@@ -1,5 +1,4 @@
 # TODO
-DO NOT COMMIT THIS SHIT AS IS YET DO NOT FUCKING DO IT
 - dev
     full
         scan for changes, make sure theres a documentation that correlates with that.
@@ -20,6 +19,17 @@ DO NOT COMMIT THIS SHIT AS IS YET DO NOT FUCKING DO IT
     implement the full workflow, partial workflow, etc.
     create a service which runs stubgen continually
         stubgen src\chriscarl -o dist/typing
+    ideally I would make shadow modules and when they make a stubgen, rename them as follows:
+        stubgenning logging:
+            stubgen -m logging -o dist/typing
+            Processed 1 modules
+            Generated dist/typing\logging/__init__.pyi
+        stubgenning an individual file:
+            stubgen .\src\chriscarl\core\lib\stdlib\os.py -o dist/typing
+            Processed 1 modules
+            Generated dist/typing\chriscarl/core/lib/stdlib/os.pyi
+        therefore
+            for mod.lib.stdlib.logging, copy dist/typing\chriscarl/core/lib/stdlib/logging.pyi -> dist/typing\logging/__init__.pyi
 - on commit
     scan for and replace / remove
         f' strings - f'\w

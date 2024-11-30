@@ -11,6 +11,7 @@ core.lib.stdlib.inspect is all about the framerate
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2024-11-27 - core.lib.stdlib.inspect - simplified get_variable_names_linenos and FunctionSpecification
     2024-11-26 - core.lib.stdlib.inspect - added FunctionSpecification
                  core.lib.stdlib.inspect - added get_variable_name_lineno
     2024-11-24 - core.lib.stdlib.inspect - initial commit
@@ -50,20 +51,14 @@ def get_variable_names_linenos(var, stack_frames=-1, ignore_frames=None):
     '''
     name_lineno: List[Tuple[str, int]] = []
     ignore_frames = ignore_frames or []
-    if stack_frames < 1 and not ignore_frames:
-        for frame_tuple in inspect.stack():
-            frame = frame_tuple[0]
-            lineno = frame_tuple[2]
-            name_lineno += [(k, lineno) for k, v in frame.f_locals.items() if v is var]
-    else:
-        for i, frame_tuple in enumerate(inspect.stack()):
-            if i in ignore_frames:
-                continue
-            frame = frame_tuple[0]
-            lineno = frame_tuple[2]
-            name_lineno += [(k, lineno) for k, v in frame.f_locals.items() if v is var]
-            if i == stack_frames:
-                break
+    for i, frame_tuple in enumerate(inspect.stack()):
+        if i in ignore_frames:
+            continue
+        frame = frame_tuple[0]
+        lineno = frame_tuple[2]
+        name_lineno += [(k, lineno) for k, v in frame.f_locals.items() if v is var]
+        if i == stack_frames:
+            break
     if len(name_lineno) == 0:
         name_lineno.append(('<anonymous>', -1))
     return name_lineno
@@ -80,56 +75,28 @@ def get_variable_name_lineno(var, stack_frames=-1):
 
 @dataclass
 class FunctionSpecification(object):
-    _func: Callable
+    func: Callable
     name: str
-    positional_arguments: List[str]
-    optional_arguments: dict
+    positional: List[str]
+    optional: dict
     varargs: Optional[str]
     varkwargs: Optional[str]
-    # typing: dict
-    defaults: dict
-
-    def __init__(self, func):
-        super(FunctionSpecification, self).__init__()
-        self._func = func
-        self.name = func.__name__
-
-        # TODO: which python versions trigger this?
-        # try:
-        #     args, varargs, varkw, defaults = inspect.getargspec(func)
-        #     kwonlyargs, kwonlydefaults, annotations = (None, None, None)
-        # except AttributeError:  # probably python 2
-        (args, varargs, varkw, defaults, kwonlyargs, kwonlydefaults, annotations) = inspect.getfullargspec(func)  # pylint: disable=no-member
-
-        self.positional_arguments = args
-        self.optional_arguments = kwonlydefaults
-        if defaults is not None and len(defaults) > 0:
-            self.positional_arguments = [a for a in args[:-len(defaults)]]
-            for i, argname in enumerate(args[-len(defaults):]):
-                if argname != 'self':
-                    self.optional_arguments[argname] = defaults[i]
-        self.varargs = varargs
-        self.varkwargs = varkw
-        # self.typing = {}
-        self.defaults = {}
-        if isinstance(kwonlydefaults, dict):
-            self.defaults.update(kwonlydefaults)
 
     def __str__(self):
         return '{}(name="{}", positional={}, optional={}, varargs={}, varkwargs={})'.format(
-            self.__class__.__name__, self.name, self.positional_arguments, unordered_dict(self.optional_arguments), repr(self.varargs), repr(self.varkwargs)
+            self.__class__.__name__, self.name, self.positional, unordered_dict(self.optional), repr(self.varargs), repr(self.varkwargs)
         )
 
     def to_invocation_string(self, ignore_self=False):
         # type: (bool) -> str
         if ignore_self:
-            positionals = [e for e in self.positional_arguments if e == 'self']
+            positionals = [e for e in self.positional if e == 'self']
         else:
-            positionals = list(self.positional_arguments)
+            positionals = list(self.positional)
         return invocation_string(
-            self._func,
+            self.func,
             args=positionals,
-            kwargs=self.optional_arguments,
+            kwargs=self.optional,
             varargs=self.varargs,
             varkwargs=self.varkwargs,
             func_name=self.name,
@@ -139,14 +106,33 @@ class FunctionSpecification(object):
     def get(func):
         # type: (Callable) -> FunctionSpecification
         '''
-        args, varargs, varkw, defaults
-
-        ex)
-        >>> def main(a, b, c=True, d=False, *args, **kwargs):
-        ...     pass
-        ...
-        ... ArgSpec(args=['a', 'b', 'c', 'd'], varargs='args', keywords='kwargs', defaults=(True, False))
+        Description:
+            >>> def main(a, b, *args, c=True, d=False, **kwargs):
+            ...     pass
+            ...
+            ... FunctionSpecification(func)
+        Raises:
+            ValueError if not a function or method
         '''
         if not inspect.isfunction(func) and not inspect.ismethod(func):
-            raise ValueError('provided func {} is not a function, or at least it\'s not by inspect\'s standards'.format(repr(func)))
-        return FunctionSpecification(func)
+            raise ValueError('provided func {} is not a function, or at least its not by inspect standards'.format(repr(func)))
+        name = func.__name__
+
+        # TODO: which python versions trigger this?
+        # try:
+        #     args, varargs, varkw, defaults = inspect.getargspec(func)
+        #     kwonlyargs, kwonlydefaults, annotations = (None, None, None)
+        # except AttributeError:  # probably python 2
+        (args, varargs, varkw, defaults, kwonlyargs, kwonlydefaults, annotations) = inspect.getfullargspec(func)  # pylint: disable=no-member
+
+        positional = args
+        optional = kwonlydefaults or {}
+        if defaults is not None and len(defaults) > 0:
+            positional = [a for a in args[:-len(defaults)]]
+            for i, argname in enumerate(args[-len(defaults):]):
+                if argname != 'self':
+                    optional[argname] = defaults[i]
+        varargs = varargs
+        varkwargs = varkw
+        fs = FunctionSpecification(func=func, name=name, positional=positional, optional=optional, varargs=varargs, varkwargs=varkwargs)
+        return fs

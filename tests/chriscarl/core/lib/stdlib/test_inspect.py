@@ -60,6 +60,62 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_1_FunctionSpecification(self):
+        self.assertRaises(ValueError, lib.FunctionSpecification.get, 1)
+
+        def positional(a, b):
+            pass
+
+        def optional(c=True, d=False):
+            pass
+
+        def positional_varargs(a, b, *args):
+            pass
+
+        def optional_varkwargs(c=True, d=False, **kwargs):
+            pass
+
+        def varargs_varkwargs(*args, **kwargs):
+            pass
+
+        def positional_varargs_optional(a, b, *args, c=True, d=False):
+            pass
+
+        def positional_optional_kwargs(a, b, c=True, d=False, **kwargs):
+            pass
+
+        def positional_varargs_optional_varkwargs(a, b, *args, c=True, d=False, **kwargs):
+            pass
+
+        funcs = [
+            positional,
+            optional,
+            positional_varargs,
+            optional_varkwargs,
+            varargs_varkwargs,
+            positional_varargs_optional,
+            positional_optional_kwargs,
+            positional_varargs_optional_varkwargs,
+        ]
+        fses = [lib.FunctionSpecification.get(func) for func in funcs]
+
+        variables = [fs.to_invocation_string for fs in fses]
+        controls = [
+            'positional(a, b)',
+            'optional(c=True, d=False)',
+            'positional_varargs(a, b, *args)',
+            'optional_varkwargs(c=True, d=False, **kwargs)',
+            'varargs_varkwargs(*args, **kwargs)',
+            'positional_varargs_optional(a, b, *args, c=True, d=False)',
+            'positional_optional_kwargs(a, b, c=True, d=False, **kwargs)',
+            'positional_varargs_optional_varkwargs(a, b, *args, c=True, d=False, **kwargs)',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+        variables = [(str(fs).startswith, 'FunctionSpecification') for fs in fses]
+        controls = [True for _ in variables]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=logging.DEBUG)
@@ -67,5 +123,6 @@ if __name__ == '__main__':
     tc.setUp()
 
     tc.test_case_0_get_variable_names_linenos()
+    tc.test_case_1_FunctionSpecification()
 
     tc.tearDown()

@@ -33,6 +33,7 @@ from types import TracebackType
 # project imports
 from chriscarl.core.functors.python import conform_func_args_kwargs, invocation_string
 from chriscarl.core.lib.stdlib.typing import isinstance_raise
+from chriscarl.core.lib.stdlib.subprocess import launch_editor
 
 SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/unittest.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -114,9 +115,7 @@ class UnitTest(unittest.TestCase):
                 if break_idx > -1 and break_idx == e:
                     try:
                         filepath = sys.modules[func.__module__].__file__
-                        # https://stackoverflow.com/questions/39453951/open-file-at-specific-line-in-vscode
-                        # TODO: code --goto "<filepath>:<linenumber>:<x-coordinates>"
-                        subprocess.Popen(['code', '--goto', filepath], shell=True)
+                        launch_editor(filepath)
                         input('!!! BREAK IDX ENCOUNTERED - {} !!!\nPress any key to continue (or actually set breakpoints)...'.format(status))
                     except KeyboardInterrupt:
                         sys.exit(2)  # SIGINT-ish
