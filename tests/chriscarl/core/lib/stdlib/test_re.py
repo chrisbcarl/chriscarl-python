@@ -73,6 +73,22 @@ Updates:
             ],
         ]
         self.assert_null_hypothesis(variables, controls)
+        doc = '''hello world
+HELLO WORLD'''
+        variables = [
+            (lib.find_lineno_colno, ('hello', doc), dict(case_insensitive=True)),
+            (lib.find_lineno_colno, ('hello', doc), dict(case_insensitive=False)),
+        ]
+        controls = [
+            [
+                (1, 1),
+                (2, 1),
+            ],
+            [
+                (1, 1),
+            ],
+        ]
+        self.assert_null_hypothesis(variables, controls)
 
 
 if __name__ == '__main__':
