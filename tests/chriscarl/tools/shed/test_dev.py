@@ -163,18 +163,17 @@ class TestCase(UnitTest):
         from chriscarl.core.lib.stdlib.io import write_text_file
         write_text_file(abspath(self.tempdir, 'src/test/lol.py'), 'SCRIPT_RELPATH = False')
         make_dirpath(self.tempdir, 'tests')
-        print(os.listdir(self.tempdir))
         variables = [
-            (lib.audit_tdd, (), dict(dirpath=self.tempdir, dry=False, tests_dirname='tests', module_name='test')),
+            (lib.audit_tdd, (), dict(dirpath=self.tempdir, dry=False, tests_dirname='tests', module_name='test', cwd=self.tempdir)),
         ]
         controls = [
-            1,
+            3,
         ]
         self.assert_null_hypothesis(variables, controls)
 
     def test_case_6_audit_banned(self):
         import re
-        from chriscarl.core.lib.stdlib.io import read_text_file
+        from chriscarl.core.lib.stdlib.io import read_text_file, write_text_file
         from chriscarl.core.lib.stdlib.os import abspath
         from chriscarl.core.constants import REPO_DIRPATH
         _banned = abspath(REPO_DIRPATH, 'ignoreme/_banned')
@@ -188,6 +187,19 @@ class TestCase(UnitTest):
         ]
         controls = [
             {},
+        ]
+
+        words = ['SUPERBANNED']
+        write_text_file(abspath(self.tempdir, 'src/test/lol.py'), 'SUPERBANNED')
+        variables = [
+            (lib.audit_banned, (self.tempdir, words), dict(include=included_dirs)),
+        ]
+        controls = [
+            {
+                'src/test/lol.py': {
+                    'SUPERBANNED': [(1, 1), ],
+                }
+            },
         ]
         self.assert_null_hypothesis(variables, controls)
 

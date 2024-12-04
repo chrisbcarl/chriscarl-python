@@ -503,7 +503,7 @@ def audit_banned(root_dirpath, words, word_case_insensitive=True, extensions=Non
         if len(relpath) > longest:
             longest = len(relpath)
         try:
-            contents = read_text_file(relpath)
+            contents = read_text_file(abspath(root_dirpath, relpath))
         except UnicodeDecodeError:
             LOGGER.critical('couldnt read file "%s" due to unicode decode error, likely not a real file', relpath)
             LOGGER.debug('exception', exc_info=True)
