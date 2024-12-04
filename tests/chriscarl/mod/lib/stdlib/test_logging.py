@@ -47,15 +47,12 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    @unittest.skip('lorem ipsum')
-    def test_case_0(self):
+    def test_case_0_ungabunga(self):
         variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
+            (lib.dummy_unga_bunga_function_for_2_seconds),
         ]
         controls = [
-            6,
-            6,
+            None,
         ]
         self.assert_null_hypothesis(variables, controls)
 

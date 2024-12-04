@@ -1,20 +1,8 @@
 # TODO
 - dev
     full
+    new hermione
         scan for changes, make sure theres a documentation that correlates with that.
-        audit manifest-modify
-        audit relpath
-        audit tdd
-        audit banned
-        remove .pyc
-        stubgen src\chriscarl -o dist/typing
-        pytest --cov=chriscarl tests/ --cov-report term-missing
-            ---------- coverage:
-            TOTAL                                            1333    695    48%
-            =========================================================================================================== short test summary info ============================================================================================================
-            FAILED tests/chriscarl/core/lib/stdlib/test_importlib.py::TestCase::test_walk_module - assert False
-            =================================================================================================== 1 failed, 21 passed, 13 skipped in 1.82s ===
-
     commit, does all of the pre-commit and other shit i need to do
     implement the full workflow, partial workflow, etc.
 - on commit

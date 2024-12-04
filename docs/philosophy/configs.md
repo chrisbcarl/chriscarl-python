@@ -1,4 +1,4 @@
-# Ongoing Maintainance
+# Configs
 - on save
     - trailing spaces trim
     - yapf formatting via eeyore
@@ -14,3 +14,5 @@
         - stubs: regenerates all stubs but also adds shadow module stubs
         - clean: removes all .pyc
         - test: runs pytest coverage to ensure at least 85%
+- hidden or gitignored:
+    - `ignoreme\_banned`: includes stuff that prevents f-strings

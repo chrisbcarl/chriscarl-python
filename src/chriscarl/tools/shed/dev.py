@@ -10,7 +10,7 @@ tools.shed.dev is the "shed" in which all of the "tools" go to pick one up.
 tool are modules that define usually cli tools or mini applets that I or other people may find interesting or useful.
 
 Updates:
-    2024-11-28 - tools.shed.dev - added audit_clean, audit_stubs, audit_test
+    2024-11-28 - tools.shed.dev - added audit_clean, audit_stubs, audit_cov
     2024-11-27 - tools.shed.dev - added audit_banned and it works!
     2024-11-26 - tools.shed.dev - renamed from lib to shed since pytest got confused with multiple test_lib's
                  tools.shed.dev - added audit_tdd
@@ -58,6 +58,8 @@ SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
+
+STUB_OUTPUT_DIRPATH = 'dist/typing'
 
 
 def create_modules_and_tests(
@@ -358,42 +360,38 @@ def audit_relpath(dirpath=os.getcwd(), extensions=DEFAULT_EXTENSIONS, included_d
         chars = 128  # if verbose else 16
         changes = 0
 
-        try:
-            for filepath in walk(original_dirpath, extensions=extensions, include=included_dirs, ignore=ignored_dirs, case_insensitive=True):
-                basename = os.path.basename(filepath)
-                relpath = os.path.relpath(filepath, original_dirpath).replace('\\', '/')
-                if 'src/' in relpath:
-                    relpath = relpath.replace('src/', '')
-                with open(filepath) as r:
-                    contents = r.read()
-                search = SCRIPT_RELPLATH_REGEX.search(contents)
-                LOGGER.debug('%s: "%s"', 'something' if bool(search) else 'notathing', filepath)
-                if search:
-                    replacement = replacement_preview = "SCRIPT_RELPATH = '{}'".format(relpath)
-                    original = original_preview = search.string[search.start():search.end()]
-                    if len(original) > chars:
-                        original_preview = original_preview[0:chars - 3] + '...'
-                    if len(replacement_preview) > chars:
-                        replacement_preview = replacement_preview[0:chars - 3] + '...'
+        for filepath in walk(original_dirpath, extensions=extensions, include=included_dirs, ignore=ignored_dirs, case_insensitive=True):
+            LOGGER.debug('"%s"', filepath)
+            basename = os.path.basename(filepath)
+            relpath = os.path.relpath(filepath, original_dirpath).replace('\\', '/')
+            if 'src/' in relpath:
+                relpath = relpath.replace('src/', '')
+            with open(filepath) as r:
+                contents = r.read()
+            search = SCRIPT_RELPLATH_REGEX.search(contents)
+            LOGGER.debug('%s: "%s"', 'something' if bool(search) else 'notathing', filepath)
+            if search:
+                replacement = replacement_preview = "SCRIPT_RELPATH = '{}'".format(relpath)
+                original = original_preview = search.string[search.start():search.end()]
+                if len(original) > chars:
+                    original_preview = original_preview[0:chars - 3] + '...'
+                if len(replacement_preview) > chars:
+                    replacement_preview = replacement_preview[0:chars - 3] + '...'
 
-                    if replacement != original_preview:
-                        LOGGER.debug('replacing %s %r %r', relpath, replacement, original_preview)
-                        lines = contents[:search.end()].splitlines()
-                        lineno = len(lines) + 1
-                        charno = len(lines[-1])  # just a best effort
-                        changes += 1
-                        if not dry:
-                            LOGGER.info('replacing %s %r -> %r', '{} [line:{}; char:{}]: '.format(basename, lineno, charno), original_preview, replacement_preview)
-                            new_contents = SCRIPT_RELPLATH_REGEX.sub(replacement, contents)
-                            with open(filepath, 'w') as w:
-                                w.write(new_contents)
-            LOGGER.info('%d changes', changes)
-            if dry and changes > 0:
-                LOGGER.warning('remember to remove --dry if youd like to flush these changes.')
-        except Exception:
-            LOGGER.error('exception on filepath "%s"', filepath)
-            LOGGER.debug(locals(), exc_info=True)
-            return 1
+                if replacement != original_preview:
+                    LOGGER.debug('replacing %s %r %r', relpath, replacement, original_preview)
+                    lines = contents[:search.end()].splitlines()
+                    lineno = len(lines) + 1
+                    charno = len(lines[-1])  # just a best effort
+                    changes += 1
+                    if not dry:
+                        LOGGER.info('replacing %s %r -> %r', '{} [line:{}; char:{}]: '.format(basename, lineno, charno), original_preview, replacement_preview)
+                        new_contents = SCRIPT_RELPLATH_REGEX.sub(replacement, contents)
+                        with open(filepath, 'w') as w:
+                            w.write(new_contents)
+        LOGGER.info('%d changes', changes)
+        if dry and changes > 0:
+            LOGGER.warning('remember to remove --dry if youd like to flush these changes.')
         return 0
 
 
@@ -425,7 +423,7 @@ def audit_tdd(
         test_to_file = {}
         # test_module_prepend = 'tests.test_'
 
-        # src
+        # non src/ convention
         for module_name, filepath in walk_dirpath_for_module_files(module_name):
             tokens = module_name.split('.')
             tokens[-1] = 'test_{}'.format(tokens[-1])
@@ -434,6 +432,7 @@ def audit_tdd(
             # test_module = '{}{}'.format(test_module_prepend, module_name)
             src_to_test[module_name] = test_module
             src_to_file[module_name] = filepath
+        # src convention
         for module_name, filepath in walk_dirpath_for_module_files('src/{}'.format(module_name)):
             tokens = module_name.split('.')
             tokens[-1] = 'test_{}'.format(tokens[-1])
@@ -514,7 +513,7 @@ def audit_banned(root_dirpath, words, word_case_insensitive=True, extensions=Non
                 hit.add(word)
                 file_findings[word] = lineno_colno
                 for lineno, colno in lineno_colno:
-                    LOGGER.warning('File "%s", line %d, col %d - %r', relpath, lineno, colno, word)
+                    LOGGER.warning('File "%s", line %d, col %d - %r matched!', relpath, lineno, colno, word)
         if not file_findings:
             del findings[relpath]
     hits = sum(len(v) for v in findings.values())
@@ -525,38 +524,40 @@ def audit_banned(root_dirpath, words, word_case_insensitive=True, extensions=Non
     return findings
 
 
-def audit_stubs(dirpath=REPO_DIRPATH, module_name=chriscarl.__name__):
-    # type: (str, str) -> int
+def audit_stubs(dirpath=REPO_DIRPATH, module_name=chriscarl.__name__, output_dirpath=STUB_OUTPUT_DIRPATH):
+    # type: (str, str, str) -> int
     '''
     Description:
         generate .pyi files that contain type hints. in the case of MY module, it will also create augmented typehints for the shadow modules
     '''
     with chdir(dirpath):
-        dist_typing = abspath(dirpath, 'dist/typing')
+        dist_typing = abspath(dirpath, output_dirpath)
         if os.path.isdir(dist_typing):
             LOGGER.info('removing stale typings in "%s"', dist_typing)
             shutil.rmtree(dist_typing)
+        os.makedirs(output_dirpath)
         root_src_directory = 'src/{}'.format(module_name)
-        cmd = ['stubgen', root_src_directory, '-o', 'dist/typing']
+        cmd = ['stubgen', root_src_directory, '-o', output_dirpath]
         exit_code = subprocess.check_call(cmd, cwd=dirpath)
 
-        if module_name != chriscarl.__name__:
-            LOGGER.info('skipping shadow module feature that is exclusive to %r', chriscarl.__name__)
-            return exit_code
+        # if module_name != chriscarl.__name__:
+        #     LOGGER.info('skipping shadow module feature that is exclusive to %r', chriscarl.__name__)
+        #     return exit_code
 
         LOGGER.info('generating shadow module stub files that are exclusive to %r', chriscarl.__name__)
-        modded_libs = abspath(dist_typing, chriscarl.__name__, 'mod/lib')
+        modded_libs = abspath(dist_typing, module_name, 'mod/lib')
         generated = 0
         for src in walk(modded_libs, extensions=['.pyi'], ignore=['__init__']):
             name = os.path.splitext(os.path.basename(src))[0]
             LOGGER.debug('generating stub file for module %r', name)
-            cmd = ['stubgen', '-m', name, '-o', 'dist/typing']
+            cmd = ['stubgen', '-m', name, '-o', output_dirpath]
             subprocess.check_call(cmd, cwd=dirpath)
 
             shadow_pyi_text = read_text_file(src)
             shadow_pyi_lines = shadow_pyi_text.splitlines()[1:]  # everything but the actual from shadow import *
 
             dst = abspath(dist_typing, name, '__init__.pyi')
+            make_file_dirpath(dst)
             with open(dst, 'a', encoding='utf-8') as a:
                 a.write('\n')
                 a.write('# SHADOW MODULE SHIT FROM CHRISCARL #\n')
@@ -590,7 +591,7 @@ def audit_clean(dirpath=REPO_DIRPATH):
     return pycs
 
 
-def audit_test(dirpath=REPO_DIRPATH, module=chriscarl.__name__, tests_dirname='tests', threshold=0.69):
+def audit_cov(dirpath=REPO_DIRPATH, module=chriscarl.__name__, tests_dirname='tests', threshold=0.69):
     # type: (str, str, str, float) -> int
     '''
     Description:

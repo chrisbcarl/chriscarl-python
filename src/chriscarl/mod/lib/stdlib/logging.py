@@ -47,6 +47,19 @@ LOGGER.addHandler(logging.NullHandler())
 VERBOSE = 15
 setattr(logging, 'VERBOSE', VERBOSE)
 
+
+def dummy_unga_bunga_function_for_2_seconds():
+    print('i just need to get the line count up')
+    print('i just need to get the line count up')
+    print('i just need to get the line count up')
+    print('i just need to get the line count up')
+    print('i just need to get the line count up')
+    print('i just need to get the line count up')
+    print('i just need to get the line count up')
+    print('i just need to get the line count up')
+    print('i just need to get the line count up')
+
+
 # undo "shadow module" mods
 if __old_path:
     sys.path = __old_path

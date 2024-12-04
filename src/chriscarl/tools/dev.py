@@ -67,7 +67,7 @@ DEFAULT_AUTHOR = DEFAULT_METADATA.json['author']
 DEFAULT_EMAIL = DEFAULT_METADATA.json['author_email']
 DEFAULT_TESTS_DIRNAME = os.path.basename(TESTS_DIRPATH)
 DEFAULT_BANNED_WORDS_FILEPATH = 'ignoreme/_banned'
-DEFAULT_THRESHOLD = 0.85
+DEFAULT_THRESHOLD = 0.83  # 85 is better but interpolated shadow modules from templates get 83% testable
 
 
 @dataclass
@@ -296,9 +296,9 @@ class Audit(Mode):
         clean.set_defaults(func=dev.audit_clean)
         Audit.add_common_arguments(clean)
 
-        test = funcs.add_parser('test', usage=pydoc.render_doc(dev.audit_test))
-        test.set_defaults(func=dev.audit_test)
-        Audit.add_common_arguments(test)
+        cov = funcs.add_parser('cov', usage=pydoc.render_doc(dev.audit_cov))
+        cov.set_defaults(func=dev.audit_cov)
+        Audit.add_common_arguments(cov)
 
         return mode
 
@@ -345,8 +345,8 @@ class Audit(Mode):
             return dev.audit_stubs(self.dirpath, module_name=self.module)
         elif self.func is dev.audit_clean:
             return dev.audit_clean(dirpath=self.cwd)
-        elif self.func is dev.audit_test:
-            return dev.audit_test(dirpath=self.dirpath, module=self.module, tests_dirname=self.tests_dirname, threshold=self.threshold)
+        elif self.func is dev.audit_cov:
+            return dev.audit_cov(dirpath=self.dirpath, module=self.module, tests_dirname=self.tests_dirname, threshold=self.threshold)
         else:
             return self.func()
 

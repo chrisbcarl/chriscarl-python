@@ -49,11 +49,18 @@ class TestCase(UnitTest):
         return super().tearDown()
 
     def test_case_0_create_modules_and_tests(self):
+        from chriscarl.core.lib.stdlib.io import write_text_file
+        write_text_file('{}/test/a.py'.format(self.tempdir), '')
+        write_text_file('{}/test/b/__init__.py'.format(self.tempdir), '')
         variables = [
             (lib.create_modules_and_tests, (
                 'test',
                 ['a.b.c'],
             ), dict(tests_dirname='tests', cwd=self.tempdir, force=True, launch=False)),
+            (lib.create_modules_and_tests, (
+                'test',
+                ['a.b.c'],
+            ), dict(tests_dirname='tests', cwd=self.tempdir, force=False, launch=False)),
             (lib.create_modules_and_tests, (
                 'test',
                 ['a.b.c'],
@@ -78,6 +85,7 @@ class TestCase(UnitTest):
                 ('test', 'test.a.b', abspath(self.tempdir, 'tests/test/a/test_b.py')),
                 ('test', 'test.a.b.c', abspath(self.tempdir, 'tests/test/a/b/test_c.py')),
             ],
+            [],
             [
                 ('test', 'test', abspath(self.tempdir, 'tests/test_test.py')),
                 ('test', 'test.a', abspath(self.tempdir, 'tests/test/test_a.py')),
@@ -137,7 +145,7 @@ class TestCase(UnitTest):
     def test_case_4_audit_relpath(self):
         from chriscarl.core.lib.stdlib.io import write_text_file
         lol_py = abspath(self.tempdir, 'lol.py')
-        write_text_file(lol_py, 'SCRIPT_RELPATH = False')
+        write_text_file(lol_py, "SCRIPT_RELPATH = 'False.py'")
         variables = [
             (lib.audit_relpath, (), dict(dirpath=REPO_DIRPATH, included_dirs=[PYPA_SRC_DIRPATH, TESTS_DIRPATH])),
             (lib.audit_relpath, (), dict(dirpath=self.tempdir)),
@@ -161,7 +169,7 @@ class TestCase(UnitTest):
         self.tearDown()
         self.setUp()
         from chriscarl.core.lib.stdlib.io import write_text_file
-        write_text_file(abspath(self.tempdir, 'src/test/lol.py'), 'SCRIPT_RELPATH = False')
+        write_text_file(abspath(self.tempdir, 'src/test/lol.py'), "SCRIPT_RELPATH = 'False.py'")
         make_dirpath(self.tempdir, 'tests')
         variables = [
             (lib.audit_tdd, (), dict(dirpath=self.tempdir, dry=False, tests_dirname='tests', module_name='test', cwd=self.tempdir)),
@@ -203,6 +211,29 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_7_audit_stubs(self):
+        lib.create_modules_and_tests('test', ['mod.lib.stdlib.logging'], tests_dirname='tests', cwd=self.tempdir, force=True, launch=False)
+        variables = [
+            (lib.audit_stubs, (), dict(dirpath=self.tempdir, module_name='test')),
+        ]
+        controls = [
+            0,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_8_audit_clean(self):
+        from chriscarl.core.lib.stdlib.os import walk
+        current_pycs = len(list(walk(REPO_DIRPATH, extensions=['.pyc'])))
+        variables = [
+            (lib.audit_clean, (), dict(dirpath=self.tempdir)),
+            (lib.audit_clean, (), dict(dirpath=REPO_DIRPATH)),
+        ]
+        controls = [
+            0,
+            current_pycs,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=logging.DEBUG)
@@ -216,5 +247,7 @@ if __name__ == '__main__':
     tc.test_case_4_audit_relpath()
     tc.test_case_5_audit_tdd()
     tc.test_case_6_audit_banned()
+    tc.test_case_7_audit_stubs()
+    tc.test_case_8_audit_clean()
 
     tc.tearDown()
