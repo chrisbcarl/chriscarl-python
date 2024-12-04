@@ -5,6 +5,13 @@
         scan for changes, make sure theres a documentation that correlates with that.
     commit, does all of the pre-commit and other shit i need to do
     implement the full workflow, partial workflow, etc.
+    tdd add something to verify the main section includes all functions either commented or not
+        ```python
+        import tests
+        from tests.chriscarl.mod.lib.stdlib.test_logging import TestCase
+        tc = TestCase()
+        [ele for ele in dir(tc) if ele.startswith('test')]
+        ['test_case_0_ungabunga']
 - on commit
     scan for and replace / remove
         f' strings - f'\w

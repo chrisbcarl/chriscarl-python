@@ -62,6 +62,6 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0()
+    tc.test_case_0_ungabunga()
 
     tc.tearDown()
