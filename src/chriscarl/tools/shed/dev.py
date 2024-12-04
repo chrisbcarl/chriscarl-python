@@ -264,7 +264,7 @@ def run_functions_by_dot_path(root_module, func_names, print_help=False, log_lev
     except AttributeError as ae:
         LOGGER.error('%s, perhaps a mispelled or stale function name %r?', ' '.join(ae.args), ae.name)
         LOGGER.debug('exception', exc_info=True)
-        return 1
+        return 2
 
 
 def audit_manifest_modify():
@@ -502,7 +502,11 @@ def audit_banned(root_dirpath, words, word_case_insensitive=True, extensions=Non
     for relpath in walk(root_dirpath, extensions=extensions, ignore=ignore, include=include, case_insensitive=file_case_insensitive, relpath=True):
         if len(relpath) > longest:
             longest = len(relpath)
-        contents = read_text_file(relpath)
+        try:
+            contents = read_text_file(relpath)
+        except UnicodeDecodeError:
+            LOGGER.critical('couldnt read file "%s" due to unicode decode error, likely not a real file', relpath)
+            LOGGER.debug('exception', exc_info=True)
         file_findings = findings[relpath] = {}
         for word in words:
             lineno_colno = list(find_lineno_colno(word, contents, case_insensitive=word_case_insensitive))

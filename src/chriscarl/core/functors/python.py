@@ -46,6 +46,7 @@ THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+CRAZY_SENTINEL = '0cc44c50-5d1e-4529-b8c3-5ee4271aa5a0_338ad6d4-ce81-4e13-9ccc-5a34cf55947b'
 _hasattr = hasattr
 _getattr = getattr
 _setattr = setattr
@@ -60,7 +61,14 @@ def abbreviate_arg(arg, chars=32):
     if isinstance(arg, str):
         str_a = str(arg)
         if len(str_a) - 3 > chars:
-            token = "'{}'".format(str_a[:chars - 3] + "...")
+            if os.path.exists(str_a):
+                relpath = os.path.relpath(str_a, os.getcwd())
+                if len(relpath) - 3 > chars:
+                    token = '"{}"'.format(relpath[:chars - 3] + "...")
+                else:
+                    token = '"{}"'.format(relpath)
+            else:
+                token = "'{}'".format(str_a[:chars - 3] + "...")
         else:
             token = str_a
     else:
@@ -187,7 +195,7 @@ def hasattr_cmp(key, *objs):
         return (False, all(not hasattr_deep(obj, key) for obj in B))
 
 
-def getattr_deep(obj, key, default=None):
+def getattr_deep(obj, key, default=CRAZY_SENTINEL):
     # type: (Any, str, Any) -> Any
     '''
     Description:
@@ -205,7 +213,7 @@ def getattr_deep(obj, key, default=None):
         for token in key.split('.'):
             subobj = _getattr(subobj, token)
     except AttributeError as ae:
-        if default is not None:
+        if default != CRAZY_SENTINEL:  # i can't use None, because some deep code uses getattr(blah, blah, None), particularly in pytest...
             return default
         raise AttributeError('{} instance has no attribute {}'.format(obj.__class__.__name__, key)) from ae
 

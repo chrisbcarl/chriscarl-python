@@ -77,6 +77,35 @@ class TestCase(UnitTest):
         self.assert_null_hypothesis(variables, controls)
         self.assertRaises(AssertionError, lib.UnitTest.assert_subset, 'abc', ['a', 'b', 'c'])
 
+    def test_case_2_infrastructure(self):
+        bad_length_variables = [
+            (print),
+        ]
+        bad_length_controls = [
+            None,
+            None,
+        ]
+        self.assertRaises(ValueError, lib.UnitTest.assert_null_hypothesis, bad_length_variables, bad_length_controls)
+
+        bad_exceptions_variables = [
+            (print),
+        ]
+        bad_exceptions_controls = [
+            Exception,
+        ]
+        self.assertRaises(AssertionError, lib.UnitTest.assert_null_hypothesis, bad_exceptions_variables, bad_exceptions_controls)
+
+        def asserts():
+            assert 1 == 2
+
+        good_assertion_variables = [
+            asserts,
+        ]
+        good_assertion_controls = [
+            False,
+        ]
+        self.assertRaises(AssertionError, lib.UnitTest.assert_null_hypothesis, good_assertion_variables, good_assertion_controls)
+
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(msg)s', level=logging.DEBUG)
@@ -85,5 +114,6 @@ if __name__ == '__main__':
 
     tc.test_case_0_assert_null_hypothesis()
     tc.test_case_1_assert_subset()
+    tc.test_case_2_infrastructure()
 
     tc.tearDown()

@@ -42,16 +42,13 @@ def read_text_file(filepath, encoding='utf-8'):
         with open(filepath, 'r', encoding=encoding) as r:
             return r.read()
     except UnicodeDecodeError as ude:
-        raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason))
+        raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason)) from ude
 
 
 def read_bytes_file(filepath):
     # type: (str) -> bytes
-    try:
-        with open(filepath, 'rb') as rb:
-            return rb.read()
-    except UnicodeDecodeError as ude:
-        raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason))
+    with open(filepath, 'rb') as rb:
+        return rb.read()
 
 
 def write_text_file(filepath, content, encoding='utf-8'):

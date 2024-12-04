@@ -27,6 +27,10 @@ This is from MY perspective, a retrospective history of how I started this whole
     $env:POETRY_VIRTUALENVS_CREATE = 1
     $env:POETRY_VIRTUALENVS_IN_PROJECT = 1
     poetry install
+
+    # more permanently
+    poetry config virtualenvs.in-project true
+    poetry install
     ```
 5. activate the .venv by setting .vscode/settings.json `"python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\scripts\\python.exe",`
 6. install project in editable mode

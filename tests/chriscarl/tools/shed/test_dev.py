@@ -22,7 +22,7 @@ import logging
 
 # project imports (expected to work)
 from chriscarl.core.lib.stdlib.unittest import UnitTest
-from chriscarl.core.lib.stdlib.os import abspath
+from chriscarl.core.lib.stdlib.os import abspath, make_dirpath
 from chriscarl.core.constants import REPO_DIRPATH, PYPA_SRC_DIRPATH, TESTS_DIRPATH
 
 # test imports
@@ -54,6 +54,18 @@ class TestCase(UnitTest):
                 'test',
                 ['a.b.c'],
             ), dict(tests_dirname='tests', cwd=self.tempdir, force=True, launch=False)),
+            (lib.create_modules_and_tests, (
+                'test',
+                ['a.b.c'],
+            ), dict(tests_dirname='tests', cwd=self.tempdir, force=True, launch=False, no_module=True)),
+            (lib.create_modules_and_tests, (
+                'test',
+                ['a.b.c'],
+            ), dict(tests_dirname='tests', cwd=self.tempdir, force=True, launch=False, no_test=True)),
+            (lib.create_modules_and_tests, (
+                'test',
+                ['mod.lib.stdlib.plz'],
+            ), dict(tests_dirname='tests', cwd=self.tempdir, force=True, launch=False)),
         ]
         controls = [
             [
@@ -66,15 +78,43 @@ class TestCase(UnitTest):
                 ('test', 'test.a.b', abspath(self.tempdir, 'tests/test/a/test_b.py')),
                 ('test', 'test.a.b.c', abspath(self.tempdir, 'tests/test/a/b/test_c.py')),
             ],
+            [
+                ('test', 'test', abspath(self.tempdir, 'tests/test_test.py')),
+                ('test', 'test.a', abspath(self.tempdir, 'tests/test/test_a.py')),
+                ('test', 'test.a.b', abspath(self.tempdir, 'tests/test/a/test_b.py')),
+                ('test', 'test.a.b.c', abspath(self.tempdir, 'tests/test/a/b/test_c.py')),
+            ],
+            [
+                ('__init__', 'test', abspath(self.tempdir, 'src/test/__init__.py')),
+                ('__init__', 'test.a', abspath(self.tempdir, 'src/test/a/__init__.py')),
+                ('__init__', 'test.a.b', abspath(self.tempdir, 'src/test/a/b/__init__.py')),
+                ('module', 'test.a.b.c', abspath(self.tempdir, 'src/test/a/b/c.py')),
+            ],
+            [
+                ('__init__', 'test', abspath(self.tempdir, 'src/test/__init__.py')),
+                ('__init__', 'test.mod', abspath(self.tempdir, 'src/test/mod/__init__.py')),
+                ('__init__', 'test.mod.lib', abspath(self.tempdir, 'src/test/mod/lib/__init__.py')),
+                ('__init__', 'test.mod.lib.stdlib', abspath(self.tempdir, 'src/test/mod/lib//stdlib/__init__.py')),
+                ('module', 'test.mod.lib.stdlib.plz', abspath(self.tempdir, 'src/test/mod/lib/stdlib/plz.py')),
+                ('test', 'test', abspath(self.tempdir, 'tests/test_test.py')),
+                ('test', 'test.mod', abspath(self.tempdir, 'tests/test/test_mod.py')),
+                ('test', 'test.mod.lib', abspath(self.tempdir, 'tests/test/mod/test_lib.py')),
+                ('test', 'test.mod.lib.stdlib', abspath(self.tempdir, 'tests/test/mod/lib/test_stdlib.py')),
+                ('test', 'test.mod.lib.stdlib.plz', abspath(self.tempdir, 'tests/test/mod/lib/stdlib/test_plz.py')),
+            ],
         ]
         self.assert_null_hypothesis(variables, controls)
 
     def test_case_1_run_functions_by_dot_path(self):
         variables = [
             (lib.run_functions_by_dot_path, ('builtins', ['vars'])),
+            (lib.run_functions_by_dot_path, ('not_real', ['print'])),
+            (lib.run_functions_by_dot_path, ('builtins', ['not_real'])),
         ]
         controls = [
             0,
+            1,
+            2,
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -95,20 +135,40 @@ class TestCase(UnitTest):
         self.assertEqual(original, new, '_self_modify should take effect but be idempotent! something changed, check the git diff?')
 
     def test_case_4_audit_relpath(self):
+        from chriscarl.core.lib.stdlib.io import write_text_file
+        lol_py = abspath(self.tempdir, 'lol.py')
+        write_text_file(lol_py, 'SCRIPT_RELPATH = False')
         variables = [
             (lib.audit_relpath, (), dict(dirpath=REPO_DIRPATH, included_dirs=[PYPA_SRC_DIRPATH, TESTS_DIRPATH])),
+            (lib.audit_relpath, (), dict(dirpath=self.tempdir)),
+        ]
+        controls = [
+            0,
+            0,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+        os.remove(lol_py)
+
+    def test_case_5_audit_tdd(self):
+        variables = [
+            (lib.audit_tdd, (), dict(dirpath=REPO_DIRPATH, dry=False, tests_dirname='tests', force=True)),
         ]
         controls = [
             0,
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_case_5_audit_tdd(self):
+        self.tearDown()
+        self.setUp()
+        from chriscarl.core.lib.stdlib.io import write_text_file
+        write_text_file(abspath(self.tempdir, 'src/test/lol.py'), 'SCRIPT_RELPATH = False')
+        make_dirpath(self.tempdir, 'tests')
+        print(os.listdir(self.tempdir))
         variables = [
-            (lib.audit_tdd, (), dict(dirpath=REPO_DIRPATH, dry=False, tests_dirname='tests', cwd=self.tempdir, force=True)),
+            (lib.audit_tdd, (), dict(dirpath=self.tempdir, dry=False, tests_dirname='tests', module_name='test')),
         ]
         controls = [
-            0,
+            1,
         ]
         self.assert_null_hypothesis(variables, controls)
 

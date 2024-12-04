@@ -1,0 +1,16 @@
+# Ongoing Maintainance
+- on save
+    - trailing spaces trim
+    - yapf formatting via eeyore
+    - run on save extension
+        - mypy stubgen creation for .py files
+- audit
+    - all: run all of the below
+        - manifest-modify:  modifies files.manifest
+        - manifest-verify: verifies files.manifest
+        - relpath ensures: each file has the correct relpath for pyinstaller reasons
+        - tdd: ensures each file has a test
+        - banned: ensures no bad words exist
+        - stubs: regenerates all stubs but also adds shadow module stubs
+        - clean: removes all .pyc
+        - test: runs pytest coverage to ensure at least 85%

@@ -22,6 +22,8 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
+from chriscarl.core.constants import TEST_COLLATERAL_DIRPATH
+from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
@@ -47,15 +49,17 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    @unittest.skip('lorem ipsum')
-    def test_case_0(self):
+    def test_case_0_unicode_throw(self):
+        utf8 = abspath(TEST_COLLATERAL_DIRPATH, 'utf-8')
+        utf16le = abspath(TEST_COLLATERAL_DIRPATH, 'utf-16-le')
+        self.assertRaises(UnicodeDecodeError, lib.read_text_file, utf16le)
         variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
+            (lib.read_text_file, (utf8, ), dict(encoding='utf-8')),
+            (lib.read_text_file, (utf16le, ), dict(encoding='utf-16-le')),
         ]
         controls = [
-            6,
-            6,
+            'hello world',
+            '\ufeffhello world',
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -65,6 +69,6 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0()
+    tc.test_case_0_unicode_throw()
 
     tc.tearDown()

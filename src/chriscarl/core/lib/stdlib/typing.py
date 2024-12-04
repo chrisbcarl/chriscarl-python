@@ -147,8 +147,8 @@ def isof(obj, *typings):
 
 def isinstance_raise(obj, *typings, msg=''):
     # type: (Any, List[Union[type, Iterable, _AnyMeta, None ,_UnionGenericAlias, _GenericAlias, ModuleType]], str) -> bool
-    from chriscarl.core.lib.stdlib.inspect import get_variable_names_linenos
-    var_name = list(get_variable_names_linenos(obj, stack_frames=2))[0][0]
+    from chriscarl.core.lib.stdlib.inspect import get_variable_name_lineno
+    var_name = get_variable_name_lineno(obj)[0]
 
     res = isof(obj, *typings)
     if not res:

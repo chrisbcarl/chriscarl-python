@@ -85,7 +85,7 @@ class TestCase(UnitTest):
         mp.unmod(force=True)
         return super().tearDown()
 
-    @unittest.skip('TODO: pytest freaks out on mod')
+    # @unittest.skip('TODO: pytest freaks out on mod')
     def test_case_0_hasgetset_attr_mod(self):
         assert hasattr.__name__ != cp.hasattr_deep.__name__, 'hack uninitiated'
         mp.mod(force=True)
@@ -103,7 +103,7 @@ class TestCase(UnitTest):
         self.assert_null_hypothesis(variables, controls)
         mp.unmod(force=True)
 
-    @unittest.skip('TODO: pytest freaks out on mod')
+    # @unittest.skip('TODO: pytest freaks out on mod')
     def test_case_1_hasgetset_attr_mod_context(self):
         assert hasattr.__name__ != cp.hasattr_deep.__name__, 'hack uninitiated'
         with mp.Mod():

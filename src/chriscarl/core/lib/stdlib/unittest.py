@@ -114,31 +114,35 @@ class UnitTest(unittest.TestCase):
 
                 if break_idx > -1 and break_idx == e:
                     try:
-                        filepath = sys.modules[func.__module__].__file__
-                        launch_editor(filepath)
+                        module = sys.modules[func.__module__]
+                        if hasattr(module, '__file__'):
+                            filepath = module.__file__
+                            launch_editor(filepath)
                         input('!!! BREAK IDX ENCOUNTERED - {} !!!\nPress any key to continue (or actually set breakpoints)...'.format(status))
                     except KeyboardInterrupt:
                         sys.exit(2)  # SIGINT-ish
 
                 if inspect.isclass(control) and issubclass(control, Exception):
+                    exe = None
                     try:
                         experiment = func(*args, **kwargs)
+                    except Exception as ex:
+                        experiment = exe = ex
+                    if not exe:
                         assert False, '{} failed to accept null hypothesis (experiment raises exception): {} not encountered, got a real result instead {}!'.format(
                             status, control, experiment
                         )
-                    except Exception as ex:
-                        experiment = ex
-                    assert issubclass(type(experiment), control), '{} failed to accept null hypothesis (control != experiment): {} != {}!'.format(status, control, experiment)
+                    assert issubclass(type(experiment), control), '{} failed to accept null hypothesis (control != experiment): {!r} != {!r}!'.format(status, control, experiment)
 
                 else:
                     experiment = func(*args, **kwargs)
                     if inspect.isgenerator(experiment) or isinstance(experiment, (map, filter)):
                         LOGGER.debug('{} encountered a generator... expanding.'.format(status))
                         experiment = list(experiment)  # expand it out
-                    assert experiment == control, '{} failed to accept null hypothesis (control != experiment): {} != {}'.format(status, control, experiment)
+                    assert experiment == control, '{} failed to accept null hypothesis (control != experiment): {!r} != {!r}'.format(status, control, experiment)
 
                 # stacklevel has a bug in it somewhere such that lazy formatting isnt correctly using THIS frame, but the stacklevel frame
-                LOGGER.info('{} = {}'.format(status, control), stacklevel=2)
+                LOGGER.info('{} PASS'.format(status), stacklevel=2)
             return True
         except AssertionError as ae:
             # https://stackoverflow.com/a/58821552
