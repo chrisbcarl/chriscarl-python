@@ -105,6 +105,52 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_3_drives(self):
+        if sys.platform == 'win32':
+            drives = lib.drives()
+            current_drive = lib.current_drive()
+            self.assertIn('c', drives)
+            self.assertIn(current_drive, drives)
+
+    def test_case_4_as_posix(self):
+        variables = [
+            (lib.as_posix, ('/temp', ), dict(wsl=False)),
+        ]
+        controls = [
+            '/temp',
+        ]
+        if sys.platform == 'win32':
+            variables += [
+                (lib.as_posix, ('C:\\temp', ), dict(wsl=False)),
+                (lib.as_posix, ('C:\\temp', ), dict(wsl=True)),
+            ]
+            controls += [
+                '/temp',
+                '/mnt/c/temp',
+            ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_5_as_posix_win32(self):
+        if sys.platform == 'win32':
+            drives = lib.drives()
+            current_drive = lib.current_drive()
+            other_drives = [drive for drive in drives if drive != current_drive]
+            with lib.chdir('/'):
+                for other_drive in other_drives:
+                    try:
+                        os.chdir('{}:'.format(other_drive))
+                    except OSError:
+                        continue
+                    variables = [
+                        (lib.as_posix, ('C:\\temp', ), dict(wsl=False)),
+                        (lib.as_posix, ('\\temp', ), dict(wsl=True)),
+                    ]
+                    controls = [
+                        'C:/temp',
+                        '/mnt/{}/temp'.format(other_drive),
+                    ]
+                    self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=logging.DEBUG)
@@ -114,5 +160,8 @@ if __name__ == '__main__':
     tc.test_case_0_abspath()
     tc.test_case_1_chdir()
     tc.test_case_2_walk()
+    tc.test_case_3_drives()
+    tc.test_case_4_as_posix()
+    tc.test_case_5_as_posix_win32()
 
     tc.tearDown()

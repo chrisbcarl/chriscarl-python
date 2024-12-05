@@ -1,6 +1,8 @@
 # TODO
 - dev
-    full
+    version is fucked
+    logging wrappers need to go everywhere shortly
+    full / all
     new hermione
         scan for changes, make sure theres a documentation that correlates with that.
     commit, does all of the pre-commit and other shit i need to do

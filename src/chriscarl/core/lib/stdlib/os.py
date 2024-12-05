@@ -10,6 +10,7 @@ core.lib.stdlib.os is all about file system traversal
 core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
 
 Updates:
+    2024-12-04 - core.lib.stdlib.os - added as_posix
     2024-11-27 - core.lib.stdlib.os - added walk
     2024-11-26 - core.lib.stdlib.os - added chdir context manager
     2024-11-24 - core.lib.stdlib.os - initial commit
@@ -20,6 +21,7 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import re
+import string
 import logging
 from typing import Generator, Optional, List
 
@@ -116,3 +118,39 @@ def walk(root_dirpath, extensions=None, ignore=None, include=None, case_insensit
                 yield bname
             else:
                 yield abspath(dirpath, filename)
+
+
+def drives():
+    # type: () -> List[str]
+    '''https://stackoverflow.com/a/34187346'''
+    return [d for d in string.ascii_lowercase if os.path.exists('%s:' % d)]
+
+
+def current_drive():
+    # type: () -> str
+    return abspath(os.getcwd())[0].lower()
+
+
+def as_posix(path, wsl=False):
+    # type: (str, bool) -> str
+    '''
+    Description:
+        convert any path into a logical posix path.
+        C:\\temp and cwd is on the C:\\ drive returns /temp
+        D:\\temp and cwd is on the C:\\ drive returns D:/temp
+    '''
+    path = abspath(path)
+    if sys.platform == 'win32':
+        if wsl:
+            drive = path[0].lower()
+            return '/mnt/{}{}'.format(drive, path[2:].replace('\\', '/'))
+        if re.match(r'^[a-z]\:', path, flags=re.IGNORECASE):
+            cwd = abspath(os.getcwd())
+            if path[0].lower() == cwd[0].lower():
+                return path[2:].replace('\\', '/')
+    else:
+        if path[1] == ':':
+            return path[2:].replace('\\', '/')
+        return path.replace('\\', '/')
+
+    return path.replace('\\', '/')

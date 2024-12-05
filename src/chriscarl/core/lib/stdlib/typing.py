@@ -125,7 +125,7 @@ def isof_one(obj, typing):
 
 
 def isof(obj, *typings):
-    # type: (Any, List[Union[type, Iterable, _AnyMeta, None ,_UnionGenericAlias, _GenericAlias, ModuleType]]) -> bool
+    # type: (Any, Union[type, Iterable, _AnyMeta, None ,_UnionGenericAlias, _GenericAlias, ModuleType]) -> bool
     '''
     Description:
         wouldnt it be nice to do something like this?
@@ -146,7 +146,7 @@ def isof(obj, *typings):
 
 
 def isinstance_raise(obj, *typings, msg=''):
-    # type: (Any, List[Union[type, Iterable, _AnyMeta, None ,_UnionGenericAlias, _GenericAlias, ModuleType]], str) -> bool
+    # type: (Any, Union[type, Iterable, _AnyMeta, None ,_UnionGenericAlias, _GenericAlias, ModuleType], str) -> bool
     from chriscarl.core.lib.stdlib.inspect import get_variable_name_lineno
     var_name = get_variable_name_lineno(obj)[0]
 

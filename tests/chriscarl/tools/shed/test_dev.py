@@ -126,19 +126,18 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_case_2_audit_manifest_verify(self):
+    def test_case_2_audit_manifest(self):
+        from chriscarl.core.lib.stdlib.io import read_bytes_file
+        original = read_bytes_file(lib.__file__)
+
         variables = [
-            (lib.audit_manifest_verify),
+            (lib.audit_manifest),
         ]
         controls = [
             0,
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_case_3_audit_manifest_modify(self):
-        from chriscarl.core.lib.stdlib.io import read_bytes_file
-        original = read_bytes_file(lib.__file__)
-        lib.audit_manifest_modify()
         new = read_bytes_file(lib.__file__)
         self.assertEqual(original, new, '_self_modify should take effect but be idempotent! something changed, check the git diff?')
 
@@ -242,8 +241,8 @@ if __name__ == '__main__':
 
     tc.test_case_0_create_modules_and_tests()
     tc.test_case_1_run_functions_by_dot_path()
-    tc.test_case_2_audit_manifest_verify()
-    tc.test_case_3_audit_manifest_modify()
+    tc.test_case_2_audit_manifest()
+
     tc.test_case_4_audit_relpath()
     tc.test_case_5_audit_tdd()
     tc.test_case_6_audit_banned()

@@ -42,10 +42,16 @@ FILEPATH_DEFAULT_DESCRIPTIONS_JSON = os.path.join(DIRPATH_ROOT, 'default-descrip
 FILEPATH_MANIFEST_PY = os.path.join(DIRPATH_ROOT, 'manifest.py')
 
 # ./templates
-DIRPATH_TEMPLATES = os.path.join(SCRIPT_DIRPATH, 'templates')
+DIRPATH_TEMPLATES = os.path.join(SCRIPT_DIRPATH, './templates')
 FILEPATH_MOD_LIB_TEMPLATE = os.path.join(DIRPATH_TEMPLATES, 'mod.lib.template')
 FILEPATH_TEMPLATE = os.path.join(DIRPATH_TEMPLATES, 'template')
 FILEPATH_TEST_TEMPLATE = os.path.join(DIRPATH_TEMPLATES, 'test.template')
 FILEPATH_TOOL_TEMPLATE = os.path.join(DIRPATH_TEMPLATES, 'tool.template')
+
+# ./templates/git
+DIRPATH_GIT = os.path.join(SCRIPT_DIRPATH, './templates/git')
+FILEPATH_CHANGELOG_MD = os.path.join(DIRPATH_GIT, 'CHANGELOG.md')
+FILEPATH_PYPROJECT_TOML = os.path.join(DIRPATH_GIT, 'pyproject.toml')
+FILEPATH_README_MD = os.path.join(DIRPATH_GIT, 'README.md')
 
 # ###

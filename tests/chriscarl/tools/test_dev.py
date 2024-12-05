@@ -58,6 +58,8 @@ class TestCase(UnitTest):
             log_level='INFO',
             dry=True,
             dirpath=self.tempdir,
+            no_modify=True,
+            no_verify=True,
         )
         return setUp
 
@@ -76,11 +78,8 @@ class TestCase(UnitTest):
     def test_case_2_audit_banned(self):
         lib.Audit(func=lib.dev.audit_banned, **self.audit_kwargs).run()
 
-    def test_case_3_audit_manifest_modify(self):
-        lib.Audit(func=lib.dev.audit_manifest_modify, **self.audit_kwargs).run()
-
-    def test_case_4_audit_manifest_verify(self):
-        lib.Audit(func=lib.dev.audit_manifest_verify, **self.audit_kwargs).run()
+    def test_case_3_audit_manifest(self):
+        lib.Audit(func=lib.dev.audit_manifest, **self.audit_kwargs).run()
 
     def test_case_5_audit_relpath(self):
         lib.Audit(func=lib.dev.audit_relpath, **self.audit_kwargs).run()
@@ -108,8 +107,8 @@ if __name__ == '__main__':
     tc.test_case_0_no_arg_conflicts()
     tc.test_case_1_audit_clean()
     tc.test_case_2_audit_banned()
-    tc.test_case_3_audit_manifest_modify()
-    tc.test_case_4_audit_manifest_verify()
+    tc.test_case_3_audit_manifest()
+
     tc.test_case_5_audit_relpath()
     tc.test_case_6_audit_stubs()
     tc.test_case_7_audit_tdd()

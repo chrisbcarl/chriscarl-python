@@ -3,13 +3,13 @@
 '''
 Author:         Chris Carl
 Email:          chrisbcarl@outlook.com
-Date:           2024-11-29
+Date:           2024-12-04
 Description:
 
-chriscarl.mod.lib.stdlib.logging unit test.
+chriscarl.mod.lib.third.tomllib unit test.
 
 Updates:
-    2024-11-29 - tests.chriscarl.mod.lib.stdlib.logging - initial commit
+    2024-12-04 - tests.chriscarl.mod.lib.third.tomllib - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -22,12 +22,14 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
+from chriscarl.core.constants import TEST_COLLATERAL_DIRPATH
+from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
-import chriscarl.mod.lib.stdlib.logging as lib
+import chriscarl.mod.lib.third.tomllib as lib
 
-SCRIPT_RELPATH = 'tests/chriscarl/mod/lib/stdlib/test_logging.py'
+SCRIPT_RELPATH = 'tests/chriscarl/mod/lib/third/test_tomllib.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -47,22 +49,16 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    def test_case_0_new_levels(self):
+    @unittest.skip('lorem ipsum')
+    def test_case_0(self):
         variables = [
-            # usual
-            (logging.debug, 'plz'),
-            (logging.info, 'plz'),
-            (logging.warning, 'plz'),
-            (logging.error, 'plz'),
-            (logging.critical, 'plz'),
-            # mine
-            (logging.diffuse, 'plz'),
-            (logging.verbose, 'plz'),
-            (logging.important, 'plz'),
-            (logging.inform, 'plz'),
-            (logging.success, 'plz'),
+            (sum, [0, 1, 2, 3]),
+            (sum, [0, 1, 2, 3]),
         ]
-        controls = [None for _ in variables]
+        controls = [
+            6,
+            6,
+        ]
         self.assert_null_hypothesis(variables, controls)
 
 
@@ -71,6 +67,6 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0_new_levels()
+    tc.test_case_0()
 
     tc.tearDown()

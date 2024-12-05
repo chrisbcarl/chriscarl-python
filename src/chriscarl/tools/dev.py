@@ -252,6 +252,8 @@ class Audit(Mode):
     func: Callable
     dirpath: str
     dry: bool
+    no_modify: bool
+    no_verify: bool
     included_dirs: List[str] = field(default_factory=lambda: ['src/', 'tests'])
     tests_dirname: str = DEFAULT_TESTS_DIRNAME
     words_filepath: str = DEFAULT_BANNED_WORDS_FILEPATH
@@ -268,13 +270,9 @@ class Audit(Mode):
             help='which func do you want? run "{} {} {} -h" to get help on the {!r} func'.format(SCRIPT_NAME, cls.__name__.lower(), example_audit_func, example_audit_func)
         )
 
-        manifest_modify = funcs.add_parser('manifest-modify', usage=pydoc.render_doc(dev.audit_manifest_modify))
-        manifest_modify.set_defaults(func=dev.audit_manifest_modify)
-        Audit.add_common_arguments(manifest_modify)
-
-        manifest_verify = funcs.add_parser('manifest-verify', usage=pydoc.render_doc(dev.audit_manifest_verify))
-        manifest_verify.set_defaults(func=dev.audit_manifest_verify)
-        Audit.add_common_arguments(manifest_verify)
+        manifest = funcs.add_parser('manifest', usage=pydoc.render_doc(dev.audit_manifest))
+        manifest.set_defaults(func=dev.audit_manifest)
+        Audit.add_common_arguments(manifest)
 
         relpath = funcs.add_parser('relpath', usage=pydoc.render_doc(dev.audit_relpath))
         relpath.set_defaults(func=dev.audit_relpath)
@@ -307,6 +305,8 @@ class Audit(Mode):
         Mode.add_common_arguments(parser)
         parser.add_argument('--dirpath', type=str, default=REPO_DIRPATH, help='where do we start crawling?')
         parser.add_argument('--included_dirs', type=str, nargs='+', default=['src/', 'tests/'], help='any directories that you do care about, and run them relatively to dirpath?')
+        parser.add_argument('--no-modify', action='store_true', help='do not modify?')
+        parser.add_argument('--no-verify', action='store_true', help='do not verify?')
         parser.add_argument('--dry', action='store_true', help='do not write?')
         parser.add_argument('--tests-dirname', type=str, default=DEFAULT_TESTS_DIRNAME, help='name of the tests folder?')
         parser.add_argument('--words-filepath', type=str, default=DEFAULT_BANNED_WORDS_FILEPATH, help='filepath with a bunch of words you want banned?')
@@ -316,7 +316,9 @@ class Audit(Mode):
     def run(self):
         # type: () -> int
         LOGGER.info('starting %r', self.func.__name__)
-        if self.func is dev.audit_relpath:
+        if self.func is dev.audit_manifest:
+            return dev.audit_manifest(no_modify=self.no_modify, no_verify=self.no_verify)
+        elif self.func is dev.audit_relpath:
             return dev.audit_relpath(dirpath=self.dirpath, included_dirs=self.included_dirs, dry=self.dry)
         elif self.func is dev.audit_tdd:
             return dev.audit_tdd(

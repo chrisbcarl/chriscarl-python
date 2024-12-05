@@ -10,6 +10,8 @@ tools.shed.dev is the "shed" in which all of the "tools" go to pick one up.
 tool are modules that define usually cli tools or mini applets that I or other people may find interesting or useful.
 
 Updates:
+    2024-12-04 - tools.shed.dev - FIX: manifest-modify wasnt handling nested folders correctly, now it does
+                 tools.shed.dev - combined modify and verify as I probably should have done all along, jesus
     2024-11-28 - tools.shed.dev - added audit_clean, audit_stubs, audit_cov
     2024-11-27 - tools.shed.dev - added audit_banned and it works!
     2024-11-26 - tools.shed.dev - renamed from lib to shed since pytest got confused with multiple test_lib's
@@ -269,63 +271,64 @@ def run_functions_by_dot_path(root_module, func_names, print_help=False, log_lev
         return 2
 
 
-def audit_manifest_modify():
-    # type: () -> int
+def audit_manifest(no_modify=False, no_verify=False):
+    # type: (bool, bool) -> int
     '''
     Description:
         update the files manifest
         run this to update the DIRPATH_* and FILEPATH_* constants that represent actual file paths
     '''
-    importlib.reload(manifest)
-    LOGGER.info('analyzing "%s"', manifest.__file__)
-    manifest_filepath = abspath(manifest.__file__)
-    with open(manifest_filepath, 'r', encoding='utf-8') as r:
-        lines = r.read().splitlines()
-        indexes = [l for l, line in enumerate(lines) if line.startswith('# ###')]
+    if no_modify:
+        LOGGER.info('skipping modifying "%s"', manifest.__file__)
+    else:
+        LOGGER.info('modifying "%s"', manifest.__file__)
+        importlib.reload(manifest)
+        manifest_filepath = abspath(manifest.__file__)
+        with open(manifest_filepath, 'r', encoding='utf-8') as r:
+            lines = r.read().splitlines()
+            indexes = [l for l, line in enumerate(lines) if line.startswith('# ###')]
 
-    with chdir(os.path.dirname(manifest.__file__)):
-        tokens = []
-        for d, _, fs in os.walk('./'):
-            if '__pycache__' in d:
-                continue
-            dirname = os.path.basename(d)
-            dupper = dirname.upper()
-            tokens.append("# {}".format(d))
-            if dupper:
-                tokens.append("DIRPATH_{} = os.path.join(SCRIPT_DIRPATH, '{}')".format(dupper, dirname))
-            else:
-                dupper = 'ROOT'
-                tokens.append("DIRPATH_ROOT = SCRIPT_DIRPATH")
-            for f in fs:
-                if '__init__' in f:
+        with chdir(os.path.dirname(manifest.__file__)):
+            tokens = []
+            for d, _, fs in os.walk('./'):
+                if '__pycache__' in d:
                     continue
-                pname = get_legal_python_name(f)
-                tokens.append("FILEPATH_{} = os.path.join(DIRPATH_{}, '{}')".format(pname.upper(), dupper, f))
+                dirname = os.path.basename(d)
+                dupper = dirname.upper()
+                d_relpath = d.replace('\\', '/')
+                tokens.append("# {}".format(d_relpath))
+                if dupper:
+                    tokens.append("DIRPATH_{} = os.path.join(SCRIPT_DIRPATH, '{}')".format(dupper, d_relpath))
+                else:
+                    dupper = 'ROOT'
+                    tokens.append("DIRPATH_ROOT = SCRIPT_DIRPATH")
+                for f in fs:
+                    if '__init__' in f:
+                        continue
+                    pname = get_legal_python_name(f)
+                    tokens.append("FILEPATH_{} = os.path.join(DIRPATH_{}, '{}')".format(pname.upper(), dupper, f))
 
-            tokens.append("")
+                tokens.append("")
 
-    new_content = lines[0:indexes[0]] + ['# ###\n'] + tokens + lines[indexes[1]:]
-    LOGGER.info('writing %d lines of filepath content', len(tokens))
-    with open(manifest_filepath, 'w', encoding='utf-8') as w:
-        w.write('\n'.join(new_content))
-    return 0
+        new_content = lines[0:indexes[0]] + ['# ###\n'] + tokens + lines[indexes[1]:]
+        LOGGER.info('writing %d lines of filepath content', len(tokens))
+        with open(manifest_filepath, 'w', encoding='utf-8') as w:
+            w.write('\n'.join(new_content))
 
+    # check each of the DIRPATH_* and FILEPATH_* actually exist...
+    if no_verify:
+        LOGGER.info('skipping verifying "%s"', manifest.__file__)
+    else:
+        LOGGER.info('verifying "%s"', manifest.__file__)
+        importlib.reload(manifest)
+        lcls = dict(vars(manifest))
+        for k, v in lcls.items():
+            if k.startswith('DIRPATH') and not os.path.isdir(v):
+                raise OSError('dir {} at "{}" does not exist!'.format(k, v))
+        for k, v in lcls.items():
+            if k.startswith('FILEPATH') and not os.path.isfile(v):
+                raise OSError('file {} at "{}" does not exist!'.format(k, v))
 
-def audit_manifest_verify():
-    # type: () -> int
-    '''
-    Description:
-        verify the files manifest
-        run this to check each of the DIRPATH_* and FILEPATH_* actually exist...
-    '''
-    importlib.reload(manifest)
-    lcls = dict(vars(manifest))
-    for k, v in lcls.items():
-        if k.startswith('DIRPATH') and not os.path.isdir(v):
-            raise OSError('dir {} at "{}" does not exist!'.format(k, v))
-    for k, v in lcls.items():
-        if k.startswith('FILEPATH') and not os.path.isfile(v):
-            raise OSError('file {} at "{}" does not exist!'.format(k, v))
     return 0
 
 
@@ -529,6 +532,8 @@ def audit_stubs(dirpath=REPO_DIRPATH, module_name=chriscarl.__name__, output_dir
     '''
     Description:
         generate .pyi files that contain type hints. in the case of MY module, it will also create augmented typehints for the shadow modules
+        modeled after this command which can be run at any time:
+            stubgen src/chriscarl -o dist/typing
     '''
     with chdir(dirpath):
         dist_typing = abspath(dirpath, output_dirpath)
@@ -596,6 +601,9 @@ def audit_cov(dirpath=REPO_DIRPATH, module=chriscarl.__name__, tests_dirname='te
     '''
     Description:
         run pytest coverage and call out anything below a certain threshold
+        modeled after this command which can be run at any time:
+            pytest --cov=chriscarl tests --cov-report term-missing
+            pytest --cov=chriscarl.core.types tests/chriscarl/core/types --cov-report term-missing
     '''
     with chdir(dirpath):
         cmd = ['pytest', '--cov={}'.format(module), '{}/'.format(tests_dirname), '--cov-report', 'term-missing']
