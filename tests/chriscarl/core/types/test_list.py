@@ -18,6 +18,7 @@ import os
 import sys
 import logging
 import unittest
+from typing import List
 
 # third party imports
 
@@ -81,14 +82,43 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_3_as_list(self):
+        variables = [
+            (lib.as_list, ([1], List[int])),
+            (lib.as_list, (1, List[int])),
+        ]
+        controls = [
+            [1],
+            [1],
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_4_contains(self):
+        variables = [
+            (lib.contains, (self.num_list, 1)),
+            (lib.contains, (self.num_list, 2)),
+            (lib.contains, (self.num_list, 3)),
+            (lib.contains, (self.num_list, [1, 2, 3])),
+            (lib.contains, (self.num_list, None)),
+        ]
+        controls = [
+            None,
+            None,
+            None,
+            None,
+            ValueError,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=logging.DEBUG)
     tc = TestCase()
     tc.setUp()
 
     tc.test_case_0_dedupe()
     tc.test_case_1_find_index()
     tc.test_case_2_sorted_list_by_frequency()
+    tc.test_case_3_as_list()
+    tc.test_case_4_contains()
 
     tc.tearDown()

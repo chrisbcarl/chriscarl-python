@@ -61,13 +61,33 @@ class TestCase(UnitTest):
             (logging.important, 'plz'),
             (logging.inform, 'plz'),
             (logging.success, 'plz'),
+            # usual
+            (LOGGER.debug, 'plz'),
+            (LOGGER.info, 'plz'),
+            (LOGGER.warning, 'plz'),
+            (LOGGER.error, 'plz'),
+            (LOGGER.critical, 'plz'),
+            # mine
+            (LOGGER.diffuse, 'plz'),
+            (LOGGER.verbose, 'plz'),
+            (LOGGER.important, 'plz'),
+            (LOGGER.inform, 'plz'),
+            (LOGGER.success, 'plz'),
         ]
         controls = [None for _ in variables]
+        if sys.version_info[0] == 2:
+            new_variables = [(logging._levelNames.__contains__, k) for k in lib.NEW_NAME_TO_LEVEL] + [(logging._levelNames.__contains__, v) for v in lib.NEW_NAME_TO_LEVEL.values()]
+            variables += new_variables
+            controls += [True for _ in new_variables]
+        else:
+            new_variables = [(logging._nameToLevel.__contains__, k)
+                             for k in lib.NEW_NAME_TO_LEVEL] + [(logging._levelToName.__contains__, v) for v in lib.NEW_NAME_TO_LEVEL.values()]
+            variables += new_variables
+            controls += [True for _ in new_variables]
         self.assert_null_hypothesis(variables, controls)
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=logging.DEBUG)
     tc = TestCase()
     tc.setUp()
 

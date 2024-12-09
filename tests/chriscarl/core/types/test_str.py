@@ -3,13 +3,13 @@
 '''
 Author:         Chris Carl
 Email:          chrisbcarl@outlook.com
-Date:           2024-11-27
+Date:           2024-11-26
 Description:
 
-chriscarl.core.lib.stdlib.re unit test.
+chriscarl.core.types.string unit test.
 
 Updates:
-    2024-11-27 - tests.chriscarl.core.lib.stdlib.re - initial commit
+    2024-11-26 - tests.chriscarl.core.types.string - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -17,6 +17,7 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
+import unittest
 
 # third party imports
 
@@ -24,9 +25,9 @@ import logging
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
-import chriscarl.core.lib.stdlib.re as lib
+import chriscarl.core.types.str as lib
 
-SCRIPT_RELPATH = 'tests/chriscarl/core/lib/stdlib/test_re.py'
+SCRIPT_RELPATH = 'tests/chriscarl/core/types/test_string.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -57,36 +58,36 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_case_1_find_lineno_colno(self):
-        doc = '''chriscarl.core.lib.stdlib.re unit test.
-Updates:
-    2024-11-27 - tests.chriscarl.core.lib.stdlib.re - initial commit'''
+    def test_case_1_size_to_bytes(self):
         variables = [
-            (lib.find_lineno_colno, ('re', doc)),
+            (lib.size_to_bytes, '1024 b'),
+            (lib.size_to_bytes, '1 Mb'),
+            (lib.size_to_bytes, '1Gb'),
+            (lib.size_to_bytes, '1024'),
+            (lib.size_to_bytes, '1024b'),
+            (lib.size_to_bytes, '1M'),
+            (lib.size_to_bytes, '1 M'),
+            (lib.size_to_bytes, '1G'),
+            (lib.size_to_bytes, '1 G'),
+            (lib.size_to_bytes, '1tb', dict(into='g')),
+            (lib.size_to_bytes, '1tb', dict(into='m')),
+            (lib.size_to_bytes, '1tb', dict(into='k')),
+            (lib.size_to_bytes, '1tb', dict(into='b')),
         ]
         controls = [
-            [
-                (1, 13),
-                (1, 27),
-                (3, 36),
-                (3, 50),
-            ],
-        ]
-        self.assert_null_hypothesis(variables, controls)
-        doc = '''hello world
-HELLO WORLD'''
-        variables = [
-            (lib.find_lineno_colno, ('hello', doc), dict(case_insensitive=True)),
-            (lib.find_lineno_colno, ('hello', doc), dict(case_insensitive=False)),
-        ]
-        controls = [
-            [
-                (1, 1),
-                (2, 1),
-            ],
-            [
-                (1, 1),
-            ],
+            1024**1,
+            1024**2,
+            1024**3,
+            2**10,
+            2**10,
+            2**20,
+            2**20,
+            2**30,
+            2**30,
+            1024**1,
+            1024**2,
+            1024**3,
+            1024**4,
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -96,6 +97,6 @@ if __name__ == '__main__':
     tc.setUp()
 
     tc.test_case_0_find_index()
-    tc.test_case_1_find_lineno_colno()
+    tc.test_case_1_size_to_bytes()
 
     tc.tearDown()

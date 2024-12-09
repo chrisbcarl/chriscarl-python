@@ -10,6 +10,7 @@ Python is lots of deep nerdy python shit that usually involves runtime fuckery.
 chriscarl.core files are non-self-referential, do very little importing, and define the bedrock from which other things do import.
 
 Updates:
+    2024-12-09 - core.python - added get_this_file_lineno / get_caller_file_lineno
     2024-11-29 - core.python - fixed abbreviate_arg so that it wouldnt always have elipses
     2024-11-27 - core.python - added abbreviate_arg
     2024-11-26 - core.python - added invocation support for partials
@@ -33,7 +34,7 @@ from typing import Any, Tuple, List, Union, Callable, Generator, Dict, Optional,
 # third party imports
 
 # project imports
-from chriscarl.core.lib.stdlib.logging import get_log_func
+from chriscarl.core.constants import SENTINEL
 
 SCRIPT_RELPATH = 'chriscarl/core/functors/python.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -46,7 +47,6 @@ THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-CRAZY_SENTINEL = '0cc44c50-5d1e-4529-b8c3-5ee4271aa5a0_338ad6d4-ce81-4e13-9ccc-5a34cf55947b'
 _hasattr = hasattr
 _getattr = getattr
 _setattr = setattr
@@ -195,7 +195,7 @@ def hasattr_cmp(key, *objs):
         return (False, all(not hasattr_deep(obj, key) for obj in B))
 
 
-def getattr_deep(obj, key, default=CRAZY_SENTINEL):
+def getattr_deep(obj, key, default=SENTINEL):
     # type: (Any, str, Any) -> Any
     '''
     Description:
@@ -213,7 +213,7 @@ def getattr_deep(obj, key, default=CRAZY_SENTINEL):
         for token in key.split('.'):
             subobj = _getattr(subobj, token)
     except AttributeError as ae:
-        if default != CRAZY_SENTINEL:  # i can't use None, because some deep code uses getattr(blah, blah, None), particularly in pytest...
+        if default != SENTINEL:  # i can't use None, because some deep code uses getattr(blah, blah, None), particularly in pytest...
             return default
         raise AttributeError('{} instance has no attribute {}'.format(obj.__class__.__name__, key)) from ae
 
@@ -291,7 +291,8 @@ def conform_func_args_kwargs(func_args_kwargs):
 
 def run_func_args_kwargs(func_args_kwargs, break_idx=-1, log_level=logging.DEBUG):
     # type: (List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]], int, Union[str, int]) -> Generator[Any, None, List[Any]]
-    log_func = get_log_func(log_level)
+    from chriscarl.core.lib.stdlib.logging import get_log_func_from_level
+    log_func = get_log_func_from_level(log_level)
     variables = conform_func_args_kwargs(func_args_kwargs)
     results = []
     for e, tpl in enumerate(variables):

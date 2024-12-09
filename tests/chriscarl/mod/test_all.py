@@ -3,13 +3,13 @@
 '''
 Author:         Chris Carl
 Email:          chrisbcarl@outlook.com
-Date:           2024-11-26
+Date:           2024-12-09
 Description:
 
-chriscarl.core.types.string unit test.
+chriscarl.mod.all unit test.
 
 Updates:
-    2024-11-26 - tests.chriscarl.core.types.string - initial commit
+    2024-12-09 - tests.chriscarl.mod.all - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -22,12 +22,14 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
+from chriscarl.core.constants import TEST_COLLATERAL_DIRPATH
+from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
-import chriscarl.core.types.string as lib
+import chriscarl.mod.all as lib
 
-SCRIPT_RELPATH = 'tests/chriscarl/core/types/test_string.py'
+SCRIPT_RELPATH = 'tests/chriscarl/mod/test_all.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -47,23 +49,23 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    def test_case_0_find_index(self):
+    @unittest.skip('lorem ipsum')
+    def test_case_0(self):
         variables = [
-            (lib.find_index, ('abc', 'abcabcabc')),
-            (lib.find_index, ('abc', 'abbcabccabc')),
+            (sum, [0, 1, 2, 3]),
+            (sum, [0, 1, 2, 3]),
         ]
         controls = [
-            [0, 3, 6],
-            [4, 8],
+            6,
+            6,
         ]
         self.assert_null_hypothesis(variables, controls)
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=logging.DEBUG)
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0_find_index()
+    tc.test_case_0()
 
     tc.tearDown()

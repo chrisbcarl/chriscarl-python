@@ -1,7 +1,28 @@
 # TODO
 - dev
-    version is fucked
     logging wrappers need to go everywhere shortly
+    version class is fucked, please simplify
+    some kind of exception class that is able to raise exceptions cleanly, with correct relevant traceback localization
+        exc_info = sys.exc_info()
+        traceback = exc_info[2]
+        back_frame = traceback.tb_frame.f_back
+        back_tb = TracebackType(tb_next=None, tb_frame=back_frame, tb_lasti=back_frame.f_lasti, tb_lineno=back_frame.f_lineno)
+        .with_traceback(back_tb)
+        .with_traceback(back_tb)
+    do pyi stubgen myself with AST analysis and figure out what i've added or changed and then modify the ast directly and THEN print it out.
+        basically analyze the AST of original module
+        analyze AST of shadow module
+        combine what has been changed or added in the new ast
+        import ast
+        with open(r'C:\Users\chris\src\chriscarl-python\dist\typing\logging\__init__.pyi') as r:
+            content = r.read()
+        parsed = ast.parse(content)
+        print(ast.dump(parsed, indent=4))
+        print(ast.unparse(parsed))
+    mod.all created
+        on new mod.something, add it to all
+        edit the templates so that they use all
+    mod.logging needs to modify all previously instantiated loggers with the new logger class so they get all level functions...
     full / all
     new hermione
         scan for changes, make sure theres a documentation that correlates with that.

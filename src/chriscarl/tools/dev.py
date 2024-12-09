@@ -41,7 +41,7 @@ from argparse import _SubParsersAction, ArgumentParser, ArgumentError, Namespace
 # project imports
 import chriscarl
 from chriscarl.core.constants import REPO_DIRPATH, TESTS_DIRPATH
-from chriscarl.core.lib.stdlib.logging import LOG_LEVELS
+from chriscarl.core.lib.stdlib.logging import NAME_TO_LEVEL
 from chriscarl.core.lib.stdlib.argparse import ArgparseNiceFormat
 from chriscarl.core.lib.stdlib.os import abspath, chdir
 from chriscarl.core.lib.stdlib.json import read_json
@@ -90,13 +90,14 @@ class Mode:
         sys.exit(mode.run())
 
     @staticmethod
-    def add_common_arguments(parser):
-        # type: (ArgumentParser) -> ArgumentParser
+    def add_common_arguments(parser, log_levels=None):
+        # type: (ArgumentParser, Optional[List[str]]) -> ArgumentParser
+        log_levels = log_levels or list(NAME_TO_LEVEL)
         parser.add_argument('--cwd', type=str, default=os.getcwd(), help='cd to this directory')
         parser.add_argument('--module', type=str, default=DEFAULT_ROOT_LIB, help='change the default lib? all modes act on this "root".')
         parser.add_argument('--author', type=str, default=DEFAULT_AUTHOR, help='author first last no space')
         parser.add_argument('--email', type=str, default=DEFAULT_EMAIL, help='author email')
-        parser.add_argument('--log-level', type=str, default='INFO', choices=LOG_LEVELS, help='log level?')
+        parser.add_argument('--log-level', type=str, default='INFO', choices=log_levels, help='log level?')
         return parser
 
     @classmethod

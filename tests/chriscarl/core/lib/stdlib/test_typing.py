@@ -202,7 +202,6 @@ class TestCase(UnitTest):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=logging.DEBUG)
     tc = TestCase()
     tc.setUp()
 

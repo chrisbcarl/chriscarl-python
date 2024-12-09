@@ -45,3 +45,4 @@ CWD = os.getcwd()
 NOW = datetime.datetime.now()
 DATE = NOW.strftime('%Y-%m-%d')
 TIME = NOW.strftime('%H:%M:%S.%f')
+SENTINEL = '0cc44c50-5d1e-4529-b8c3-5ee4271aa5a0_338ad6d4-ce81-4e13-9ccc-5a34cf55947b'

@@ -136,3 +136,20 @@ class FunctionSpecification(object):
         varkwargs = varkw
         fs = FunctionSpecification(func=func, name=name, positional=positional, optional=optional, varargs=varargs, varkwargs=varkwargs)
         return fs
+
+
+def get_this_file_lineno(stack_frames=1):
+    # type: (int) -> Tuple[str, int]
+    for i, frame_tuple in enumerate(inspect.stack()):
+        if i != stack_frames:
+            continue
+        if i == stack_frames:
+            relpath = os.path.relpath(frame_tuple[1], os.getcwd())
+            lineno = frame_tuple[2]
+            return relpath, lineno
+    return '', -1
+
+
+def get_caller_file_lineno():
+    # type: () -> Tuple[str, int]
+    return get_this_file_lineno(stack_frames=3)

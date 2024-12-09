@@ -46,6 +46,9 @@ def abspath(*paths):
     return os.path.abspath(os.path.expanduser(os.path.join(*paths)))
 
 
+TEMP_DIRPATH = abspath('C:/temp' if sys.platform == 'win32' else '/tmp')
+
+
 def dirpath(*paths):
     # type: (str) -> str
     abs_ = abspath(*paths)

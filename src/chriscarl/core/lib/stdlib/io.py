@@ -35,6 +35,9 @@ THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+MODES = ['r', 'w', 'a', 'rb', 'wb', 'ab']
+MODES += ['{}+'.format(__mode) for __mode in MODES]
+
 
 def read_text_file(filepath, encoding='utf-8'):
     # type: (str, str) -> str

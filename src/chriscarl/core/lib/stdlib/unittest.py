@@ -10,6 +10,7 @@ core.lib.stdlib.unittest includes stuff I want all unit tests to have access to
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2024-12-09 - core.lib.stdlib.unittest - UnitTest now configures with my logging by default, so much nicer.
     2024-11-26 - core.lib.stdlib.unittest - added UnitTest as a class
                  core.lib.stdlib.unittest - assertions now outline the line above itself so that they make more sense
     2024-11-22 - core.lib.stdlib.unittest - initial commit
@@ -52,6 +53,8 @@ class UnitTest(unittest.TestCase):
     tempfile = None
 
     def setUp(self):
+        from chriscarl.core.lib.stdlib.logging import configure
+        configure()
         fd, self.tempfile = tempfile.mkstemp()
         os.close(fd)
         self.tempdir = tempfile.mkdtemp()
@@ -133,16 +136,15 @@ class UnitTest(unittest.TestCase):
                             status, control, experiment
                         )
                     assert issubclass(type(experiment), control), '{} failed to accept null hypothesis (control != experiment): {!r} != {!r}!'.format(status, control, experiment)
-
+                    LOGGER.info('{} PASS w/ exception {}'.format(status, control), stacklevel=2)
                 else:
                     experiment = func(*args, **kwargs)
                     if inspect.isgenerator(experiment) or isinstance(experiment, (map, filter)):
                         LOGGER.debug('{} encountered a generator... expanding.'.format(status))
                         experiment = list(experiment)  # expand it out
                     assert experiment == control, '{} failed to accept null hypothesis (control != experiment): {!r} != {!r}'.format(status, control, experiment)
-
-                # stacklevel has a bug in it somewhere such that lazy formatting isnt correctly using THIS frame, but the stacklevel frame
-                LOGGER.info('{} PASS'.format(status), stacklevel=2)
+                    # stacklevel has a bug in it somewhere such that lazy formatting isnt correctly using THIS frame, but the stacklevel frame
+                    LOGGER.info('{} PASS'.format(status), stacklevel=2)
             return True
         except AssertionError as ae:
             # https://stackoverflow.com/a/58821552

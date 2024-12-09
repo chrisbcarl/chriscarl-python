@@ -40,6 +40,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 _isinstance = isinstance
+T_TYPING = Union[type, Iterable, _AnyMeta, None, _UnionGenericAlias, _GenericAlias, ModuleType]
 
 
 def isof_typing(obj, typing):
@@ -109,7 +110,7 @@ def isof_iterable(obj, itr):
 
 
 def isof_one(obj, typing):
-    # type: (Any, Union[type, Iterable, _AnyMeta, None ,_UnionGenericAlias, _GenericAlias, ModuleType]) -> bool
+    # type: (Any, T_TYPING) -> bool
     if typing is Any:
         return True
     if typing is None:
@@ -125,7 +126,7 @@ def isof_one(obj, typing):
 
 
 def isof(obj, *typings):
-    # type: (Any, Union[type, Iterable, _AnyMeta, None ,_UnionGenericAlias, _GenericAlias, ModuleType]) -> bool
+    # type: (Any, T_TYPING) -> bool
     '''
     Description:
         wouldnt it be nice to do something like this?
@@ -146,7 +147,7 @@ def isof(obj, *typings):
 
 
 def isinstance_raise(obj, *typings, msg=''):
-    # type: (Any, Union[type, Iterable, _AnyMeta, None ,_UnionGenericAlias, _GenericAlias, ModuleType], str) -> bool
+    # type: (Any, T_TYPING, str) -> bool
     from chriscarl.core.lib.stdlib.inspect import get_variable_name_lineno
     var_name = get_variable_name_lineno(obj)[0]
 

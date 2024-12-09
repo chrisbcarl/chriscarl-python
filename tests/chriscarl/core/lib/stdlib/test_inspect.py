@@ -116,13 +116,21 @@ class TestCase(UnitTest):
         controls = [True for _ in variables]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_2_linenos(self):
+
+        def run():
+            return lib.get_caller_file_lineno()[1]
+
+        self.assertEqual(lib.get_this_file_lineno()[1], 124)
+        self.assertEqual(run(), 125)
+
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=logging.DEBUG)
     tc = TestCase()
     tc.setUp()
 
     tc.test_case_0_get_variable_names_linenos()
     tc.test_case_1_FunctionSpecification()
+    tc.test_case_2_linenos()
 
     tc.tearDown()

@@ -3,14 +3,14 @@
 '''
 Author:         Chris Carl
 Email:          chrisbcarl@outlook.com
-Date:           2024-11-26
+Date:           2024-12-09
 Description:
 
-core.types.string is... TODO: lorem ipsum
-core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
+mod.all is... TODO: lorem ipsum
+mod are modules that use clever and brittle hacks that modify behavior at runtime via side effect through the use of eval, exec, shadow techniques, and otherwise.
 
 Updates:
-    2024-11-26 - core.types.string - initial commit
+    2024-12-09 - mod.all - initial commit
 '''
 
 # stdlib imports
@@ -18,13 +18,18 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-from typing import Generator
+import importlib
 
 # third party imports
 
 # project imports
+[importlib.import_module(__mod) for __mod in [
+    'chriscarl.mod.python',
+    'chriscarl.mod.lib.stdlib.logging',
+    'chriscarl.mod.lib.third.tomllib',
+]]
 
-SCRIPT_RELPATH = 'chriscarl/core/types/string.py'
+SCRIPT_RELPATH = 'chriscarl/mod/all.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -35,12 +40,4 @@ THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-
-def find_index(search, text):
-    # type: (str, str) -> Generator[int, None, None]
-    len_search = len(search)
-    for c, char in enumerate(text):
-        if c + len_search > len(text):
-            break
-        if char == search[0] and text[c:c + len_search] == search:
-            yield c
+# THIS IS IT, THERE IS NOTHING MORE
