@@ -6,7 +6,7 @@ Email:          chrisbcarl@outlook.com
 Date:           2024-11-25
 Description:
 
-core.lib.stdlib.subprocess is... TODO: lorem ipsum
+core.lib.stdlib.subprocess is mostly wrappers around handling subprocesses.
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:

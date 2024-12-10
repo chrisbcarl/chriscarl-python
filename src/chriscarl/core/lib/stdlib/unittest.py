@@ -136,7 +136,7 @@ class UnitTest(unittest.TestCase):
                             status, control, experiment
                         )
                     assert issubclass(type(experiment), control), '{} failed to accept null hypothesis (control != experiment): {!r} != {!r}!'.format(status, control, experiment)
-                    LOGGER.info('{} PASS w/ exception {}'.format(status, control), stacklevel=2)
+                    LOGGER.info('{} PASS w/ expected {}'.format(status, control), stacklevel=2)
                 else:
                     experiment = func(*args, **kwargs)
                     if inspect.isgenerator(experiment) or isinstance(experiment, (map, filter)):

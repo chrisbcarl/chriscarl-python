@@ -6,11 +6,11 @@ Email:          chrisbcarl@outlook.com
 Date:           2024-12-09
 Description:
 
-mod.all is intended to be "set and forget". run via `import chriscarl.mod.all as _` and you'll get all the juicy side effects.
-mod are modules that use clever and brittle hacks that modify behavior at runtime via side effect through the use of eval, exec, shadow techniques, and otherwise.
+core.types.dict is everything related to dictionaries/maps/hash tables.
+core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
-    2024-12-09 - mod.all - initial commit
+    2024-12-09 - core.types.dict - initial commit
 '''
 
 # stdlib imports
@@ -18,18 +18,12 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-import importlib
 
 # third party imports
 
 # project imports
-[importlib.import_module(__mod) for __mod in [
-    'chriscarl.mod.python',
-    'chriscarl.mod.lib.stdlib.logging',
-    'chriscarl.mod.lib.third.tomllib',
-]]
 
-SCRIPT_RELPATH = 'chriscarl/mod/all.py'
+SCRIPT_RELPATH = 'chriscarl/core/types/dict.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -39,5 +33,3 @@ SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
-
-# THIS IS IT, THERE IS NOTHING MORE

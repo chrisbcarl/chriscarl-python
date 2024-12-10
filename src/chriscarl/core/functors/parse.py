@@ -6,7 +6,7 @@ Email:          chrisbcarl@outlook.com
 Date:           2024-11-29
 Description:
 
-core.functors.parse is... TODO: lorem ipsum
+core.functors.parse all about parsing functions, think stdout, tables, etc.
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:

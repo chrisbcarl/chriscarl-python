@@ -6,7 +6,7 @@ Email:          chrisbcarl@outlook.com
 Date:           2024-11-25
 Description:
 
-core.types.list is... TODO: lorem ipsum
+core.types.list is all about these array-lists.
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:

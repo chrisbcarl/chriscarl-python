@@ -185,6 +185,7 @@ class Create(Mode):
             tool=self.tool,
             no_test=self.no_test,
             no_module=self.no_module,
+            launch=True,
         )
         return len(created_type_module_filepaths) > 0
 

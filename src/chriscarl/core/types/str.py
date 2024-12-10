@@ -6,7 +6,7 @@ Email:          chrisbcarl@outlook.com
 Date:           2024-11-26
 Description:
 
-core.types.str is... TODO: lorem ipsum
+core.types.str is probably badly named and should be "string" but either sucks, so i'll go with this one.
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
