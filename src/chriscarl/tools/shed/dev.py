@@ -608,7 +608,11 @@ def audit_cov(dirpath=REPO_DIRPATH, module=chriscarl.__name__, tests_dirname='te
         cmd = ['pytest', '--cov={}'.format(module), '{}/'.format(tests_dirname), '--cov-report', 'term-missing']
         _, output = run(cmd, cwd=dirpath)
 
-    below = [pc for pc in PytestCoverage.parse(output) if pc.cover < threshold]
+    for line in output.splitlines():
+        print(line)
+
+    below = [pc for pc in PytestCoverage.parse_coverage(output) if pc.cover < threshold]
+    failed = PytestCoverage.parse_tests(output, tests_dirname=tests_dirname)
     if below:
         LOGGER.warning('encountered %d items below the %0.2f%% threshold!', len(below), threshold)
         for pc in below:
@@ -618,5 +622,12 @@ def audit_cov(dirpath=REPO_DIRPATH, module=chriscarl.__name__, tests_dirname='te
         LOGGER.warning('encountered %d items below the %0.2f%% threshold!', len(below), threshold)
     else:
         LOGGER.info('encountered %d items below the %0.2f%% threshold!', len(below), threshold)
+
+    if failed:
+        LOGGER.error('%d items outright failed!', len(failed))
+        for filepath, lineno, exc in failed:
+            LOGGER.error('"%s", line %d w/ %r', filepath, lineno, exc)
+    else:
+        LOGGER.info('at least none failed outright!')
 
     return len(below)

@@ -10,6 +10,7 @@ core.functors.parse all about parsing functions, think stdout, tables, etc.
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2024-12-11 - core.functors.parse - modified parse_coverage, added parse_tests
     2024-11-29 - core.functors.parse - initial commit
 '''
 
@@ -20,7 +21,7 @@ import sys
 import re
 import logging
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Tuple
 
 # third party imports
 
@@ -47,7 +48,7 @@ class PytestCoverage:
     missing: List[str] = field(default_factory=lambda: [])
 
     @staticmethod
-    def parse(text):
+    def parse_coverage(text):
         # type: (str) -> List[PytestCoverage]
         coverages = []
         coverage_encountered = False
@@ -70,6 +71,19 @@ class PytestCoverage:
                     missing = [ele.strip() for ele in tokens[4].split(',')]
                 pc = PytestCoverage(name=tokens[0], stmts=int(tokens[1]), miss=int(tokens[2]), cover=int(tokens[3].replace('%', '')) / 100, missing=missing)
                 coverages.append(pc)
-            print(line)
 
         return coverages
+
+    @staticmethod
+    def parse_tests(text, tests_dirname='tests'):
+        # type: (str, str) -> List[Tuple[str, int, str]]
+        failed = set()
+        regex_str = r'(?P<file>{}.+)\:(?P<lineno>\d+)\: (?P<exc>\w+(Error|Exception|Iteration))'.format(tests_dirname)
+        regex = re.compile(regex_str)
+        for line in text.splitlines():
+            mo = regex.match(line)
+            if mo:
+                groups = mo.groupdict()
+                file, lineno, exc = groups['file'], int(groups['lineno'], base=0), groups['exc']
+                failed.add((file, lineno, exc))
+        return sorted(failed)

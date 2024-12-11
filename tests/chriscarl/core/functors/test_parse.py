@@ -50,18 +50,29 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    def test_case_PytestCoverage(self):
+    def test_case_0_PytestCoverage(self):
         pytest_coverage_text = read_text_file(abspath(TEST_COLLATERAL_DIRPATH, 'pytest-coverage.txt'))
-        pytest_coverages = lib.PytestCoverage.parse(pytest_coverage_text)
+        pytest_coverages = lib.PytestCoverage.parse_coverage(pytest_coverage_text)
         for pytest_coverage in pytest_coverages:
             LOGGER.debug(pytest_coverage)
         self.assertGreater(len(pytest_coverages), 0)
+
+        variables = [
+            (lib.PytestCoverage.parse_tests, pytest_coverage_text),
+        ]
+        controls = [
+            [
+                ('tests\\chriscarl\\tools\\shed\\test_dev.py', 70, 'AssertionError'),
+                ('tests\\chriscarl\\tools\\shed\\test_dev.py', 113, 'AssertionError'),
+            ],
+        ]
+        self.assert_null_hypothesis(variables, controls)
 
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_PytestCoverage()
+    tc.test_case_0_PytestCoverage()
 
     tc.tearDown()

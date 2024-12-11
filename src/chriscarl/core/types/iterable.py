@@ -10,6 +10,7 @@ core.types.iterable is actually a lot of list and dict stuff combined, but since
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
+    2024-12-11 - core.types.iterable - added keys
     2024-12-09 - core.types.iterable - initial commit
 '''
 
@@ -18,7 +19,7 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-from typing import Optional, Union, Any, Iterable, List, Dict
+from typing import Optional, Union, Any, Iterable, List, Dict, Generator, Tuple
 from collections import OrderedDict
 
 # third party imports
@@ -26,6 +27,7 @@ from collections import OrderedDict
 # project imports
 from chriscarl.core.constants import SENTINEL
 from chriscarl.core.lib.stdlib.inspect import get_variable_name_lineno
+from chriscarl.core.lib.stdlib.typing import isinstance_raise
 
 SCRIPT_RELPATH = 'chriscarl/core/types/iterable.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -38,9 +40,11 @@ THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+Keyable = Union[Dict, List, Tuple]
+
 
 def get(key, iterable, split='.', default=SENTINEL):
-    # type: (str, Iterable, str, Any) -> Any
+    # type: (str, Keyable, str, Any) -> Any
     iterable_name = get_variable_name_lineno(iterable)[0]
     current_value = iterable
     key_so_far = []
@@ -63,6 +67,43 @@ def get(key, iterable, split='.', default=SENTINEL):
             return default
         raise KeyError('key "{}" for provided object "{}" does not exist because of {!r}!'.format(split.join(key_so_far), iterable_name, ike)) from ike
     return current_value
+
+
+def keys(value, prepend=None):
+    # type: (Keyable, Optional[str]) -> Generator[str, None, None]
+    '''
+    Description:
+        given a dictionary like this: {'a': 0, 'b': [1, 2]}
+        yield a generator of: ['a', 'b.0', 'b.1']
+
+    Arguments:
+        value: Keyable
+        prepend: Optional[str]
+            if you want the keys to start with something
+            >>> keys({'a': 0, 'b.0': 1, 'b.1': 2}, prepend='whatever')
+            >>> yields ['whatever.a', 'whatever.b.0', 'whatever.b.1']
+
+    Returns:
+        Generator[str, None, None]
+    '''
+    isinstance_raise(value, Keyable)
+    if isinstance(value, dict):
+        for k, v in value.items():
+            if prepend is None:
+                key = k
+            else:
+                key = '{}.{}'.format(prepend, k)
+            yield key
+            for key in keys(v, prepend=key):
+                yield key
+    elif isinstance(value, (list, tuple, set)):
+        for i, v in enumerate(value):
+            if prepend is None:
+                key = str(i)
+            else:
+                key = '{}.{}'.format(prepend, i)
+            for key in keys(v, prepend=key):
+                yield key
 
 
 def flatten_iterable(value, prepend=None, _flattened=None):

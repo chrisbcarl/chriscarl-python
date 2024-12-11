@@ -71,7 +71,7 @@ def D():
                 },
                 'D': {}
             },
-            ValueError,
+            TypeError,
         ]
         self.assert_null_hypothesis(variables, controls)
 

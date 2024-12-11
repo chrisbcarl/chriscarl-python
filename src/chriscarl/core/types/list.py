@@ -89,8 +89,12 @@ def as_list(obj_or_list, typing):
 def contains(choices, value_or_values):
     # type: (Iterable, Union[Any, Iterable]) -> None
     '''
-    is value or values contained in choices?
+    Description:
+        does left side contain all of the right side?
+    Raises:
+        ValueError
     '''
+    # NOTE: can't really use set, since set requires hashable, and who knows whats inside "choices"
     relpath, lineno = get_caller_file_lineno()
     choices = list(choices)  # helps to flatten iterators and sets and other things
 

@@ -11,7 +11,7 @@ core.lib are modules that contain code that is about (but does not modify) the l
 
 Updates:
     2024-12-11 - core.lib.stdlib.ast - added visit, merge_python
-                 core.lib.stdlib.ast - added get__all__
+                 core.lib.stdlib.ast - added get__all__, updated merge_python to account for __all__
     2024-12-09 - core.lib.stdlib.ast - initial commit
 '''
 
@@ -148,11 +148,3 @@ def get__all__(root):
             continue
         all_.append(key[0])
     return all_
-
-
-# def diff_function_graphs(a, b):
-#     # type: (FUNCTION_GRAPH, FUNCTION_GRAPH) -> dict
-#     # TODO: not sure how to do this one...
-#     # "key": type(a) != type(b)
-#     # "key": value(a) != value(b)
-#     return {}

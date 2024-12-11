@@ -3,6 +3,12 @@
     the last thing I was on is trying to compare one file to another via AST, see if functions were added / removed, so I can autogen the changelog
     dict probably should redo flatten in the context of walk to get all of the keys...
 
+    dev new project
+        creates a pre-commit
+        creates the .vscode
+        creates the extensions, etc.
+        pyproj toml
+
     logging wrappers need to go everywhere shortly
     version class is fucked, please simplify
     some kind of exception class that is able to raise exceptions cleanly, with correct relevant traceback localization

@@ -130,36 +130,7 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_flattened(self):
-        import intel.libraries.stdlib.json as json
-        from intel.types.dicts import flatten_dict, is_flat
-
-        assert is_flat(1), 'int isnt flat?'
-        assert is_flat('1'), 'str isnt flat?'
-        assert is_flat(['1']), 'List[str] isnt flat?'
-        assert is_flat(set()), 'empty set isnt flat?'
-        assert is_flat((1, )), '1 element tuple isnt flat?'
-        assert is_flat(dict(a=1)), 'flat dict isnt flat?'
-        assert not is_flat(NESTED_HARD), 'large nested dict is flat?'
-
-        flat = flatten_dict(NESTED_HARD, name='NESTED_HARD')
-        # LOGGER.debug(json.dumps(flat, indent=4))
-
-        assert is_flat(flat), 'flat isnt flat?'
-        all(e.startswith('NESTED_HARD.') for e in flat), 'not all keys start with NESTED_HARD?'
-
-        flat = flatten_dict(dict(a=dict(x=1, y=2), b=dict(x=1, y=2)))
-        # LOGGER.debug(json.dumps(flat, indent=4))
-
-        data = [
-            (is_flat(flat)),
-            (all(x.split('.')[0] in set(['a', 'b']) for x in flat.keys())),
-        ]
-        fail_to_reject(data=data, experiment=lambda x: x is True, null_hypothesis='name=None doesnt work')
-
-    def test_walk(self):
-        from intel.types.dicts import dict_walk, dict_access, dict_modify, dict_glob_key_to_keys
-
+    def shit_test_walk(self):
         # dict-walk tests
         d = {'a': [0, {'b': 1}, 2]}
         expected_keys = ['a', 'a.0', 'a.1', 'a.1.b', 'a.2']

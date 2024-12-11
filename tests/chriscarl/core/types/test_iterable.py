@@ -143,11 +143,27 @@ class TestCase(UnitTest):
         controls = [dicks[i] for i in range(6)]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_2_get(self):
+        variables = [
+            (lib.keys, [0, 1]),
+            (lib.keys, {'a': 0, 'b': 1}),
+            (lib.keys, NESTED_DICT),
+            (lib.keys, 1),
+        ]
+        controls = [
+            ['0', '1'],
+            ['a', 'b'],
+            ['0', '2', '2.0', '2.1', '2.2', '6', '10', '10.11', '10.13'],
+            TypeError,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
     tc.test_case_0_get()
     tc.test_case_1_flatten_iterable()
+    tc.test_case_2_get()
 
     tc.tearDown()

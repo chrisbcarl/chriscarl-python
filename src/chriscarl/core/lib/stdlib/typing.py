@@ -154,5 +154,5 @@ def isinstance_raise(obj, *typings, msg=''):
     res = isof(obj, *typings)
     if not res:
         msg = msg or 'provided {} for {!r}, requires: {}'.format(type(obj), var_name, typings if len(typings) > 1 else typings[0])
-        raise ValueError(msg)
+        raise TypeError(msg)
     return res
