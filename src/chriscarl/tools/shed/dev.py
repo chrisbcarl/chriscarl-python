@@ -11,6 +11,7 @@ tool are modules that define usually cli tools or mini applets that I or other p
 
 Updates:
     2024-12-11 - tools.shed.dev - audit_stubgen modified to make use of ast analysis and merging
+                 tools.shed.dev - added pytest actual results to audit cov
     2024-12-04 - tools.shed.dev - FIX: manifest-modify wasnt handling nested folders correctly, now it does
                  tools.shed.dev - combined modify and verify as I probably should have done all along, jesus
     2024-11-28 - tools.shed.dev - added audit_clean, audit_stubs, audit_cov
