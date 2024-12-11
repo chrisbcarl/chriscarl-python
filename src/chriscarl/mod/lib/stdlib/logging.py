@@ -10,6 +10,7 @@ mod.lib.stdlib.logging augments logging with new constants, functions, and helpe
 mod.lib are modules that shadow the original module, and by virtue of import, modify the original modules behavior with overrides.
 
 Updates:
+    2024-12-11 - mod.lib.stdlib.logging - removed _logger_function_factory and replaced them explicitly for better stubgen
     2024-12-09 - mod.lib.stdlib.logging - small refactors
     2024-12-04 - mod.lib.stdlib.logging - properly added my log levels
     2024-11-29 - mod.lib.stdlib.logging - initial commit
@@ -84,7 +85,7 @@ NEW_NAME_TO_LEVEL = {
     'VERBOSE': VERBOSE,
     'DIFFUSE': DIFFUSE,
     'PROLIX': PROLIX,
-}
+}  # type: Dict[str, int]
 
 NAME_TO_LEVEL = {
     'SUCCESS': SUCCESS,
@@ -97,10 +98,10 @@ NAME_TO_LEVEL = {
     'DEBUG': logging.DEBUG,
     'DIFFUSE': DIFFUSE,
     'PROLIX': PROLIX,
-}
+}  # type: Dict[str, int]
 setattr(logging, 'NAME_TO_LEVEL', NAME_TO_LEVEL)
 lib.NAME_TO_LEVEL.update(NAME_TO_LEVEL)
-LEVEL_TO_NAME = {v: k for k, v in NAME_TO_LEVEL.items()}
+LEVEL_TO_NAME = {v: k for k, v in NAME_TO_LEVEL.items()}  # type: Dict[int, str]
 setattr(logging, 'LEVEL_TO_NAME', LEVEL_TO_NAME)
 lib.LEVEL_TO_NAME.update(LEVEL_TO_NAME)
 if sys.version_info[0] == 2:
@@ -114,24 +115,8 @@ setattr(logging.Logger, '_default_makeRecord', logging.Logger.makeRecord)
 setattr(logging.Logger, 'makeRecord', lib.Logger_makeRecord)
 
 
-def _logger_function_factory(level):
-    '''do not modify or suffer death.'''
-
-    def _logger_function(self, message, *args, **kwargs):
-        kwargs['stacklevel'] = kwargs.get('stacklevel', 1) + 1
-        if self.isEnabledFor(level):
-            self._log(level, message, args, **kwargs)
-
-    return _logger_function
-
-
 class Logger(logging.Logger):
-    # success = _logger_function_factory(SUCCESS)
-    # important = _logger_function_factory(IMPORTANT)
-    # inform = _logger_function_factory(INFORM)
-    # verbose = _logger_function_factory(VERBOSE)
-    # diffuse = _logger_function_factory(DIFFUSE)
-    # prolix = _logger_function_factory(PROLIX)
+
     def success(self, msg, *args, **kwargs):
         if self.isEnabledFor(SUCCESS):
             self._log(SUCCESS, msg, args, **kwargs)
@@ -183,31 +168,41 @@ Logger.manager.root = logging.root = root = RootLogger(logging.WARNING)
 Logger.manager = logging.Manager(Logger.root)
 
 
-def _logging_function_factory(level):
-    '''do not modify or suffer death.'''
-
-    name = LEVEL_TO_NAME.get(level, 'PROLIX').lower()
-
-    def _loging_function(msg, *args, **kwargs):
-        '''
-        Log a message with severity 'DEBUG' on the root logger. If the logger has
-        no handlers, call basicConfig() to add a console handler with a pre-defined
-        format.
-        '''
-        kwargs['stacklevel'] = kwargs.get('stacklevel', 1) + 1
-        if len(logging.root.handlers) == 0:
-            logging.basicConfig()
-        getattr(logging.root, name)(msg, *args, **kwargs)
-
-    return _loging_function
+def success(msg, *args, **kwargs):
+    if len(logging.root.handlers) == 0:
+        logging.basicConfig()
+    root.success(msg, *args, **kwargs)
 
 
-success = _logging_function_factory(SUCCESS)
-important = _logging_function_factory(IMPORTANT)
-inform = _logging_function_factory(INFORM)
-verbose = _logging_function_factory(VERBOSE)
-diffuse = _logging_function_factory(DIFFUSE)
-prolix = _logging_function_factory(PROLIX)
+def important(msg, *args, **kwargs):
+    if len(logging.root.handlers) == 0:
+        logging.basicConfig()
+    root.important(msg, *args, **kwargs)
+
+
+def inform(msg, *args, **kwargs):
+    if len(logging.root.handlers) == 0:
+        logging.basicConfig()
+    root.inform(msg, *args, **kwargs)
+
+
+def verbose(msg, *args, **kwargs):
+    if len(logging.root.handlers) == 0:
+        logging.basicConfig()
+    root.verbose(msg, *args, **kwargs)
+
+
+def diffuse(msg, *args, **kwargs):
+    if len(logging.root.handlers) == 0:
+        logging.basicConfig()
+    root.diffuse(msg, *args, **kwargs)
+
+
+def prolix(msg, *args, **kwargs):
+    if len(logging.root.handlers) == 0:
+        logging.basicConfig()
+    root.prolix(msg, *args, **kwargs)
+
 
 setattr(logging, 'success', success)
 setattr(logging, 'important', important)

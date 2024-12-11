@@ -12,6 +12,12 @@
         back_tb = TracebackType(tb_next=None, tb_frame=back_frame, tb_lasti=back_frame.f_lasti, tb_lineno=back_frame.f_lineno)
         .with_traceback(back_tb)
         .with_traceback(back_tb)
+        .with_traceback(exe.__traceback__)
+    audit imports
+        test all imports this way:
+            modules = walk_module_names_filepaths
+            for modules in modules:
+                subprocess.popen(python -c import module)
     do pyi stubgen myself with AST analysis and figure out what i've added or changed and then modify the ast directly and THEN print it out.
         basically analyze the AST of original module
         analyze AST of shadow module

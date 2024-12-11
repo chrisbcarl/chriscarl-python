@@ -75,11 +75,62 @@ def D():
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_1_merge_python(self):
+        variables = [
+            (lib.merge_python, ('a = 1', 'b =2')),
+            (lib.merge_python, ('def puff(): puff()', 'def pass_(): bitch()')),
+            (lib.merge_python, ('class A():\n  def B(): pass', 'class A():\n  def C(): pass')),
+        ]
+        controls = [
+            'a = 1\nb = 2',
+            'def puff():\n    puff()\n\ndef pass_():\n    bitch()',
+            'class A:\n\n    def B():\n        pass\n\n    def C():\n        pass',
+        ]
+        python_l = '''CONST_1 = 1
+class A:
+    def B(self):
+        pass
+def C():
+    pass
+'''
+        python_r = '''class A:
+    def D(self):
+        pass
+def E():
+    pass
+CONST_2 = 2
+'''
+        # unparsing tends to insert more lines in weird spots, whatever.
+        python_m = '''CONST_1 = 1
+
+class A:
+
+    def B(self):
+        pass
+
+    def D(self):
+        pass
+
+def C():
+    pass
+
+def E():
+    pass
+CONST_2 = 2'''
+        variables += [
+            (lib.merge_python, (python_l, python_r)),
+        ]
+        controls += [
+            python_m,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
     tc.test_case_0_get_function_graph()
+    tc.test_case_1_merge_python()
 
     tc.tearDown()

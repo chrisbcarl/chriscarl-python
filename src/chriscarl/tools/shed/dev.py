@@ -10,6 +10,7 @@ tools.shed.dev is the "shed" in which all of the "tools" go to pick one up.
 tool are modules that define usually cli tools or mini applets that I or other people may find interesting or useful.
 
 Updates:
+    2024-12-11 - tools.shed.dev - audit_stubgen modified to make use of ast analysis and merging
     2024-12-04 - tools.shed.dev - FIX: manifest-modify wasnt handling nested folders correctly, now it does
                  tools.shed.dev - combined modify and verify as I probably should have done all along, jesus
     2024-11-28 - tools.shed.dev - added audit_clean, audit_stubs, audit_cov
@@ -42,6 +43,7 @@ import chriscarl
 from chriscarl.core.constants import DATE, REPO_DIRPATH
 from chriscarl.core.functors.python import run_func_args_kwargs, get_legal_python_name
 from chriscarl.core.functors.parse import PytestCoverage
+from chriscarl.core.lib.stdlib.ast import merge_python
 from chriscarl.core.lib.stdlib.io import read_text_file, write_text_file
 from chriscarl.core.lib.stdlib.json import read_json
 from chriscarl.core.lib.stdlib.os import make_dirpath, abspath, chdir, walk, make_file_dirpath
@@ -554,22 +556,19 @@ def audit_stubs(dirpath=REPO_DIRPATH, module_name=chriscarl.__name__, output_dir
         generated = 0
         for src in walk(modded_libs, extensions=['.pyi'], ignore=['__init__']):
             name = os.path.splitext(os.path.basename(src))[0]
+            dst = abspath(dist_typing, name, '__init__.pyi')
             LOGGER.debug('generating stub file for module %r', name)
+
             cmd = ['stubgen', '-m', name, '-o', output_dirpath]
             subprocess.check_call(cmd, cwd=dirpath)
 
-            shadow_pyi_text = read_text_file(src)
-            shadow_pyi_lines = shadow_pyi_text.splitlines()[1:]  # everything but the actual from shadow import *
-
-            dst = abspath(dist_typing, name, '__init__.pyi')
-            make_file_dirpath(dst)
-            with open(dst, 'a', encoding='utf-8') as a:
-                a.write('\n')
-                a.write('# SHADOW MODULE SHIT FROM CHRISCARL #\n')
-                for line in shadow_pyi_lines:
-                    a.write('{}\n'.format(line))
-
-            LOGGER.debug('appended to stub file "%s" from "%s"', dst, src)
+            l_python, r_python = read_text_file(dst), read_text_file(src)
+            # remove imports like these: (from logging import * | import logging)
+            r_python = '\n'.join(line for line in r_python.splitlines() if 'from {}'.format(name) not in line and 'import {}'.format(name) not in line)
+            m_python = merge_python(l_python, r_python)
+            # TODO: modify __all__
+            write_text_file(dst, m_python)
+            LOGGER.debug('merged to to stub file "%s" from "%s"', dst, src)
             generated += 1
         LOGGER.info('generated %d shadow module stub files', generated)
 

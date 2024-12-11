@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Project that contains my everything--algorithms, data structures, tools, methodologies, tips, tricks, snippets, templates, code gen, etc."
 authors = ["Chris Carl <chrisbcarl@outlook.com>"]
 readme = "README.md"
+package-mode = true
 packages = [{include = "chriscarl", from = "src"}]
 include = [
     { path = "tests", format = "sdist" },
