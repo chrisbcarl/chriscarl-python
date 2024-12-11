@@ -11,6 +11,7 @@ core.lib are modules that contain code that is about (but does not modify) the l
 
 Updates:
     2024-12-11 - core.lib.stdlib.ast - added visit, merge_python
+                 core.lib.stdlib.ast - added get__all__
     2024-12-09 - core.lib.stdlib.ast - initial commit
 '''
 
@@ -90,24 +91,27 @@ def visit(node, visited=None, names=None):
 
 
 def merge_python(l, r):
-    # type: (str, str) -> str
+    # type: (Union[ast.AST, str], Union[ast.AST, str]) -> str
     '''
     Description:
-        given a string of python on the left, add the NEW stuff from the right on top of the left
+        given a string or ast of python on the left, add the NEW stuff from the right on top of the left
         >>> merge_python('a = 1', 'b=2')
         >>> ... 'a = 1\nb = 2'
     '''
-    l_root, r_root = ast.parse(l), ast.parse(r)
+    l_root, r_root = ast.parse(l) if isinstance(l, str) else l, ast.parse(r) if isinstance(r, str) else r
     l_visited = visit(l_root)
     r_visited = visit(r_root)
 
-    totaly_new = [k for k in r_visited if k not in l_visited]
+    totally_new = [k for k in r_visited if k not in l_visited]
+    unnested = []
     nested = []
-    # handle constants and globals and loose functions first
-    for new in totaly_new:
+    for new in totally_new:
         if len(new) > 1:
             nested.append(new)
-            continue
+        else:
+            unnested.append(new)
+    # handle constants and globals and loose functions first
+    for new in unnested:
         l_root.body.append(r_visited[new])  # type: ignore
     # classes and other stuff later.
     for new in nested:
@@ -116,8 +120,34 @@ def merge_python(l, r):
         old_class_node = l_visited[old_class_key]
         old_class_node.body.append(new_node)  # type: ignore
 
+    # if there's an __all__ in the original and its a list
+    all_ = l_visited.get(('__all__', ))
+    if isinstance(all_, ast.Assign) and hasattr(all_, 'value') and hasattr(all_.value, 'elts'):
+        prior = set(ele.value for ele in all_.value.elts)
+        for new in unnested + list(set(map(lambda x: x[0], nested))):
+            value = new[0]
+            if value not in prior:
+                all_.value.elts.append(ast.Constant(value=value))
+
     new_tree = ast.fix_missing_locations(l_root)
     return ast.unparse(new_tree)
+
+
+def get__all__(root):
+    # type: (Union[ast.AST, str]) -> List[str]
+    '''
+    Description:
+        get back a list of all globally available exposed stuff that is either an assignment, class, or function def
+    '''
+    if isinstance(root, str):
+        root = ast.parse(root)
+    all_ = []
+    visited = visit(root)
+    for key in visited:
+        if len(key) > 1:
+            continue
+        all_.append(key[0])
+    return all_
 
 
 # def diff_function_graphs(a, b):

@@ -34,6 +34,7 @@ import logging
 import importlib
 import subprocess
 import shutil
+import ast
 from typing import List, Union, Tuple, Callable, Any, Optional, Dict
 
 # third party imports
@@ -46,7 +47,7 @@ from chriscarl.core.functors.parse import PytestCoverage
 from chriscarl.core.lib.stdlib.ast import merge_python
 from chriscarl.core.lib.stdlib.io import read_text_file, write_text_file
 from chriscarl.core.lib.stdlib.json import read_json
-from chriscarl.core.lib.stdlib.os import make_dirpath, abspath, chdir, walk, make_file_dirpath
+from chriscarl.core.lib.stdlib.os import make_dirpath, abspath, chdir, walk
 from chriscarl.core.lib.stdlib.importlib import walk_dirpath_for_module_files
 from chriscarl.core.lib.stdlib.re import find_lineno_colno
 from chriscarl.core.lib.stdlib.subprocess import run, launch_editor
@@ -566,7 +567,6 @@ def audit_stubs(dirpath=REPO_DIRPATH, module_name=chriscarl.__name__, output_dir
             # remove imports like these: (from logging import * | import logging)
             r_python = '\n'.join(line for line in r_python.splitlines() if 'from {}'.format(name) not in line and 'import {}'.format(name) not in line)
             m_python = merge_python(l_python, r_python)
-            # TODO: modify __all__
             write_text_file(dst, m_python)
             LOGGER.debug('merged to to stub file "%s" from "%s"', dst, src)
             generated += 1

@@ -75,18 +75,22 @@ def D():
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_case_1_merge_python(self):
+    def test_case_1_visit(self):
         variables = [
             (lib.merge_python, ('a = 1', 'b =2')),
             (lib.merge_python, ('def puff(): puff()', 'def pass_(): bitch()')),
             (lib.merge_python, ('class A():\n  def B(): pass', 'class A():\n  def C(): pass')),
         ]
+        ab = 'a = 1\nb = 2'
+        puff_puff_pass_bitch = 'def puff():\n    puff()\n\ndef pass_():\n    bitch()'
+        class_ab = 'class A:\n\n    def B():\n        pass\n\n    def C():\n        pass'
         controls = [
-            'a = 1\nb = 2',
-            'def puff():\n    puff()\n\ndef pass_():\n    bitch()',
-            'class A:\n\n    def B():\n        pass\n\n    def C():\n        pass',
+            ab,
+            puff_puff_pass_bitch,
+            class_ab,
         ]
-        python_l = '''CONST_1 = 1
+        python_l = '''__all__ = ['CONST_1', 'A', 'C']
+CONST_1 = 1
 class A:
     def B(self):
         pass
@@ -101,7 +105,8 @@ def E():
 CONST_2 = 2
 '''
         # unparsing tends to insert more lines in weird spots, whatever.
-        python_m = '''CONST_1 = 1
+        python_m = '''__all__ = ['CONST_1', 'A', 'C', 'E', 'CONST_2']
+CONST_1 = 1
 
 class A:
 
@@ -125,12 +130,24 @@ CONST_2 = 2'''
         ]
         self.assert_null_hypothesis(variables, controls)
 
+        variables = [
+            (lib.get__all__, ab),
+            (lib.get__all__, puff_puff_pass_bitch),
+            (lib.get__all__, class_ab),
+        ]
+        controls = [
+            ['a', 'b'],
+            ['puff', 'pass_'],
+            ['A'],
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
     tc.test_case_0_get_function_graph()
-    tc.test_case_1_merge_python()
+    tc.test_case_1_visit()
 
     tc.tearDown()

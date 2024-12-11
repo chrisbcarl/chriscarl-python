@@ -10,6 +10,7 @@ Python is lots of deep nerdy python shit that usually involves runtime fuckery.
 chriscarl.core files are non-self-referential, do very little importing, and define the bedrock from which other things do import.
 
 Updates:
+    2024-12-11 - core.python - added abbreviate_arg now uses repr to avoid multiline string args in the output
     2024-12-09 - core.python - added get_this_file_lineno / get_caller_file_lineno
     2024-11-29 - core.python - fixed abbreviate_arg so that it wouldnt always have elipses
     2024-11-27 - core.python - added abbreviate_arg
@@ -59,7 +60,7 @@ def abbreviate_arg(arg, chars=32):
     if chars < 3:
         raise ValueError("you cant have an abbreviation less than 3... that would leave out '...' as an option...")
     if isinstance(arg, str):
-        str_a = str(arg)
+        str_a = repr(arg)[1:-1]
         if len(str_a) - 3 > chars:
             if os.path.exists(str_a):
                 relpath = os.path.relpath(str_a, os.getcwd())
