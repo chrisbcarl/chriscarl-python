@@ -8,7 +8,34 @@
         creates the .vscode
         creates the extensions, etc.
         pyproj toml
+        mypy --install-types --non-interactive
 
+    def new namespace core.lib.third.pandas
+        where the implication is a new namespace project is made that creates a core.pandas and a mod.pandas just in case
+            ```python
+            def text_to_df(text):
+                lines = text.splitlines()
+                columns = [ele.strip() for ele in lines[0].split('\t') if ele.strip()]
+                data = lines[1:]
+                mat = [line.split('\t')[1:] for line in data]
+                for r, row in enumerate(mat):
+                    for c, col in enumerate(row):
+                        mat[r][c] = col.strip()
+                        try:
+                            mat[r][c] = int(col.strip())
+                        except ValueError:
+                            pass
+                df = pd.DataFrame(mat, columns=columns)
+                return df
+
+            text = '''  customer        category        important       sales
+            0   101     cat2    yes     123
+            1   102     cat2    no      52
+            2   103     cat1    yes     214
+            3   104     cat3    yes     663
+            4   101     cat2    yes     204
+            5   103     cat1    yes     453'''
+            ```
     logging wrappers need to go everywhere shortly
     version class is fucked, please simplify
     some kind of exception class that is able to raise exceptions cleanly, with correct relevant traceback localization

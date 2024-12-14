@@ -10,6 +10,7 @@ core.types.str is probably badly named and should be "string" but either sucks, 
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
+    2024-12-13 - core.types.str - added strip_unicode
     2024-11-26 - core.types.str - initial commit
 '''
 
@@ -93,3 +94,13 @@ def bytes_to_size(size, upper=False):
             return '{:.2f}{}'.format(size, unit)
         size /= 1024
     return ''  # this will never hit
+
+
+def strip_unicode(text, encoding='utf-8'):
+    # type: (str, str) -> str
+    '''
+    Description:
+        wanna get rid of pesky shit like '\\u0026' or '\x26' which is just an &? then this is for u.
+        TODO: chr(0x26) == '&' so maybe some regex replacement is faster.
+    '''
+    return text.encode(encoding).decode(encoding)

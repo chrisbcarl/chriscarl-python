@@ -37,7 +37,7 @@ This is from MY perspective, a retrospective history of how I started this whole
 7. `pip install -e .`
 
 
-# Additional Setup
+## Additional Setup
 1. configure `.vscode/settings.json`
     - set generic vscode settings
     - set the yapf formatter
@@ -47,3 +47,11 @@ This is from MY perspective, a retrospective history of how I started this whole
     - set the mypy type checker args
 2. `mypy --install-types --non-interactive` install mypy types
 3. change the toml and add `mypy` and `pytest` tool additions
+
+
+## Reinstall
+```powershell
+Remove-Item -Recurse -Force -Path '.venv'
+
+poetry install
+```

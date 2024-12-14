@@ -91,6 +91,17 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_2_unicode(self):
+        variables = [
+            (lib.strip_unicode, '\u0026'),
+            (lib.strip_unicode, '\x26'),
+        ]
+        controls = [
+            '&',
+            '&',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -98,5 +109,6 @@ if __name__ == '__main__':
 
     tc.test_case_0_find_index()
     tc.test_case_1_size_to_bytes()
+    tc.test_case_2_unicode()
 
     tc.tearDown()
