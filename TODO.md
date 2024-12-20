@@ -36,6 +36,11 @@
             4   101     cat2    yes     204
             5   103     cat1    yes     453'''
             ```
+    an uber class: UberObject
+        has to_dict, to_str, to_yaml, to_ini, from_ini, to_argparse, from_argparse, etc. to pickle, from pickle, etc.
+        also has privates that can be omitted from string representations, and privates that say particular values are to be printed in an encrypted way
+        have data model things like +, *, -, diff, etc.
+
     logging wrappers need to go everywhere shortly
     version class is fucked, please simplify
     some kind of exception class that is able to raise exceptions cleanly, with correct relevant traceback localization

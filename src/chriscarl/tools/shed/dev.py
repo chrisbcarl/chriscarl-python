@@ -10,6 +10,7 @@ tools.shed.dev is the "shed" in which all of the "tools" go to pick one up.
 tool are modules that define usually cli tools or mini applets that I or other people may find interesting or useful.
 
 Updates:
+    2024-12-20 - tools.shed.dev - audit_banned now includes the filename, lol
     2024-12-11 - tools.shed.dev - audit_stubgen modified to make use of ast analysis and merging
                  tools.shed.dev - added pytest actual results to audit cov
     2024-12-04 - tools.shed.dev - FIX: manifest-modify wasnt handling nested folders correctly, now it does
@@ -511,14 +512,26 @@ def audit_banned(root_dirpath, words, word_case_insensitive=True, extensions=Non
         try:
             contents = read_text_file(abspath(root_dirpath, relpath))
         except UnicodeDecodeError:
-            LOGGER.critical('couldnt read file "%s" due to unicode decode error, likely not a real file', relpath)
+            LOGGER.warning('couldnt read file "%s" due to unicode decode error, likely not a real file', relpath)
             LOGGER.debug('exception', exc_info=True)
         file_findings = findings[relpath] = {}
         for word in words:
+            if word in relpath:
+                hit.add(word)
+                if word not in file_findings:
+                    file_findings[word] = []
+                file_findings[word].append((0, 0))
+                LOGGER.warning('File "%s" itself - %r matched!', relpath, lineno, colno, word)
             lineno_colno = list(find_lineno_colno(word, contents, case_insensitive=word_case_insensitive))
             if lineno_colno:
                 hit.add(word)
-                file_findings[word] = lineno_colno
+
+            lineno_colno = list(find_lineno_colno(word, contents, case_insensitive=word_case_insensitive))
+            if lineno_colno:
+                hit.add(word)
+                if word not in file_findings:
+                    file_findings[word] = []
+                file_findings[word].extend(lineno_colno)
                 for lineno, colno in lineno_colno:
                     LOGGER.warning('File "%s", line %d, col %d - %r matched!', relpath, lineno, colno, word)
         if not file_findings:

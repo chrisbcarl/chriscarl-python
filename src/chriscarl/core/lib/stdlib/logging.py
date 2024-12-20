@@ -10,6 +10,7 @@ core.lib.stdlib.logging is one of the most pivotal libraries and largely informs
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2024-12-20 - core.lib.stdlib.logging - FIX:  the padding actually expands correctly
     2024-12-09 - core.lib.stdlib.logging - added configure, level_to_int, levels_to_ints, SuccinctFormatter, ConsoleConfig, FileConfig (this is the big one)
     2024-12-08 - core.lib.stdlib.logging - added Logger_makeRecord, SuccinctFormatter
     2024-11-26 - core.lib.stdlib.logging - initial commit
@@ -255,6 +256,7 @@ class SuccinctFormatter(logging.Formatter):
         if len_changed:
             fmt = self.__class__.BASE_FORMAT.format(len_level_name=self.len_level_name, len_debug_info=self.len_debug_info)
             self._fmt = fmt
+            self._style._fmt = fmt  # NOTE: its actually the Style object that does the formatting in python 3+
 
         return super(SuccinctFormatter, self).format(record)
 
@@ -384,3 +386,14 @@ def configure(names=None, configs=DEFAULT_CONFIGS):
                 logger.handlers.append(hndl)
             logger.setLevel(lowest_level)
     return loggers
+
+
+def configure_ez(names, level='INFO', filepath='', fmt=''):
+    # type: (List[str], str, str, str) -> List[logging.Logger]
+    configs = []  # type: List[ConsoleConfig]
+    if filepath:
+        fc = FileConfig(level=level, format=fmt, formatter=DEFAULT_FORMATTER, propagate=False, filepath=filepath)
+        configs.append(fc)
+    cc = ConsoleConfig(level=level, format=fmt, formatter=DEFAULT_FORMATTER, propagate=False)
+    configs.append(cc)
+    return configure(names=names, configs=configs)
