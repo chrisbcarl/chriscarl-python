@@ -1,5 +1,6 @@
 # TODO
 - dev
+
     the last thing I was on is trying to compare one file to another via AST, see if functions were added / removed, so I can autogen the changelog
     dict probably should redo flatten in the context of walk to get all of the keys...
 
@@ -82,6 +83,11 @@
         tc = TestCase()
         [ele for ele in dir(tc) if ele.startswith('test')]
         ['test_case_0_ungabunga']
+    create should probably be template and name based, with changable rules, and the template explains how to parse and how to imply what that path arg is (that way other projects can use it by specifying a template dirpath)
+        dev create lib chriscarl.core.types.bigint
+        dev create mod chriscarl.mod.lib.logging
+        dev create ipynb scripts/notes/etc --template-dir ./project/create/templates --rule-dir ./project/create/rules
+            where there's an implied ipynb within templates and rules
 - on commit
     scan for and replace / remove
         f' strings - f'\w
