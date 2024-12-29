@@ -388,8 +388,8 @@ def configure(names=None, configs=DEFAULT_CONFIGS):
     return loggers
 
 
-def configure_ez(names, level='INFO', filepath='', fmt=''):
-    # type: (List[str], str, str, str) -> List[logging.Logger]
+def configure_ez(names=None, level='INFO', filepath='', fmt=''):
+    # type: (Optional[List[Union[str, ModuleType, logging.Logger]]], str, str, str) -> List[logging.Logger]
     configs = []  # type: List[ConsoleConfig]
     if filepath:
         fc = FileConfig(level=level, format=fmt, formatter=DEFAULT_FORMATTER, propagate=False, filepath=filepath)

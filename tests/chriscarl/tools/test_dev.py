@@ -56,6 +56,7 @@ class TestCase(UnitTest):
             author='',
             email='',
             log_level='INFO',
+            log_filepath=lib.DEFAULT_LOG_FILEPATH,
             dry=True,
             dirpath=self.tempdir,
             no_modify=True,

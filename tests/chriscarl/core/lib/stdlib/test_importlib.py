@@ -52,6 +52,10 @@ class TestCase(UnitTest):
         logging_libraries = [tpl[0] for tpl in lib.walk_module_names_filepaths(module=logging)]
         self.assert_subset(known_libraries, logging_libraries)
 
+        # TODO: this is BAD, we dont want modules like os.py to return Lib.ast, Lib.os, etc...
+        for ele in lib.walk_module_names_filepaths(module=os):
+            LOGGER.debug(ele)
+
     def test_case_1_walk_module(self):
         from chriscarl.core.types.list import sorted_list_by_frequency
         exceptions = [tpl[1] for tpl in lib.walk_module(module=logging)]

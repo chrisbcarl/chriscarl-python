@@ -10,6 +10,7 @@ core.types.iterable is actually a lot of list and dict stuff combined, but since
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
+    2024-12-28 - core.types.iterable - FIX: keys doesnt throw TypeError for any reason anymore
     2024-12-11 - core.types.iterable - added keys
     2024-12-09 - core.types.iterable - initial commit
 '''
@@ -57,6 +58,8 @@ def get(key, iterable, split='.', default=SENTINEL):
             try:
                 int_key = int(key, base=0)
                 current_value = current_value[int_key]  # type: ignore
+                if isinstance(current_value, set):
+                    current_value = list(current_value)  # to allow for indexing...
                 continue
             except ValueError:
                 pass
@@ -86,11 +89,10 @@ def keys(value, prepend=None):
     Returns:
         Generator[str, None, None]
     '''
-    isinstance_raise(value, Keyable)
     if isinstance(value, dict):
         for k, v in value.items():
             if prepend is None:
-                key = k
+                key = str(k)
             else:
                 key = '{}.{}'.format(prepend, k)
             yield key
@@ -102,12 +104,13 @@ def keys(value, prepend=None):
                 key = str(i)
             else:
                 key = '{}.{}'.format(prepend, i)
+            yield key
             for key in keys(v, prepend=key):
                 yield key
 
 
 def flatten_iterable(value, prepend=None, _flattened=None):
-    # type: (Union[Iterable, Any], Optional[str], Optional[dict]) -> Union[dict, Any]
+    # type: (Union[Iterable, Any], Optional[str], Optional[dict]) -> dict
     '''
     Description:
         given a dictionary like this: {'a': 0, 'b': [1, 2]}
@@ -124,7 +127,7 @@ def flatten_iterable(value, prepend=None, _flattened=None):
             do not provide this, its to facilitate the recursion
 
     Returns:
-        Union[dict, Any]
+        dict
     '''
     if _flattened is None:
         if not isinstance(value, Iterable):

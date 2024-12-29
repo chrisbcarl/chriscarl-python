@@ -143,20 +143,29 @@ class TestCase(UnitTest):
         controls = [dicks[i] for i in range(6)]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_case_2_get(self):
+    def test_case_2_keys(self):
+        lst = [0, 1]
+        dct = {'a': 0, 'b': 1}
         variables = [
-            (lib.keys, [0, 1]),
-            (lib.keys, {'a': 0, 'b': 1}),
+            (lib.keys, lst),
+            (lib.keys, dct),
             (lib.keys, NESTED_DICT),
             (lib.keys, 1),
         ]
         controls = [
             ['0', '1'],
             ['a', 'b'],
-            ['0', '2', '2.0', '2.1', '2.2', '6', '10', '10.11', '10.13'],
-            TypeError,
+            ['0', '2', '2.0', '2.1', '2.2', '6', '6.0', '6.1', '6.2', '10', '10.11', '10.13'],
+            [],
         ]
         self.assert_null_hypothesis(variables, controls)
+
+        for i, data in enumerate([lst, dct, NESTED_DICT]):
+            keys = controls[i]
+            flat = list(lib.flatten_iterable(data).values())
+            got = list(lib.get(key, data) for key in keys)
+            got = [ele for ele in got if not isinstance(ele, (list, dict, tuple, set))]
+            self.assertEqual(got, flat, 'failed equality on data {}...'.format(i))
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -164,6 +173,6 @@ if __name__ == '__main__':
 
     tc.test_case_0_get()
     tc.test_case_1_flatten_iterable()
-    tc.test_case_2_get()
+    tc.test_case_2_keys()
 
     tc.tearDown()

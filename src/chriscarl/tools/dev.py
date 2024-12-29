@@ -9,6 +9,7 @@ Description:
 Tool that is used to do lots of "dev" related things like git pushing, versioning, publishing, templating, conforming, etc.
 
 Updates:
+    2024-12-28 - tools.dev - adopted logging.configure_ez
     2024-11-29 - tools.dev - added stubs, clean, and test
     2024-11-26 - tools.dev - moved code away from here and into tools.lib.dev
                  tools.dev - added the audit mode and "hardcoded" it a bit more
@@ -40,8 +41,8 @@ from argparse import _SubParsersAction, ArgumentParser, ArgumentError, Namespace
 
 # project imports
 import chriscarl
-from chriscarl.core.constants import REPO_DIRPATH, TESTS_DIRPATH
-from chriscarl.core.lib.stdlib.logging import NAME_TO_LEVEL
+from chriscarl.core.constants import REPO_DIRPATH, TESTS_DIRPATH, TEMP_DIRPATH
+from chriscarl.core.lib.stdlib.logging import NAME_TO_LEVEL, configure_ez
 from chriscarl.core.lib.stdlib.argparse import ArgparseNiceFormat
 from chriscarl.core.lib.stdlib.os import abspath, chdir
 from chriscarl.core.lib.stdlib.json import read_json
@@ -68,6 +69,7 @@ DEFAULT_EMAIL = DEFAULT_METADATA.json['author_email']
 DEFAULT_TESTS_DIRNAME = os.path.basename(TESTS_DIRPATH)
 DEFAULT_BANNED_WORDS_FILEPATH = 'ignoreme/_banned'
 DEFAULT_THRESHOLD = 0.83  # 85 is better but interpolated shadow modules from templates get 83% testable
+DEFAULT_LOG_FILEPATH = abspath('{}/chriscarl/dev.log'.format(TEMP_DIRPATH))
 
 
 @dataclass
@@ -81,12 +83,13 @@ class Mode:
     author: str
     email: str
     log_level: str
+    log_filepath: str
 
     @classmethod
     def main(cls):
         parser = cls.argparser()
         mode = cls.from_parser(parser)
-        logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=mode.log_level)
+        configure_ez(level=mode.log_level, filepath=mode.log_filepath)
         sys.exit(mode.run())
 
     @staticmethod
@@ -98,6 +101,7 @@ class Mode:
         parser.add_argument('--author', type=str, default=DEFAULT_AUTHOR, help='author first last no space')
         parser.add_argument('--email', type=str, default=DEFAULT_EMAIL, help='author email')
         parser.add_argument('--log-level', type=str, default='INFO', choices=log_levels, help='log level?')
+        parser.add_argument('--log-filepath', type=str, default=DEFAULT_LOG_FILEPATH, help='log filepath?')
         return parser
 
     @classmethod
@@ -388,7 +392,7 @@ def main():
     Class = MODE_MAP[ns.mode]
     mode = Class.from_parser(parser)
 
-    logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=mode.log_level)
+    configure_ez(level=mode.log_level, filepath=mode.log_filepath)
     LOGGER.debug(vars(mode))
 
     with chdir(mode.cwd):
