@@ -72,6 +72,10 @@ def get(key, iterable, split='.', default=SENTINEL):
     return current_value
 
 
+def isleaf(value):
+    return not isinstance(value, (list, dict, tuple, set))
+
+
 def keys(value, prepend=None):
     # type: (Keyable, Optional[str]) -> Generator[str, None, None]
     '''

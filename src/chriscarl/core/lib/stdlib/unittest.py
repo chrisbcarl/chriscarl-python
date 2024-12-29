@@ -32,7 +32,7 @@ from types import TracebackType
 # third party imports
 
 # project imports
-from chriscarl.core.functors.python import conform_func_args_kwargs, invocation_string
+from chriscarl.core.functors.python import T_FUNC_ARGS_KWARGS, conform_func_args_kwargs, invocation_string
 from chriscarl.core.lib.stdlib.typing import isinstance_raise
 from chriscarl.core.lib.stdlib.subprocess import launch_editor
 
@@ -73,7 +73,7 @@ class UnitTest(unittest.TestCase):
 
     @staticmethod
     def assert_null_hypothesis(variables, controls, break_idx=-1):
-        # (List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]], Tuple[Callable, tuple, dict]]], List[Any], int) -> bool
+        # type: (T_FUNC_ARGS_KWARGS, List[Any], int) -> bool
         '''
         Description:
             h0 (the "null" hypothesis) is that there is no relationship between the variables and the function, therefore the control group will reflect the experiment results

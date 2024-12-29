@@ -10,6 +10,7 @@ core.lib.stdlib.ast is about Abstract Syntax Trees and the neat things you can d
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2024-12-28 - core.lib.stdlib.ast - added diff_python_strings
     2024-12-11 - core.lib.stdlib.ast - added visit, merge_python
                  core.lib.stdlib.ast - added get__all__, updated merge_python to account for __all__
     2024-12-09 - core.lib.stdlib.ast - initial commit
@@ -21,12 +22,12 @@ import os
 import sys
 import logging
 import ast
-import copy
-from typing import Union, Optional, Dict, List
+from typing import Union, Optional, Dict, List, Tuple
 
 # third party imports
 
 # project imports
+from chriscarl.core.types.iterable import get, keys, isleaf
 from chriscarl.core.lib.stdlib.typing import isinstance_raise
 
 SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/ast.py'
@@ -40,11 +41,11 @@ THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-FUNCTION_GRAPH = Dict[str, Optional['FUNCTION_GRAPH']]
+FUNCTION_GRAPH = Dict[str, Union[str, 'FUNCTION_GRAPH']]
 
 
-def get_function_graph(node):
-    # type: (Union[str, ast.Module, ast.FunctionDef, ast.ClassDef]) -> FUNCTION_GRAPH
+def get_function_graph(node, as_str=False):
+    # type: (Union[str, ast.Module, ast.FunctionDef, ast.ClassDef], bool) -> FUNCTION_GRAPH
     '''
     Description:
         given a string or ast object
@@ -55,9 +56,9 @@ def get_function_graph(node):
     graph = {}  # type: FUNCTION_GRAPH
     for subnode in node.body:
         if isinstance(subnode, ast.FunctionDef):
-            graph[subnode.name] = get_function_graph(subnode)
+            graph[subnode.name] = ast.unparse(subnode) if as_str else get_function_graph(subnode, as_str=as_str)
         elif isinstance(subnode, ast.ClassDef):
-            graph[subnode.name] = get_function_graph(subnode)
+            graph[subnode.name] = get_function_graph(subnode, as_str=as_str)
     return graph
 
 
@@ -97,7 +98,11 @@ def merge_python(l, r):
         given a string or ast of python on the left, add the NEW stuff from the right on top of the left
         >>> merge_python('a = 1', 'b=2')
         >>> ... 'a = 1\nb = 2'
+
+    # TODO: doesnt merge comments for some reason...
     '''
+    isinstance_raise(l, Union[str, ast.AST])
+    isinstance_raise(r, Union[str, ast.AST])
     l_root, r_root = ast.parse(l) if isinstance(l, str) else l, ast.parse(r) if isinstance(r, str) else r
     l_visited = visit(l_root)
     r_visited = visit(r_root)
@@ -148,3 +153,34 @@ def get__all__(root):
             continue
         all_.append(key[0])
     return all_
+
+
+
+def diff_python_strings(l, r):
+    # type: (Union[ast.AST, str], Union[ast.AST, str]) -> Tuple[list, list, list]
+    '''
+    Description:
+        diff l r, so if new stuff is in r, they'll be treated as added
+    Returns:
+        Tuple[list, list, list]
+            added
+            removed
+            changed
+    '''
+    lg = get_function_graph(l, as_str=True)
+    lk = {key for key in keys(lg)}
+    rg = get_function_graph(r, as_str=True)
+    rk = {key for key in keys(rg)}
+
+    added = rk.difference(lk)
+    rmed = lk.difference(rk)
+    same = rk.intersection(lk)
+    changed = []
+    for k in sorted(same):
+        lv = get(k, lg)
+        rv = get(k, rg)
+        if not isleaf(lv) or not isleaf(rv):
+            continue
+        if lv != rv:
+            changed.append(k)
+    return list(sorted(added)), list(sorted(rmed)), changed

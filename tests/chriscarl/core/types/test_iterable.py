@@ -143,7 +143,7 @@ class TestCase(UnitTest):
         controls = [dicks[i] for i in range(6)]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_case_2_keys(self):
+    def test_case_2_keys_isleaf(self):
         lst = [0, 1]
         dct = {'a': 0, 'b': 1}
         variables = [
@@ -164,7 +164,7 @@ class TestCase(UnitTest):
             keys = controls[i]
             flat = list(lib.flatten_iterable(data).values())
             got = list(lib.get(key, data) for key in keys)
-            got = [ele for ele in got if not isinstance(ele, (list, dict, tuple, set))]
+            got = [ele for ele in got if lib.isleaf(ele)]
             self.assertEqual(got, flat, 'failed equality on data {}...'.format(i))
 
 if __name__ == '__main__':

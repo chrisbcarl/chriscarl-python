@@ -267,8 +267,11 @@ def setattr_deep(obj, key, value):
         raise AttributeError('{} instance has no attribute {}'.format(obj.__class__.__name__, key)) from ae
 
 
+T_FUNC_ARGS_KWARGS = List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]]
+
+
 def conform_func_args_kwargs(func_args_kwargs):
-    # type: (List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]]) -> List[Tuple[Callable, tuple, dict]]
+    # type: (T_FUNC_ARGS_KWARGS) -> List[Tuple[Callable, tuple, dict]]
     sanitized = []
     for e, tpl in enumerate(func_args_kwargs):
         if callable(tpl):
