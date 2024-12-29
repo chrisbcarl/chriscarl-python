@@ -168,6 +168,27 @@ def e():
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_3_is_python(self):
+        variables = [
+            (lib.is_python, ('')),
+            (lib.is_python, ('A')),  # A could be some constant
+            (lib.is_python, ('1')),
+            (lib.is_python, ('A = 1')),
+            (lib.is_python, ('A is 1')),
+            (lib.is_python, ('A is one')),  # syntactically fine because one COULD be a container
+            (lib.is_python, ('A is one hell of a tricky bastard')),  # aint no way
+        ]
+        controls = [
+            True,
+            True,
+            True,
+            True,
+            True,
+            True,
+            False,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 
 if __name__ == '__main__':
@@ -177,5 +198,6 @@ if __name__ == '__main__':
     tc.test_case_0_get_function_graph()
     tc.test_case_1_visit()
     tc.test_case_2_diff_python_strings()
+    tc.test_case_3_is_python()
 
     tc.tearDown()

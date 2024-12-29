@@ -27,6 +27,7 @@ Notes:
         '%(relativeCreated)5d %(name)-15s %(levelname)-8s %(message)s'
         '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         '%(asctime)s - %(levelname)-8s - %(filename)-16s - %(funcName)-16s - %(lineno)-4d - %(message)s'
+        '%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s'
 '''
 
 # stdlib imports

@@ -44,6 +44,15 @@ LOGGER.addHandler(logging.NullHandler())
 FUNCTION_GRAPH = Dict[str, Union[str, 'FUNCTION_GRAPH']]
 
 
+def is_python(text):
+    # type: (str) -> bool
+    try:
+        ast.parse(text)
+        return True
+    except Exception:
+        return False
+
+
 def get_function_graph(node, as_str=False):
     # type: (Union[str, ast.Module, ast.FunctionDef, ast.ClassDef], bool) -> FUNCTION_GRAPH
     '''
