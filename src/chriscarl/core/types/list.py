@@ -10,6 +10,7 @@ core.types.list is all about these array-lists.
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
+    2025-01-01 - core.types.list - added n_sized_chunks and n_chunks
     2024-12-09 - core.types.list - added as_list and contains
     2024-11-25 - core.types.list - initial commit
 '''
@@ -105,3 +106,32 @@ def contains(choices, value_or_values):
         for i, v in enumerate(value_or_values):
             if v not in choices:
                 raise ValueError('"{}", line {} - provided value {!r} at at index {} not in: {}'.format(relpath, lineno, v, i, choices))
+
+
+def n_sized_chunks(lst, n):
+    # type: (list, int) -> Generator[list, None, None]
+    '''
+    https://stackoverflow.com/a/312464
+    '''
+    if n < 1:
+        raise ValueError('how can you divide a list into {} sized chunks... idiot'.format(n))
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+
+def n_chunks(lst, n):
+    # type: (list, int) -> Generator[list, None, None]
+    '''
+    if I want to divide 0, 1, 2, 3, 4 into 3 chunks, i'd expect 01, 23, 4 or 0, 12, 34
+    '''
+    if n < 1:
+        raise ValueError('how can you divide a list into {} chunks... idiot'.format(n))
+    i = 0
+    even = len(lst) % n == 0
+    size = len(lst) // n if even else len(lst) // n + 1
+    while i < len(lst):
+        yield lst[i:i + size]
+        i += size
+        if not even and size - 1 > 0 and (len(lst) - i) % (size - 1) == 0:  # if remaining list is divisible by dropping down chunk lenght, do it
+            size -= 1
+            even = True

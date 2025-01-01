@@ -10,6 +10,7 @@ core.lib.stdlib.unittest includes stuff I want all unit tests to have access to
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2025-01-01 - core.lib.stdlib.unittest - FIX: stuff that yields generators now will have to answer for their exception crimes
     2024-12-09 - core.lib.stdlib.unittest - UnitTest now configures with my logging by default, so much nicer.
     2024-11-26 - core.lib.stdlib.unittest - added UnitTest as a class
                  core.lib.stdlib.unittest - assertions now outline the line above itself so that they make more sense
@@ -129,6 +130,10 @@ class UnitTest(unittest.TestCase):
                     exe = None
                     try:
                         experiment = func(*args, **kwargs)
+                        # NOTE: code that yields a generator doesn't actually precompute shit at all--so if there are type checks they will be silent until the first iteration actually does anything...
+                        if inspect.isgenerator(experiment) or isinstance(experiment, (map, filter)):
+                            LOGGER.debug('{} encountered a generator... expanding.'.format(status))
+                            experiment = list(experiment)  # expand it out
                     except Exception as ex:
                         experiment = exe = ex
                     if not exe:
