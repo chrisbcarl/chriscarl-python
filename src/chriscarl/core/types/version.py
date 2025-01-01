@@ -10,6 +10,7 @@ core.types.version is my conceptions around semantic versioning
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
+    2024-12-29 - core.types.version - works and tested
     2024-12-04 - core.types.version - initial commit
 '''
 
@@ -41,7 +42,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 REGEX_VERSION = re.compile(r'^(?P<major>\d+) \. (?P<minor>\d+) (?P<patch>\. (\d+))? ((?P<label>[-ab])([\d\.\-\w]+))?$', flags=re.VERBOSE)
 REGEX_LABEL = re.compile(r'^\-?(?P<label>[\d\.\-\w]+)?$', flags=re.VERBOSE)
-REGEX_PRERELEASE = re.compile(r'^[ab](?P<prerelease>[\d\.\-\w]+)?$', flags=re.VERBOSE)
+REGEX_PRERELEASE = re.compile(r'^(?P<prerelease>[ab])(?P<prerelease_num>[\d\.\-\w]+)?$', flags=re.VERBOSE)
 
 
 @dataclass

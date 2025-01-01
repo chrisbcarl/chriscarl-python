@@ -88,9 +88,10 @@ def walk_module_names_filepaths(module=__name__):
     if isinstance(module, str):
         module = importlib.import_module(module)
 
-    path = Path(module.__path__[0])
+    filepath = Path(module.__file__)
+    # path = Path(module.__path__[0])  # works on user defined modules... not on builtin like os.py
     # now all will be commonly compared to /module
-    for module_name, filepath in walk_dirpath_for_module_files(str(path)):
+    for module_name, filepath in walk_dirpath_for_module_files(str(filepath.parent)):
         yield module_name, filepath
 
 

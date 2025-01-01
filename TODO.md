@@ -42,7 +42,6 @@
         also has privates that can be omitted from string representations, and privates that say particular values are to be printed in an encrypted way
         have data model things like +, *, -, diff, etc.
 
-    logging wrappers need to go everywhere shortly
     version class is fucked, please simplify
     some kind of exception class that is able to raise exceptions cleanly, with correct relevant traceback localization
         exc_info = sys.exc_info()

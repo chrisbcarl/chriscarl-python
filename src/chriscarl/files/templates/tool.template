@@ -24,7 +24,8 @@ from argparse import ArgumentParser
 # third party imports
 
 # project imports
-from chriscarl.core.lib.stdlib.logging import LOG_LEVELS
+from chriscarl.core.constants import TEMP_DIRPATH
+from chriscarl.core.lib.stdlib.logging import LOG_LEVELS, configure_ez
 from chriscarl.core.lib.stdlib.argparse import ArgparseNiceFormat
 from chriscarl.core.lib.stdlib.os import abspath, make_dirpath
 
@@ -41,7 +42,8 @@ LOGGER.addHandler(logging.NullHandler())
 
 # argument defaults
 DEFAULT_FIB_INIT = [0, 1]
-DEFAULT_OUTPUT_DIRPATH = os.path.abspath('/tmp')
+DEFAULT_OUTPUT_DIRPATH = abspath('{}/tool'.format(TEMP_DIRPATH))
+DEFAULT_LOG_FILEPATH = abspath('{}/tool.log'.format(TEMP_DIRPATH))
 
 # tool constants
 
@@ -78,6 +80,7 @@ class Arguments:
     output_dirpath: str = DEFAULT_OUTPUT_DIRPATH
     messages: List[str] = field(default_factory=lambda: [])
     log_level: str = 'INFO'
+    log_filepath: str = DEFAULT_LOG_FILEPATH
 
     @staticmethod
     def argparser():
@@ -90,13 +93,14 @@ class Arguments:
         parser.add_argument('--output-dirpath', '-o', type=str, default=DEFAULT_OUTPUT_DIRPATH, help='where do you want to save a text of the sequence')
         parser.add_argument('--messages', '-m', type=str, nargs='*', default=[], help='messages youd like to have printed')
         parser.add_argument('--log-level', type=str, default='INFO', choices=LOG_LEVELS, help='log level?')
+        parser.add_argument('--log-filepath', type=str, default=DEFAULT_LOG_FILEPATH, help='log filepath?')
         return parser
 
     def process(self):
         make_dirpath(self.output_dirpath)
         if self.debug:
             self.log_level = 'DEBUG'
-        logging.basicConfig(format='%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s', level=self.log_level)
+        configure_ez(level=self.log_level, filepath=self.log_filepath)
 
     @staticmethod
     def from_argparser(parser):

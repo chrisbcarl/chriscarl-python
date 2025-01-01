@@ -27,6 +27,7 @@ Notes:
         '%(relativeCreated)5d %(name)-15s %(levelname)-8s %(message)s'
         '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         '%(asctime)s - %(levelname)-8s - %(filename)-16s - %(funcName)-16s - %(lineno)-4d - %(message)s'
+        '%(asctime)s - %(levelname)10s - %(filename)s - %(funcName)s - %(message)s'
 '''
 
 # stdlib imports
@@ -388,8 +389,8 @@ def configure(names=None, configs=DEFAULT_CONFIGS):
     return loggers
 
 
-def configure_ez(names, level='INFO', filepath='', fmt=''):
-    # type: (List[str], str, str, str) -> List[logging.Logger]
+def configure_ez(names=None, level='INFO', filepath='', fmt=''):
+    # type: (Optional[List[Union[str, ModuleType, logging.Logger]]], str, str, str) -> List[logging.Logger]
     configs = []  # type: List[ConsoleConfig]
     if filepath:
         fc = FileConfig(level=level, format=fmt, formatter=DEFAULT_FORMATTER, propagate=False, filepath=filepath)

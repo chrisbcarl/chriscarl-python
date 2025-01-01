@@ -49,8 +49,18 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    @unittest.skip('plz')
-    def test_case_0_version(self):
+    def test_case_0_version_parse(self):
+        variables = [
+            (lib.Version.parse, '1.2.NOPE'),
+            (lib.Version.parse, '1.-2.-3-alpha'),
+        ]
+        controls = [
+            ValueError,
+            ValueError,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_1_cmp(self):
         variables = [
             (lib.Version.__eq__, (lib.Version.parse('0.0.0'), '0.0.0')),
             (lib.Version.__ne__, (lib.Version.parse('0.0.0'), '0.0.1')),
@@ -58,20 +68,28 @@ class TestCase(UnitTest):
             (lib.Version.__lt__, (lib.Version.parse('1.0.0'), '1.1.0')),
             (lib.Version.__eq__, (lib.Version.parse('1.0.1'), '1.0.1')),
             (lib.Version.__ge__, (lib.Version.parse('1.0.1'), '1.0.1')),
-            (lib.Version.__eq__, (lib.Version.parse('1.0.1').update('major', 1), '2.0.0')),
-            (lib.Version.__eq__, (lib.Version.parse('1.0.1').update('minor', 1), '1.1.0')),
-            (lib.Version.__eq__, (lib.Version.parse('1.0.1').update('patch', 1), '1.0.2')),
             # label (labels are greater than the base version)
             (lib.Version.__gt__, (lib.Version.parse('1.0.0-beta'), '1.0.0-alpha')),
             (lib.Version.__gt__, (lib.Version.parse('3.0.25-beta'), '3.0.25-alpha')),
             (lib.Version.__eq__, (lib.Version.parse('0.0.0-label'), '0.0.0-label')),
             (lib.Version.__lt__, (lib.Version.parse('0.5.9-rc69'), '0.5.9')),
-            (lib.Version.__eq__, (lib.Version.parse('0.5.9-rc69').update('label', None), '0.5.9')),
             # prerelease (prerelease are less than the base version)
             (lib.Version.__eq__, (lib.Version.parse('0.0.0a1'), '0.0.0a1')),
             (lib.Version.__le__, (lib.Version.parse('0.0.0a1'), '0.0.0b1')),
             (lib.Version.__ge__, (lib.Version.parse('0.0.0a6'), '0.0.0a1')),
             (lib.Version.__gt__, (lib.Version.parse('1.0.0'), '1.0.0a1')),
+        ]
+        controls = [True for _ in variables]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_2_update(self):
+        variables = [
+            (lib.Version.__eq__, (lib.Version.parse('1.0.1').update('major', 1), '2.0.0')),
+            (lib.Version.__eq__, (lib.Version.parse('1.0.1').update('minor', 1), '1.1.0')),
+            (lib.Version.__eq__, (lib.Version.parse('1.0.1').update('patch', 1), '1.0.2')),
+            # label (labels are greater than the base version)
+            (lib.Version.__eq__, (lib.Version.parse('0.5.9-rc69').update('label', None), '0.5.9')),
+            # prerelease (prerelease are less than the base version)
             (lib.Version.__eq__, (lib.Version.parse('1.0.1').update('prerelease', 'a2'), '1.0.1a2')),
             (lib.Version.__ne__, (lib.Version.parse('1.0.1').update('prerelease', 'a6'), '1.0.1a2')),
             (lib.Version.__eq__, (lib.Version.parse('1.0.1a2').update('prerelease', None), '1.0.1')),
@@ -79,14 +97,13 @@ class TestCase(UnitTest):
         controls = [True for _ in variables]
         self.assert_null_hypothesis(variables, controls)
 
-        self.assertRaises(ValueError, lib.Version.parse, '1.2.NOPE')
-        self.assertRaises(ValueError, lib.Version.parse, '1.-2.-3-alpha')
-
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0_version()
+    tc.test_case_0_version_parse()
+    tc.test_case_1_cmp()
+    tc.test_case_2_update()
 
     tc.tearDown()
