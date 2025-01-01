@@ -25,7 +25,6 @@ import shutil
 import inspect
 import logging
 import unittest
-import subprocess
 import tempfile
 from typing import Callable, Tuple, Iterable, List, Any, Union
 from types import TracebackType
