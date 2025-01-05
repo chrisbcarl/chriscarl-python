@@ -10,6 +10,7 @@ core.lib.third.git wraps GitPython which installs the "git" library and is only 
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2024-12-29 - core.lib.third.git - added get_repo_changes
     2024-12-04 - core.lib.third.git - initial commit
 '''
 
@@ -19,7 +20,7 @@ import os
 import sys
 import logging
 import datetime
-from typing import Generator, Tuple, List, Union, Optional
+from typing import Generator, Tuple, List, Union, Optional, Dict
 
 # third party imports
 try:
@@ -33,6 +34,7 @@ except ImportError:
 from chriscarl.core.constants import NOW
 from chriscarl.core.lib.stdlib.typing import isinstance_raise
 from chriscarl.core.lib.stdlib.os import abspath, make_dirpath, as_posix
+from chriscarl.core.lib.stdlib.io import read_bytes_file
 from chriscarl.core.types.version import Version
 from chriscarl.files.manifest import FILEPATH_CHANGELOG_MD, FILEPATH_README_MD
 
@@ -458,3 +460,33 @@ def tag(path, name, message, origin=True):
             r.remotes.origin.push(tag)
     except Exception as e:
         LOGGER.warning('Likely no remote has been set up for this yet or that tag already exists. Please do that. MESSAGE: {}'.format(e))
+
+
+def get_repo_changes(dirpath):
+    # type: (str) -> Dict[str, List[Tuple[str, str, bytes]]]
+    '''
+    Description:
+        if a given dirpath is a repository with some uncommitted changes, you'll get back
+    Returns:
+        Dict[str, List[Tuple[str, str, bytes]]]
+            key: M/U/D
+            value: Tuple[filepath it was, new filepath in case of rename, bytes content of the existing file]
+    '''
+    repo = Repo(dirpath)
+    tpls = []  # type: List[Tuple[str, str, str, bytes]]
+    # modified/deleted/moved
+    tpls.extend([(item.change_type, item.a_path, item.b_path, item.a_blob.data_stream.read()) for item in repo.index.diff(None)])
+    # check the untracked uncommitted new files
+    tpls.extend([('U', item, item, read_bytes_file(item)) for item in repo.untracked_files])
+    # check the "stage"
+    try:
+        tpls.extend([(item.change_type, item.a_path, item.b_path, item.a_blob.data_stream.read()) for item in repo.index.diff(repo.head.commit)])
+    except ValueError:  # ValueError: Reference at 'refs/heads/master' does not exist
+        pass
+
+    changes = {}
+    for change_type, path_a, path_b, byte_content in tpls:
+        if change_type not in changes:
+            changes[change_type] = []
+        changes[change_type].append((path_a, path_b, byte_content))
+    return changes

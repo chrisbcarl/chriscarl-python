@@ -16,3 +16,4 @@
         - test: runs pytest coverage to ensure at least 85%
 - hidden or gitignored:
     - `ignoreme\_banned`: includes stuff that prevents f-strings
+- `.git/hooks/pre-commit` - run dev audit banned

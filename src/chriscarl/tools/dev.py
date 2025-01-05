@@ -359,6 +359,21 @@ class Audit(Mode):
             return self.func()
 
 
+@dataclass
+class Vca(Mode):
+    '''
+    VCA or Version Control Assistant is the way i literally audit my own code from an infrastructure perspective. it's a poor-mans' linter so to speak. It is an expansion on CRUD, since CRUD is state-less, "Audit" adds state.
+    Things like relpath compliance, word replacing, swear jar, self-modification, etc.
+
+    Examples:
+        - dev vca inc
+        - dev vca dec
+        - dev vca hist
+        - dev vca init
+    '''
+    pass
+
+
 MODE_MAP: Dict[str, Type[Mode]] = {
     'create': Create,
     'read': Read,
@@ -366,6 +381,7 @@ MODE_MAP: Dict[str, Type[Mode]] = {
     'delete': Delete,
     'run': Run,
     'audit': Audit,
+    'vca': Vca,
 }
 
 

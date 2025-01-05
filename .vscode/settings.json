@@ -38,4 +38,5 @@
     // stubgen src\chriscarl -o dist/typing
     "python.analysis.stubPath": "${workspaceFolder}\\dist\\typing",
     "python.analysis.extraPaths": ["${workspaceFolder}\\src"],
+    "python.REPL.sendToNativeREPL": false,
 }
