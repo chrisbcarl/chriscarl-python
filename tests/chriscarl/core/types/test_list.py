@@ -44,6 +44,7 @@ class TestCase(UnitTest):
 
     def setUp(self):
         self.num_list = [1, 2, 2, 3, 3, 3]
+        self.ten = list(range(10))
         return super().setUp()
 
     def tearDown(self):
@@ -110,6 +111,40 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_5_n_sized_chunks(self):
+        variables = [
+            (lib.n_sized_chunks, (self.ten, 0)),
+            (lib.n_sized_chunks, (self.ten, 1)),
+            (lib.n_sized_chunks, (self.ten, 2)),
+            (lib.n_sized_chunks, (self.ten, 3)),
+            (lib.n_sized_chunks, (self.ten, 4)),
+        ]
+        controls = [
+            ValueError,
+            [[i] for i in self.ten],
+            [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]],
+            [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9]],
+            [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9]],
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_6_n_chunks(self):
+        variables = [
+            (lib.n_chunks, (self.ten, 0)),
+            (lib.n_chunks, (self.ten, 1)),
+            (lib.n_chunks, (self.ten, 2)),
+            (lib.n_chunks, (self.ten, 3)),
+            (lib.n_chunks, (self.ten, 4)),
+        ]
+        controls = [
+            ValueError,
+            [self.ten],  # since that's how it'll be evaluated
+            [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
+            [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            [[0, 1, 2], [3, 4, 5], [6, 7], [8, 9]],
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -120,5 +155,7 @@ if __name__ == '__main__':
     tc.test_case_2_sorted_list_by_frequency()
     tc.test_case_3_as_list()
     tc.test_case_4_contains()
+    tc.test_case_5_n_sized_chunks()
+    tc.test_case_6_n_chunks()
 
     tc.tearDown()
