@@ -10,6 +10,7 @@ core.types.iterable is actually a lot of list and dict stuff combined, but since
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
+    2025-01-14 - core.types.iterable - moved contains here and improved it
     2024-12-28 - core.types.iterable - FIX: keys doesnt throw TypeError for any reason anymore
     2024-12-11 - core.types.iterable - added keys
     2024-12-09 - core.types.iterable - initial commit
@@ -20,7 +21,7 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-from typing import Optional, Union, Any, Iterable, List, Dict, Generator, Tuple
+from typing import Optional, Union, Any, Iterable, List, Dict, Generator, Tuple, Callable
 from collections import OrderedDict
 
 # third party imports
@@ -28,7 +29,9 @@ from collections import OrderedDict
 # project imports
 from chriscarl.core.constants import SENTINEL
 from chriscarl.core.lib.stdlib.inspect import get_variable_name_lineno
+from chriscarl.core.lib.stdlib.inspect import get_caller_file_lineno
 from chriscarl.core.lib.stdlib.typing import isinstance_raise
+from chriscarl.core.types.list import as_list
 
 SCRIPT_RELPATH = 'chriscarl/core/types/iterable.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -232,3 +235,48 @@ def unflatten_iterable(flat, split='.'):
                     obj.append(flat[flat_key])
 
     return iterable
+
+
+def contains(subject, token_or_tokens, exc=False, func=all):
+    # type: (Iterable, Union[Any, Iterable], bool, Callable[[Iterable], bool]) -> bool
+    '''
+    Description:
+        does left side contain all tokens on the right side?
+        >>> contains(['a', 'b', 'c'], 'a')
+        ... True
+        >>> contains(['a', 'b', 'c'], ['a', 'b'])
+        ... True
+        >>> contains(['a', 'b', 'c'], 1, func=any)
+        ... False
+        >>> contains(['a', 'b', 'c'], ..., exc=True)
+        ... ValueError
+    Returns:
+        bool
+            if exc=True
+    Raises:
+        ValueError
+            if exc=True
+    '''
+    relpath, lineno = get_caller_file_lineno()
+    tokens = as_list(token_or_tokens)
+    subject_list = subject
+    if not isinstance(subject, str):
+        subject_list = list(subject)  # helps to flatten iterators and sets and other things
+    else:
+        tokens = [str(ele) for ele in tokens]
+    if not func(token in subject_list for token in tokens):
+        if not exc:
+            return False
+        msg = '"{}", line {} - subject {!r} does not contain {} tokens {}'.format(relpath, lineno, subject, func.__name__, tokens)
+        raise ValueError(msg)
+    return True
+
+
+def contains_all(subject, token_or_tokens, exc=False):
+    # type: (Iterable, Union[Any, Iterable], bool) -> bool
+    return contains(subject, token_or_tokens, exc=exc, func=all)
+
+
+def contains_any(subject, token_or_tokens, exc=False):
+    # type: (Iterable, Union[Any, Iterable], bool) -> bool
+    return contains(subject, token_or_tokens, exc=exc, func=any)

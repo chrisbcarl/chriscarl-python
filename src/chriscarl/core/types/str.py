@@ -10,6 +10,7 @@ core.types.str is probably badly named and should be "string" but either sucks, 
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
+    2025-01-14 - core.types.list - added contains_insensitive and its variants
     2024-12-13 - core.types.str - added strip_unicode
     2024-11-26 - core.types.str - initial commit
 '''
@@ -19,13 +20,14 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-from typing import Generator, Union
 from collections import OrderedDict
+from typing import Generator, Union, Callable, Iterable
 
 # third party imports
 
 # project imports
-from chriscarl.core.types.list import contains
+from chriscarl.core.types.list import as_list
+from chriscarl.core.types.iterable import contains
 
 SCRIPT_RELPATH = 'chriscarl/core/types/str.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -104,3 +106,20 @@ def strip_unicode(text, encoding='utf-8'):
         TODO: chr(0x26) == '&' so maybe some regex replacement is faster.
     '''
     return text.encode(encoding).decode(encoding)
+
+
+def contains_insensitive(text, token_or_tokens, exc=False, func=any):
+    # type: (str, str | list, bool, Callable[[Iterable], bool]) -> bool
+    raw_tokens = as_list(token_or_tokens)
+    tokens = [str(ele).lower() for ele in raw_tokens]
+    return contains(text, tokens, func=func, exc=exc)
+
+
+def contains_all_insensitive(text, token_or_tokens, exc=False):
+    # type: (str, str | list, bool) -> bool
+    return contains_insensitive(text, token_or_tokens, exc=exc, func=all)
+
+
+def contains_any_insensitive(text, token_or_tokens, exc=False):
+    # type: (str, str | list, bool) -> bool
+    return contains_insensitive(text, token_or_tokens, exc=exc, func=any)

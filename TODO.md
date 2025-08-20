@@ -1,5 +1,15 @@
 # TODO
+- FEATURES
+    are new features added that arent in the FEATURES doc?
+    are all prod features in the commit messages?
+    move all staged features to prod
+        change dates
+        change version
 - dev
+
+    dict indexing should allow for regex... dict['.*']
+
+    make a scan for stackoverflow thing and from there, generate a list of credits in the readme or elsewhere
 
     the last thing I was on is trying to compare one file to another via AST, see if functions were added / removed, so I can autogen the changelog
     dict probably should redo flatten in the context of walk to get all of the keys...
@@ -113,3 +123,23 @@
     - python metatyping: mypy, pyinstaller, GitPython, pytest-cov,
     - python building: check-manifest
     - python 2 backports: future, pathlib, typing, configparser, enum-compat,funcsigs, regex
+- order by category, name, etc.
+    - say you have a complex list of text entries, and each entry belongs to a category, and you want to sort them by harm at the top
+    - ['lithium', 'iron', 'boron', 'nitrogen', 'uranium', 'titanium']
+    - ['lithium', 'uranium', 'iron', 'nitrogen', 'titanium', 'boron']
+- analyze an ipynb and add anchors and all kinds of nice navigation shit - like each markdown always has a link at the bottom to go back up to the top, or to go to the next section and what that next section is etc.
+    ```python
+    with open(r'shit.ipynb') as r:
+        ipynb = json.load(r)
+    for cell in ipynb['cells']:
+        if cell['cell_type'] == 'markdown':
+            last_line = cell['source'][-1]
+            if 'go to top' not in last_line.lower():
+                cell['source'].append('')
+                cell['source'].append('[Go to Top](#top)')
+            elif 'go to top' in last_line.lower():
+                cell['source'][-1] = '<a href="#top">Go to Top</a>'
+
+    with open(r'shit.ipynb', 'w') as w:
+        json.dump(ipynb, w, indent=2)
+    ```

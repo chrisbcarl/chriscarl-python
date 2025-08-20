@@ -148,6 +148,8 @@ def isof(obj, *typings):
 
 def isinstance_raise(obj, *typings, msg=''):
     # type: (Any, T_TYPING, str) -> bool
+    # TODO: as_list(1, List[str]) needs to have nicer output message saying elements within the datastruct are no good, rather than the whole:
+    #       TypeError: provided <class 'list'> for 'obj_or_list', requires: typing.List[str]
     from chriscarl.core.lib.stdlib.inspect import get_variable_name_lineno
     var_name = get_variable_name_lineno(obj)[0]
 

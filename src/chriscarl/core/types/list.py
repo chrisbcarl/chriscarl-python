@@ -10,8 +10,9 @@ core.types.list is all about these array-lists.
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
+    2025-01-14 - core.types.list - removed contains
     2025-01-01 - core.types.list - added n_sized_chunks and n_chunks
-    2024-12-09 - core.types.list - added as_list and contains
+    2024-12-09 - core.types.list - added as_list
     2024-11-25 - core.types.list - initial commit
 '''
 
@@ -26,7 +27,6 @@ from typing import List, Union, Callable, Any, Generator, Iterable
 
 # project imports
 from chriscarl.core.lib.stdlib.typing import T_TYPING, isinstance_raise
-from chriscarl.core.lib.stdlib.inspect import get_caller_file_lineno
 
 SCRIPT_RELPATH = 'chriscarl/core/types/list.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -79,33 +79,12 @@ def sorted_list_by_frequency(lst, ascending=True):
     return list(generate_list_by_frequency(lst, ascending=ascending))
 
 
-def as_list(obj_or_list, typing):
+def as_list(obj_or_list, typing=List[Any]):
     # type: (Union[list, object], T_TYPING) -> List[Any]
     if not isinstance(obj_or_list, list):
         obj_or_list = [obj_or_list]
     isinstance_raise(obj_or_list, typing)
     return obj_or_list
-
-
-def contains(choices, value_or_values):
-    # type: (Iterable, Union[Any, Iterable]) -> None
-    '''
-    Description:
-        does left side contain all of the right side?
-    Raises:
-        ValueError
-    '''
-    # NOTE: can't really use set, since set requires hashable, and who knows whats inside "choices"
-    relpath, lineno = get_caller_file_lineno()
-    choices = list(choices)  # helps to flatten iterators and sets and other things
-
-    if not isinstance(value_or_values, (list, set, tuple)):
-        if value_or_values not in choices:
-            raise ValueError('"{}", line {} - provided value {!r} not in: {}'.format(relpath, lineno, value_or_values, choices))
-    else:
-        for i, v in enumerate(value_or_values):
-            if v not in choices:
-                raise ValueError('"{}", line {} - provided value {!r} at at index {} not in: {}'.format(relpath, lineno, v, i, choices))
 
 
 def n_sized_chunks(lst, n):

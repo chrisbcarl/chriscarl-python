@@ -74,6 +74,8 @@ NESTED_NESTED_DICT = {
 class TestCase(UnitTest):
 
     def setUp(self):
+        self.num_list = [1, 2, 2, 3, 3, 3]
+        self.num_dict = {k: k for k in range(1, 4)}
         return super().setUp()
 
     def tearDown(self):
@@ -167,12 +169,58 @@ class TestCase(UnitTest):
             got = [ele for ele in got if lib.isleaf(ele)]
             self.assertEqual(got, flat, 'failed equality on data {}...'.format(i))
 
+    def test_case_3_contains(self):
+        variables = [
+            (lib.contains, (self.num_list, None)),
+            (lib.contains, (self.num_list, None), dict(exc=True)),
+            (lib.contains, (self.num_list, 1)),
+            (lib.contains, (self.num_list, 2)),
+            (lib.contains, (self.num_list, 3)),
+            (lib.contains_all, (self.num_list, [1, 2, 3])),
+            (lib.contains_any, (self.num_dict, 1)),
+            (lib.contains_any, (self.num_dict, 2)),
+            (lib.contains_any, (self.num_dict, 3)),
+            (lib.contains_all, (self.num_dict, [1, 2, 3])),
+            (lib.contains_all, ('abcd', 'a')),
+            (lib.contains_all, ('abcd', 'bc')),
+            (lib.contains_all, ('abcd', ['b', 'c'])),
+            (lib.contains, (self.num_list, [4]), dict(func=any)),
+            (lib.contains, (self.num_dict, [4]), dict(func=any)),
+            (lib.contains, ('abcd', [4]), dict(func=any)),
+            (lib.contains_any, (self.num_list, [1, 2, 3, 4])),
+            (lib.contains_any, (self.num_dict, [1, 2, 3, 4])),
+            (lib.contains_any, ('abcd', ['b', 'c', 4])),
+        ]
+        controls = [
+            False,
+            ValueError,
+            True,
+            True,
+            True,
+            True,
+            True,
+            True,
+            True,
+            True,
+            True,
+            True,
+            True,
+            False,
+            False,
+            False,
+            True,
+            True,
+            True,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
     tc.test_case_0_get()
     tc.test_case_1_flatten_iterable()
-    tc.test_case_2_keys()
+    tc.test_case_2_keys_isleaf()
+    tc.test_case_3_contains()
 
     tc.tearDown()

@@ -49,7 +49,8 @@ from six import string_types, integer_types
 # project imports
 import chriscarl
 from chriscarl.core.constants import CWD
-from chriscarl.core.types.list import as_list, contains
+from chriscarl.core.types.list import as_list
+from chriscarl.core.types.iterable import contains
 from chriscarl.core.types.str import size_to_bytes
 from chriscarl.core.lib.stdlib.io import MODES
 from chriscarl.core.lib.stdlib.os import abspath, make_file_dirpath, TEMP_DIRPATH
@@ -127,7 +128,7 @@ def level_to_int(level):
     '''
     if isinstance(level, int):
         return level
-    contains(NAME_TO_LEVEL, level)
+    contains(NAME_TO_LEVEL, level, exc=True)
     return NAME_TO_LEVEL.get(level, -1)
 
 
@@ -142,7 +143,7 @@ def levels_to_ints(levels):
         if isinstance(level, int):
             int_levels.append(level)
         else:
-            contains(NAME_TO_LEVEL, level)
+            contains(NAME_TO_LEVEL, level, exc=True)
             int_levels.append(NAME_TO_LEVEL.get(level, -1))
     return int_levels
 
@@ -305,9 +306,9 @@ class FileConfig(ConsoleConfig):
 
     def __post_init__(self):
         super().__post_init__()
-        contains(MODES, self.mode)
+        contains(MODES, self.mode, exc=True)
         if isinstance(self.when, str):
-            contains(TIMED_ROTATING_WHEN, self.when)
+            contains(TIMED_ROTATING_WHEN, self.when, exc=True)
         make_file_dirpath(self.filepath)
         self.size = self.size if isinstance(self.size, (int, float)) else size_to_bytes(self.size, into='b')
 
@@ -389,12 +390,12 @@ def configure(names=None, configs=DEFAULT_CONFIGS):
     return loggers
 
 
-def configure_ez(names=None, level='INFO', filepath='', fmt=''):
-    # type: (Optional[List[Union[str, ModuleType, logging.Logger]]], str, str, str) -> List[logging.Logger]
+def configure_ez(names=None, level='INFO', filepath='', fmt='', file_level='', console_level=''):
+    # type: (Optional[List[Union[str, ModuleType, logging.Logger]]], str, str, str, str, str) -> List[logging.Logger]
     configs = []  # type: List[ConsoleConfig]
     if filepath:
-        fc = FileConfig(level=level, format=fmt, formatter=DEFAULT_FORMATTER, propagate=False, filepath=filepath)
+        fc = FileConfig(level=file_level or level, format=fmt, formatter=DEFAULT_FORMATTER, propagate=False, filepath=filepath)
         configs.append(fc)
-    cc = ConsoleConfig(level=level, format=fmt, formatter=DEFAULT_FORMATTER, propagate=False)
+    cc = ConsoleConfig(level=console_level or level, format=fmt, formatter=DEFAULT_FORMATTER, propagate=False)
     configs.append(cc)
     return configure(names=names, configs=configs)
